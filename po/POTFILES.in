@@ -1,0 +1,6 @@
+data/at.stefan99353.Blocky.desktop.in.in
+data/at.stefan99353.Blocky.gschema.xml.in
+data/at.stefan99353.Blocky.metainfo.xml.in.in
+data/resources/ui/shortcuts.ui
+data/resources/ui/window.ui
+src/application.rs
