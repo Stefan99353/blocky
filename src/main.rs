@@ -1,28 +1,39 @@
+#[macro_use]
+extern crate log;
+
 mod application;
 #[rustfmt::skip]
 mod config;
+mod paths;
 mod window;
 
-use gettextrs::{gettext, LocaleCategory};
-use gtk::{gio, glib};
+use adw::{gio, glib};
+use gettextrs::LocaleCategory;
 
-use self::application::ExampleApplication;
-use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
+use self::application::BlockyApplication;
 
 fn main() {
     // Initialize logger
     pretty_env_logger::init();
 
+    // Initialize GTK and libadwaita
+    gtk::init().expect("Failed to initialize GTK");
+    adw::init();
+
+    // Initialize paths (data, config and cache)
+    paths::init().expect("Failed to create directories");
+
     // Prepare i18n
     gettextrs::setlocale(LocaleCategory::LcAll, "");
-    gettextrs::bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
-    gettextrs::textdomain(GETTEXT_PACKAGE).expect("Unable to switch to the text domain");
+    gettextrs::bindtextdomain(config::PKG_NAME, config::LOCALEDIR)
+        .expect("Unable to bind the text domain");
+    gettextrs::textdomain(config::PKG_NAME).expect("Unable to switch to the text domain");
 
-    glib::set_application_name(&gettext("Blocky"));
-
-    let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
+    // Load gresources
+    let res = gio::Resource::load(config::RESOURCES_FILE).expect("Could not load gresource file");
     gio::resources_register(&res);
 
-    let app = ExampleApplication::new();
-    app.run();
+    glib::set_application_name(config::APP_NAME);
+
+    BlockyApplication::run();
 }

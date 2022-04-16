@@ -3,10 +3,19 @@ name = "blocky"
 version = "0.1.0"
 authors = ["Stefan Rupertsberger <s.rupertsberger@gmail.com>"]
 edition = "2021"
+license = "MIT"
 
 [dependencies]
+gettext-rs = { version = "0.7.0", features = ["gettext-system"] }
+lazy_static = "1.4.0"
 log = "0.4"
+once_cell = "1.10.0"
 pretty_env_logger = "0.4"
-gettext-rs = { version = "0.7", features = ["gettext-system"] }
-once_cell = "1.9"
-gtk = {version = "0.4", package = "gtk4"}
+
+[dependencies.gtk]
+package = "gtk4"
+version = "0.4.7"
+
+[dependencies.adw]
+package = "libadwaita"
+version = "0.1.1"

@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::application::ExampleApplication;
+use crate::application::BlockyApplication;
 use crate::config::{APP_ID, PROFILE};
 
 mod imp {
@@ -80,7 +80,7 @@ glib::wrapper! {
 }
 
 impl ExampleApplicationWindow {
-    pub fn new(app: &ExampleApplication) -> Self {
+    pub fn new(app: &BlockyApplication) -> Self {
         glib::Object::new(&[("application", app)])
             .expect("Failed to create ExampleApplicationWindow")
     }

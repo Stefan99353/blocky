@@ -1,11 +1,11 @@
 [Desktop Entry]
 Name=Blocky
-Comment=Write a GTK + Rust application
+Comment=Minecraft Launcher with support for multiple instances
 Type=Application
 Exec=blocky
 Terminal=false
-Categories=GNOME;GTK;
-Keywords=Gnome;GTK;
+Categories=GNOME;GTK;Games
+Keywords=Gnome;GTK;Games;Minecraft
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
 Icon=@icon@
 StartupNotify=true

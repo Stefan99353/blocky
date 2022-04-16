@@ -1,12 +1,12 @@
 use gettextrs::gettext;
-use log::{debug, info};
 
+use crate::config;
+use adw::prelude::*;
+use adw::subclass::prelude::*;
+use adw::{gdk, gio, glib};
 use glib::clone;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use gtk::{gdk, gio, glib};
+use gtk::subclass::application::GtkApplicationImpl;
 
-use crate::config::{APP_ID, PKGDATADIR, PROFILE, VERSION};
 use crate::window::ExampleApplicationWindow;
 
 mod imp {
@@ -14,45 +14,53 @@ mod imp {
     use glib::WeakRef;
     use once_cell::sync::OnceCell;
 
-    #[derive(Debug, Default)]
-    pub struct ExampleApplication {
+    pub struct BlockyApplication {
         pub window: OnceCell<WeakRef<ExampleApplicationWindow>>,
+        pub settings: gio::Settings,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for ExampleApplication {
-        const NAME: &'static str = "ExampleApplication";
-        type Type = super::ExampleApplication;
+    impl ObjectSubclass for BlockyApplication {
+        const NAME: &'static str = "BlockyApplication";
+        type Type = super::BlockyApplication;
         type ParentType = gtk::Application;
+
+        fn new() -> Self {
+            Self {
+                window: OnceCell::new(),
+                settings: gio::Settings::new(config::APP_ID),
+            }
+        }
     }
 
-    impl ObjectImpl for ExampleApplication {}
+    impl ObjectImpl for BlockyApplication {}
 
-    impl ApplicationImpl for ExampleApplication {
+    impl ApplicationImpl for BlockyApplication {
         fn activate(&self, app: &Self::Type) {
-            debug!("GtkApplication<ExampleApplication>::activate");
+            debug!("Activate Application");
             self.parent_activate(app);
 
             if let Some(window) = self.window.get() {
                 let window = window.upgrade().unwrap();
                 window.present();
+                debug!("Application window presented");
                 return;
             }
 
-            let window = ExampleApplicationWindow::new(app);
+            debug!("Create new application window");
+            let window = app.create_window();
+            window.present();
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
-
-            app.main_window().present();
         }
 
         fn startup(&self, app: &Self::Type) {
-            debug!("GtkApplication<ExampleApplication>::startup");
+            debug!("Start Application");
             self.parent_startup(app);
 
             // Set icons for shell
-            gtk::Window::set_default_icon_name(APP_ID);
+            gtk::Window::set_default_icon_name(config::APP_ID);
 
             app.setup_css();
             app.setup_gactions();
@@ -60,26 +68,37 @@ mod imp {
         }
     }
 
-    impl GtkApplicationImpl for ExampleApplication {}
+    impl GtkApplicationImpl for BlockyApplication {}
+    impl AdwApplicationImpl for BlockyApplication {}
 }
 
 glib::wrapper! {
-    pub struct ExampleApplication(ObjectSubclass<imp::ExampleApplication>)
+    pub struct BlockyApplication(ObjectSubclass<imp::BlockyApplication>)
         @extends gio::Application, gtk::Application,
         @implements gio::ActionMap, gio::ActionGroup;
 }
 
-impl ExampleApplication {
-    pub fn new() -> Self {
-        glib::Object::new(&[
-            ("application-id", &Some(APP_ID)),
+impl BlockyApplication {
+    pub fn run() {
+        info!("{} ({})", config::APP_NAME, config::APP_ID);
+        info!("Version: {} ({})", config::VERSION, config::PROFILE);
+        info!("Datadir: {}", config::PKG_DATADIR);
+
+        let app = glib::Object::new::<BlockyApplication>(&[
+            ("application-id", &Some(config::APP_ID)),
             ("flags", &gio::ApplicationFlags::empty()),
-            (
-                "resource-base-path",
-                &Some("/at/stefan99353/Blocky/"),
-            ),
+            ("resource-base-path", &Some("/at/stefan99353/Blocky/")),
         ])
-        .expect("Application initialization failed...")
+        .expect("Failed to initialize app");
+
+        app.set_default();
+
+        // Start Application
+        ApplicationExtManual::run(&app);
+    }
+
+    fn create_window(&self) -> ExampleApplicationWindow {
+        ExampleApplicationWindow::new(&self)
     }
 
     fn main_window(&self) -> ExampleApplicationWindow {
@@ -123,12 +142,11 @@ impl ExampleApplication {
 
     fn show_about_dialog(&self) {
         let dialog = gtk::AboutDialog::builder()
-            .logo_icon_name(APP_ID)
-            // Insert your license of choice here
-            // .license_type(gtk::License::MitX11)
+            .logo_icon_name(config::APP_ID)
+            .license_type(gtk::License::MitX11)
             // Insert your website here
             // .website("https://gitlab.gnome.org/bilelmoussaoui/blocky/")
-            .version(VERSION)
+            .version(config::VERSION)
             .transient_for(&self.main_window())
             .translator_credits(&gettext("translator-credits"))
             .modal(true)
@@ -137,13 +155,5 @@ impl ExampleApplication {
             .build();
 
         dialog.present();
-    }
-
-    pub fn run(&self) {
-        info!("Blocky ({})", APP_ID);
-        info!("Version: {} ({})", VERSION, PROFILE);
-        info!("Datadir: {}", PKGDATADIR);
-
-        ApplicationExtManual::run(self);
     }
 }

@@ -1,19 +1,21 @@
 project(
   'blocky',
   'rust',
-  version: '0.0.1',
+  version: '0.1.0',
   meson_version: '>= 0.59',
-  # license: MIT,
+  license: 'MIT',
 )
 
 i18n = import('i18n')
 gnome = import('gnome')
 
 base_id = 'at.stefan99353.Blocky'
+application_name = 'Blocky'
 
 dependency('glib-2.0', version: '>= 2.66')
 dependency('gio-2.0', version: '>= 2.66')
 dependency('gtk4', version: '>= 4.0.0')
+dependency('libadwaita-1', version: '>=1.0.0')
 
 glib_compile_resources = find_program('glib-compile-resources', required: true)
 glib_compile_schemas = find_program('glib-compile-schemas', required: true)
@@ -57,7 +59,7 @@ meson.add_dist_script(
 if get_option('profile') == 'development'
   # Setup pre-commit hook for ensuring coding style is always consistent
   message('Setting up git pre-commit hook..')
-  run_command('cp', '-f', 'hooks/pre-commit.hook', '.git/hooks/pre-commit')
+  run_command('cp', '-f', 'build-aux/pre-commit.hook', '.git/hooks/pre-commit')
 endif
 
 subdir('data')
