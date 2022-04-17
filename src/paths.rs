@@ -1,4 +1,5 @@
-use crate::config;
+use crate::settings::SettingKey;
+use crate::{config, settings};
 use adw::glib;
 use lazy_static::lazy_static;
 use std::fs;
@@ -20,6 +21,24 @@ lazy_static! {
         path.push(config::PKG_NAME);
         path
     };
+    static ref DEFAULT_INSTANCES_DIR: PathBuf = {
+        let mut path = glib::user_data_dir();
+        path.push(config::PKG_NAME);
+        path.push("instances");
+        path
+    };
+    static ref DEFAULT_LIBRARIES_DIR: PathBuf = {
+        let mut path = glib::user_data_dir();
+        path.push(config::PKG_NAME);
+        path.push("libraries");
+        path
+    };
+    static ref DEFAULT_ASSETS_DIR: PathBuf = {
+        let mut path = glib::user_data_dir();
+        path.push(config::PKG_NAME);
+        path.push("assets");
+        path
+    };
 }
 
 pub fn init() -> std::io::Result<()> {
@@ -28,4 +47,30 @@ pub fn init() -> std::io::Result<()> {
     fs::create_dir_all(CACHE.clone())?;
 
     Ok(())
+}
+
+pub fn set_defaults() {
+    let default_instances_dir = settings::get_string(SettingKey::DefaultInstancesDir);
+    if default_instances_dir == "NULL" {
+        settings::set_string(
+            SettingKey::DefaultInstancesDir,
+            &DEFAULT_INSTANCES_DIR.to_string_lossy(),
+        );
+    }
+
+    let default_libraries_dir = settings::get_string(SettingKey::DefaultLibrariesDir);
+    if default_libraries_dir == "NULL" {
+        settings::set_string(
+            SettingKey::DefaultLibrariesDir,
+            &DEFAULT_LIBRARIES_DIR.to_string_lossy(),
+        );
+    }
+
+    let default_assets_dir = settings::get_string(SettingKey::DefaultAssetsDir);
+    if default_assets_dir == "NULL" {
+        settings::set_string(
+            SettingKey::DefaultAssetsDir,
+            &DEFAULT_ASSETS_DIR.to_string_lossy(),
+        );
+    }
 }

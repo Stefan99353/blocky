@@ -1,21 +1,19 @@
-use gettextrs::gettext;
-
 use crate::config;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use adw::{gdk, gio, glib};
-use glib::clone;
 use gtk::subclass::application::GtkApplicationImpl;
 
-use crate::window::ExampleApplicationWindow;
+use crate::ui::{BlockyApplicationWindow, BlockyPreferencesWindow};
 
 mod imp {
     use super::*;
+    use crate::settings;
     use glib::WeakRef;
     use once_cell::sync::OnceCell;
 
     pub struct BlockyApplication {
-        pub window: OnceCell<WeakRef<ExampleApplicationWindow>>,
+        pub window: OnceCell<WeakRef<BlockyApplicationWindow>>,
         pub settings: gio::Settings,
     }
 
@@ -28,7 +26,7 @@ mod imp {
         fn new() -> Self {
             Self {
                 window: OnceCell::new(),
-                settings: gio::Settings::new(config::APP_ID),
+                settings: settings::get_settings(),
             }
         }
     }
@@ -74,7 +72,7 @@ mod imp {
 
 glib::wrapper! {
     pub struct BlockyApplication(ObjectSubclass<imp::BlockyApplication>)
-        @extends gio::Application, gtk::Application,
+        @extends gio::Application, gtk::Application, adw::Application,
         @implements gio::ActionMap, gio::ActionGroup;
 }
 
@@ -97,35 +95,56 @@ impl BlockyApplication {
         ApplicationExtManual::run(&app);
     }
 
-    fn create_window(&self) -> ExampleApplicationWindow {
-        ExampleApplicationWindow::new(&self)
-    }
-
-    fn main_window(&self) -> ExampleApplicationWindow {
-        self.imp().window.get().unwrap().upgrade().unwrap()
+    fn create_window(&self) -> BlockyApplicationWindow {
+        BlockyApplicationWindow::new(self)
     }
 
     fn setup_gactions(&self) {
-        // Quit
-        let action_quit = gio::SimpleAction::new("quit", None);
-        action_quit.connect_activate(clone!(@weak self as app => move |_, _| {
-            // This is needed to trigger the delete event and saving the window state
-            app.main_window().close();
-            app.quit();
-        }));
-        self.add_action(&action_quit);
+        // app.add-instance
+        let action_add_instance = gio::SimpleAction::new("add-instance", None);
+        action_add_instance.connect_activate(move |_, _| {
+            debug!("Show add-instance window");
+        });
+        self.add_action(&action_add_instance);
 
-        // About
+        // app.add-profile
+        let action_add_profile = gio::SimpleAction::new("add-profile", None);
+        action_add_profile.connect_activate(move |_, _| {
+            debug!("Show add-profile window");
+        });
+        self.add_action(&action_add_profile);
+
+        // app.preferences
+        let action_preferences = gio::SimpleAction::new("preferences", None);
+        action_preferences.connect_activate(move |_, _| {
+            debug!("Show preferences window");
+            BlockyPreferencesWindow::new().show();
+        });
+        self.add_action(&action_preferences);
+
+        // app.about
         let action_about = gio::SimpleAction::new("about", None);
-        action_about.connect_activate(clone!(@weak self as app => move |_, _| {
-            app.show_about_dialog();
-        }));
+        action_about.connect_activate(move |_, _| {
+            debug!("Show about dialog");
+            crate::ui::about::show_about_dialog();
+        });
         self.add_action(&action_about);
+
+        // app.quit
+        let action_quit = gio::SimpleAction::new("quit", None);
+        action_quit.connect_activate(move |_, _| {
+            debug!("Closing application");
+            let window = BlockyApplicationWindow::default();
+            window.close();
+        });
+        self.add_action(&action_quit);
     }
 
     // Sets up keyboard shortcuts
     fn setup_accels(&self) {
-        self.set_accels_for_action("app.quit", &["<Control>q"]);
+        self.set_accels_for_action("app.add-instance", &["<primary>plus"]);
+        self.set_accels_for_action("app.preferences", &["<primary>comma"]);
+        self.set_accels_for_action("app.quit", &["<primary>q"]);
     }
 
     fn setup_css(&self) {
@@ -139,21 +158,13 @@ impl BlockyApplication {
             );
         }
     }
+}
 
-    fn show_about_dialog(&self) {
-        let dialog = gtk::AboutDialog::builder()
-            .logo_icon_name(config::APP_ID)
-            .license_type(gtk::License::MitX11)
-            // Insert your website here
-            // .website("https://gitlab.gnome.org/bilelmoussaoui/blocky/")
-            .version(config::VERSION)
-            .transient_for(&self.main_window())
-            .translator_credits(&gettext("translator-credits"))
-            .modal(true)
-            .authors(vec!["Stefan Rupertsberger".into()])
-            .artists(vec!["Stefan Rupertsberger".into()])
-            .build();
-
-        dialog.present();
+impl Default for BlockyApplication {
+    fn default() -> Self {
+        gio::Application::default()
+            .expect("Could not get default application")
+            .downcast()
+            .unwrap()
     }
 }

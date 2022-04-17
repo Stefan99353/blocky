@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="BlockyContentBox" parent="GtkBox">
+        <child>
+            <object class="GtkStack" id="stack">
+                <property name="transition_type">crossfade</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <!-- Instances -->
+                <child>
+                    <object class="GtkStackPage">
+                        <property name="name">instances</property>
+                        <property name="child">
+                            <object class="GtkBox"/>
+                        </property>
+                    </object>
+                </child>
+                <!-- Ready -->
+                <child>
+                    <object class="GtkStackPage">
+                        <property name="name">ready</property>
+                        <property name="child">
+                            <object class="AdwStatusPage" id="ready_status_page">
+                                <property name="title" translatable="yes">Add a new Instance</property>
+                            </object>
+                        </property>
+                    </object>
+                </child>
+                <!-- Loading -->
+                <child>
+                    <object class="GtkStackPage">
+                        <property name="name">loading</property>
+                        <property name="child">
+                            <object class="GtkSpinner" id="spinner">
+                                <property name="halign">center</property>
+                                <property name="width-request">32</property>
+                            </object>
+                        </property>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </template>
+</interface>

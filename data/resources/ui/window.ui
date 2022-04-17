@@ -1,6 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <menu id="primary_menu">
+  <template class="BlockyApplicationWindow" parent="AdwApplicationWindow">
+    <property name="width_request">640</property>
+    <property name="height_request">360</property>
+    <property name="title">Blocky</property>
+    <property name="content">
+      <object class="AdwToastOverlay" id="toast_overlay">
+        <property name="child">
+          <!-- Main Container -->
+          <object class="GtkBox" id="main_box">
+            <property name="orientation">vertical</property>
+            <!-- Header -->
+            <child>
+              <object class="AdwHeaderBar" id="headerbar">
+                <property name="title_widget">
+                  <object class="AdwWindowTitle">
+                    <property name="title">Blocky</property>
+                  </object>
+                </property>
+                <!-- Add Instance Button -->
+                <child type="start">
+                  <object class="GtkButton">
+                    <property name="tooltip_text" translatable="yes">Add New Instance</property>
+                    <property name="icon_name">list-add-symbolic</property>
+                    <property name="action_name">app.add-instance</property>
+                  </object>
+                </child>
+                <!-- Menu Button -->
+                <child type="end">
+                  <object class="GtkMenuButton" id="app_menu_button">
+                    <property name="tooltip_text" translatable="yes">Menu</property>
+                    <property name="icon_name">open-menu-symbolic</property>
+                    <property name="menu_model">app_menu</property>
+                  </object>
+                </child>
+                <!-- Profile ComboBox -->
+                <child type="end">
+                  <object class="GtkComboBoxText" id="profile_combo_box">
+                    <items>
+                      <item id="1">stefan99353</item>
+                      <item id="2">EinSchlagMann</item>
+                      <item id="3">FhOsAn</item>
+                    </items>
+                  </object>
+                </child>
+              </object>
+            </child>
+
+            <!-- InstanceBox -->
+            <child>
+              <object class="BlockyContentBox" id="content_box"/>
+            </child>
+          </object>
+        </property>
+      </object>
+    </property>
+  </template>
+  <menu id="app_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Add Instance</attribute>
+        <attribute name="action">app.add-instance</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Add Profile</attribute>
+        <attribute name="action">app.add-profile</attribute>
+      </item>
+    </section>
     <section>
       <item>
         <attribute name="label" translatable="yes">_Preferences</attribute>
@@ -16,24 +82,4 @@
       </item>
     </section>
   </menu>
-  <template class="ExampleApplicationWindow" parent="GtkApplicationWindow">
-    <child type="titlebar">
-      <object class="GtkHeaderBar" id="headerbar">
-        <child type="end">
-          <object class="GtkMenuButton" id="appmenu_button">
-            <property name="icon-name">open-menu-symbolic</property>
-            <property name="menu-model">primary_menu</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkLabel" id="label">
-        <property name="label" translatable="yes">Hello world!</property>
-        <style>
-          <class name="title-header"/>
-        </style>
-      </object>
-    </child>
-  </template>
 </interface>

@@ -1,12 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schemalist>
   <schema path="/at/stefan99353/Blocky/" id="@app-id@" gettext-domain="@gettext-package@">
-    <key name="window-width" type="i">
+    <!-- Launcher Page -->
+    <key name="default-instances-dir" type="s">
+      <default>"NULL"</default>
+      <summary>Default folder for new instances</summary>
+    </key>
+    <key name="default-libraries-dir" type="s">
+      <default>"NULL"</default>
+      <summary>Default folder for Minecraft libraries</summary>
+    </key>
+    <key name="default-assets-dir" type="s">
+      <default>"NULL"</default>
+      <summary>Default folder for Minecraft assets</summary>
+    </key>
+
+    <!-- Minecraft Page -->
+    <key name="default-fullscreen" type="b">
+      <default>false</default>
+      <summary>Start Minecraft in Fullscreen (F11)</summary>
+    </key>
+    <key name="default-width" type="i">
       <default>1280</default>
+      <summary>Default window width for instances</summary>
+    </key>
+    <key name="default-height" type="i">
+      <default>720</default>
+      <summary>Default window height for instances</summary>
+    </key>
+    <key name="default-min-memory" type="i">
+      <default>1024</default>
+      <summary>Default minimum memory for instances</summary>
+    </key>
+    <key name="default-max-memory" type="i">
+      <default>2048</default>
+      <summary>Default maximum memory for instances</summary>
+    </key>
+    <key name="default-java-exec" type="s">
+      <default>"java"</default>
+      <summary>Default Java executable used by instances</summary>
+    </key>
+    <key name="default-use-jvm-args" type="b">
+      <default>false</default>
+      <summary>Enable default JVM Arguments for instances</summary>
+    </key>
+    <key name="default-jvm-args" type="s">
+      <default>""</default>
+      <summary>Default JVM Arguments for instances</summary>
+    </key>
+
+    <!-- State -->
+    <key name="window-width" type="i">
+      <default>640</default>
       <summary>Window width</summary>
     </key>
     <key name="window-height" type="i">
-      <default>720</default>
+      <default>360</default>
       <summary>Window height</summary>
     </key>
     <key name="is-maximized" type="b">

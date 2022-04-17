@@ -5,7 +5,8 @@ mod application;
 #[rustfmt::skip]
 mod config;
 mod paths;
-mod window;
+mod settings;
+mod ui;
 
 use adw::{gio, glib};
 use gettextrs::LocaleCategory;
@@ -22,6 +23,7 @@ fn main() {
 
     // Initialize paths (data, config and cache)
     paths::init().expect("Failed to create directories");
+    paths::set_defaults();
 
     // Prepare i18n
     gettextrs::setlocale(LocaleCategory::LcAll, "");
