@@ -48,7 +48,7 @@ mod imp {
         #[template_child]
         pub default_use_jvm_args_switch: TemplateChild<gtk::Switch>,
         #[template_child]
-        pub default_jvm_args_text: TemplateChild<gtk::Text>,
+        pub default_jvm_args_text: TemplateChild<gtk::Entry>,
     }
 
     #[glib::object_subclass]

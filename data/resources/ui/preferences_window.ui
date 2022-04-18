@@ -298,7 +298,7 @@
                                 <property name="subtitle" translatable="yes">Default JVM Arguments for instances</property>
                                 <property name="use_underline">True</property>
                                 <child>
-                                    <object class="GtkText" id="default_jvm_args_text">
+                                    <object class="GtkEntry" id="default_jvm_args_text">
                                         <property name="valign">center</property>
                                         <property name="hexpand">True</property>
                                     </object>
