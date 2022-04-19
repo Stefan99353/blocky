@@ -7,10 +7,10 @@ use serde_json::json;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct MinecraftProfile {
-    id: String,
-    name: String,
-    capes: Vec<serde_json::Value>,
-    skins: Vec<serde_json::Value>,
+    pub id: String,
+    pub name: String,
+    pub capes: Vec<serde_json::Value>,
+    pub skins: Vec<serde_json::Value>,
 }
 
 impl MinecraftProfile {

@@ -74,7 +74,7 @@ impl BlockyProfile {
             .map_err(|_| AuthenticationError::CodeExchange)?;
 
         let profile = Self {
-            id: Uuid::new_v4(),
+            uuid: Uuid::new_v4(),
             microsoft: MicrosoftToken::from_token_response(token_response),
             xbox_live: None,
             xbox_live_security: None,

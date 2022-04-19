@@ -1,9 +1,9 @@
 use crate::config;
-use adw::glib;
+use adw::prelude::*;
+use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::CompositeTemplate;
+use gtk::{CompositeTemplate, TemplateChild};
 
 mod imp {
     use super::*;
@@ -43,6 +43,7 @@ mod imp {
     }
 
     impl WidgetImpl for BlockyContentBox {}
+
     impl BoxImpl for BlockyContentBox {}
 }
 

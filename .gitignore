@@ -1,3 +1,6 @@
+MS_GRAPH_ID
+MS_GRAPH_SECRET
+
 ### Meson & Flatpak ###
 # Build artifacts
 build/

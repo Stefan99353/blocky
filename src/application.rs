@@ -1,18 +1,25 @@
-use crate::config;
-use adw::prelude::*;
+use crate::managers::BlockyProfileManager;
+use crate::ui::{BlockyApplicationWindow, BlockyNewProfileWindow, BlockyPreferencesWindow};
+use crate::{config, settings};
 use adw::subclass::prelude::*;
-use adw::{gdk, gio, glib};
-use gtk::subclass::application::GtkApplicationImpl;
+use gio::subclass::prelude::{ApplicationImpl, ApplicationImplExt};
+use glib::subclass::Signal;
+use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value, WeakRef};
+use gtk::gdk;
+use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use once_cell::sync::{Lazy, OnceCell};
+use tokio::io::AsyncWriteExt;
 
-use crate::ui::{BlockyApplicationWindow, BlockyPreferencesWindow};
+pub static RUNTIME: Lazy<tokio::runtime::Runtime> =
+    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to start Tokio runtime"));
 
 mod imp {
     use super::*;
-    use crate::settings;
-    use glib::WeakRef;
-    use once_cell::sync::OnceCell;
 
     pub struct BlockyApplication {
+        pub profile_manager: BlockyProfileManager,
+
         pub window: OnceCell<WeakRef<BlockyApplicationWindow>>,
         pub settings: gio::Settings,
     }
@@ -24,14 +31,38 @@ mod imp {
         type ParentType = gtk::Application;
 
         fn new() -> Self {
+            let profile_manager = BlockyProfileManager::new();
+
             Self {
+                profile_manager,
                 window: OnceCell::new(),
                 settings: settings::get_settings(),
             }
         }
     }
 
-    impl ObjectImpl for BlockyApplication {}
+    impl ObjectImpl for BlockyApplication {
+        fn properties() -> &'static [ParamSpec] {
+            static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
+                vec![ParamSpecObject::new(
+                    "profile-manager",
+                    "Profile Manager",
+                    "Profile Manager",
+                    BlockyProfileManager::static_type(),
+                    ParamFlags::READABLE,
+                )]
+            });
+
+            PROPERTIES.as_ref()
+        }
+
+        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
+            match pspec.name() {
+                "profile-manager" => self.profile_manager.to_value(),
+                _ => unimplemented!(),
+            }
+        }
+    }
 
     impl ApplicationImpl for BlockyApplication {
         fn activate(&self, app: &Self::Type) {
@@ -67,6 +98,7 @@ mod imp {
     }
 
     impl GtkApplicationImpl for BlockyApplication {}
+
     impl AdwApplicationImpl for BlockyApplication {}
 }
 
@@ -104,6 +136,20 @@ impl BlockyApplication {
         let action_add_instance = gio::SimpleAction::new("add-instance", None);
         action_add_instance.connect_activate(move |_, _| {
             debug!("Show add-instance window");
+            RUNTIME.spawn(async move {
+                let mut file = tokio::fs::File::create("./testfile.json").await.unwrap();
+                file.write(
+                    crate::settings::get_string(crate::settings::SettingKey::ProfilesFilePath)
+                        .as_bytes(),
+                )
+                .await
+                .unwrap();
+                file.flush().await.unwrap();
+                drop(file);
+
+                let x = tokio::fs::read_to_string("./testfile.json").await.unwrap();
+                debug!("{x}");
+            });
         });
         self.add_action(&action_add_instance);
 
@@ -111,6 +157,7 @@ impl BlockyApplication {
         let action_add_profile = gio::SimpleAction::new("add-profile", None);
         action_add_profile.connect_activate(move |_, _| {
             debug!("Show add-profile window");
+            BlockyNewProfileWindow::default().show();
         });
         self.add_action(&action_add_profile);
 
@@ -118,7 +165,7 @@ impl BlockyApplication {
         let action_preferences = gio::SimpleAction::new("preferences", None);
         action_preferences.connect_activate(move |_, _| {
             debug!("Show preferences window");
-            BlockyPreferencesWindow::new().show();
+            BlockyPreferencesWindow::default().show();
         });
         self.add_action(&action_preferences);
 
@@ -157,6 +204,10 @@ impl BlockyApplication {
                 gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
             );
         }
+    }
+
+    pub fn profile_manager(&self) -> BlockyProfileManager {
+        self.property("profile-manager")
     }
 }
 

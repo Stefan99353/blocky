@@ -6,3 +6,6 @@ pub const LOCALEDIR: &str = @LOCALEDIR@;
 pub const PROFILE: &str = @PROFILE@;
 pub const RESOURCES_FILE: &str = concat!(@PKG_DATADIR@, "/resources.gresource");
 pub const VERSION: &str = @VERSION@;
+
+pub const MS_GRAPH_ID: &str = @MS_GRAPH_ID@;
+pub const MS_GRAPH_SECRET: &str = @MS_GRAPH_SECRET@;

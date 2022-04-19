@@ -1,14 +1,12 @@
-use crate::glib::subclass::{InitializingObject, InitializingType, Signal};
-use crate::glib::{ParamSpec, Value};
 use crate::settings;
 use crate::settings::SettingKey;
 use crate::ui::BlockyApplicationWindow;
 use adw::subclass::prelude::*;
-use adw::{gio, glib};
 use gettextrs::gettext;
+use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType};
+use gtk::{CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType, TemplateChild};
 
 mod imp {
     use super::*;
@@ -93,10 +91,6 @@ glib::wrapper! {
 }
 
 impl BlockyPreferencesWindow {
-    pub fn new() -> Self {
-        glib::Object::new::<BlockyPreferencesWindow>(&[]).unwrap()
-    }
-
     fn setup_widgets(&self) {}
 
     fn setup_signals(&self) {
@@ -240,5 +234,11 @@ impl BlockyPreferencesWindow {
         );
 
         dialog.show();
+    }
+}
+
+impl Default for BlockyPreferencesWindow {
+    fn default() -> Self {
+        glib::Object::new::<BlockyPreferencesWindow>(&[]).unwrap()
     }
 }

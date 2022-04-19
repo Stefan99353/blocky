@@ -4,14 +4,13 @@ extern crate log;
 mod application;
 #[rustfmt::skip]
 mod config;
+mod managers;
 mod paths;
 mod settings;
 mod ui;
+mod utils;
 
-use adw::{gio, glib};
-use gettextrs::LocaleCategory;
-
-use self::application::BlockyApplication;
+use application::BlockyApplication;
 
 fn main() {
     // Initialize logger
@@ -26,7 +25,7 @@ fn main() {
     paths::set_defaults();
 
     // Prepare i18n
-    gettextrs::setlocale(LocaleCategory::LcAll, "");
+    gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
     gettextrs::bindtextdomain(config::PKG_NAME, config::LOCALEDIR)
         .expect("Unable to bind the text domain");
     gettextrs::textdomain(config::PKG_NAME).expect("Unable to switch to the text domain");

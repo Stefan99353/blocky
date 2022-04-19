@@ -5,16 +5,25 @@ authors = ["Stefan Rupertsberger <s.rupertsberger@gmail.com>"]
 edition = "2021"
 license = "MIT"
 
+[features]
+default = ["gobject", "helpers"]
+gobject = ["gio", "glib", "once_cell"]
+helpers = ["tokio"]
+
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
+gio = { version = "0.15", optional = true }
+glib = { version = "0.15", optional = true }
 itertools = "0.10"
 log = "0.4"
 oauth2 = "4.1"
+once_cell = { version = "1.10", optional = true }
 reqwest = { version = "0.11", features = ["gzip", "json", "blocking"] }
-serde = {version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha1 = "0.10"
 thiserror = "1.0"
+tokio = { version = "1", features = ["fs"], optional = true }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 webbrowser = "0.6"
 zip = "0.6"

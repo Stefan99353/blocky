@@ -17,7 +17,7 @@ use xbox_live_security::XboxLiveSecurityToken;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BlockyProfile {
-    pub id: Uuid,
+    pub uuid: Uuid,
     pub microsoft: MicrosoftToken,
     pub xbox_live: Option<XboxLiveToken>,
     pub xbox_live_security: Option<XboxLiveSecurityToken>,

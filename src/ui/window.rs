@@ -1,13 +1,10 @@
+use crate::settings::SettingKey;
 use crate::ui::BlockyContentBox;
-use crate::{config, settings};
-use adw::subclass::application_window::AdwApplicationWindowImpl;
-use adw::{gio, glib};
+use crate::{config, settings, BlockyApplication};
+use adw::subclass::prelude::*;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::CompositeTemplate;
-
-use crate::application::BlockyApplication;
-use crate::settings::SettingKey;
+use gtk::{CompositeTemplate, TemplateChild};
 
 mod imp {
     use super::*;

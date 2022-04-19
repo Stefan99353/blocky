@@ -1,8 +1,7 @@
-use gtk::prelude::*;
-
 use crate::config;
 use crate::ui::BlockyApplicationWindow;
 use gettextrs::gettext;
+use gtk::traits::GtkWindowExt;
 
 pub fn show_about_dialog() {
     let main_window = BlockyApplicationWindow::default();

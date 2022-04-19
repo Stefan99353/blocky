@@ -8,6 +8,10 @@ project(
 
 i18n = import('i18n')
 gnome = import('gnome')
+fs = import('fs')
+
+ms_graph_id = fs.read('MS_GRAPH_ID').strip()
+ms_graph_secret = fs.read('MS_GRAPH_SECRET').strip()
 
 base_id = 'at.stefan99353.Blocky'
 application_name = 'Blocky'

@@ -1,8 +1,6 @@
 use crate::config;
-use crate::gio::traits::SettingsExt;
-use adw::glib::IsA;
-use adw::prelude::SettingsExtManual;
-use adw::{gio, glib};
+use gio::prelude::*;
+use glib::IsA;
 
 #[derive(Clone, Debug)]
 pub enum SettingKey {
@@ -17,6 +15,8 @@ pub enum SettingKey {
     DefaultJavaExec,
     DefaultUseJvmArgs,
     DefaultJvmArgs,
+    ProfilesFilePath,
+    InstancesFilePath,
     WindowWidth,
     WindowHeight,
     IsMaximized,
@@ -36,6 +36,8 @@ impl SettingKey {
             SettingKey::DefaultJavaExec => "default-java-exec",
             SettingKey::DefaultUseJvmArgs => "default-use-jvm-args",
             SettingKey::DefaultJvmArgs => "default-jvm-args",
+            SettingKey::ProfilesFilePath => "profiles-file-path",
+            SettingKey::InstancesFilePath => "instances-file-path",
             SettingKey::WindowWidth => "window-width",
             SettingKey::WindowHeight => "window-height",
             SettingKey::IsMaximized => "is-maximized",
@@ -51,7 +53,7 @@ pub fn get_settings() -> gio::Settings {
 pub fn bind_property<P: IsA<glib::Object>>(key: SettingKey, object: &P, property: &str) {
     let settings = get_settings();
     settings
-        .bind(&key.to_key(), object, property)
+        .bind(key.to_key(), object, property)
         .flags(gio::SettingsBindFlags::DEFAULT)
         .build()
 }

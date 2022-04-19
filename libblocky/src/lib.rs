@@ -5,6 +5,10 @@ extern crate log;
 mod consts;
 mod download;
 mod error;
+#[cfg(feature = "gobject")]
+pub mod gobject;
+#[cfg(feature = "helpers")]
+pub mod helpers;
 mod profile;
 
 pub use error::Error;

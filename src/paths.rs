@@ -1,6 +1,6 @@
+use crate::config;
+use crate::settings;
 use crate::settings::SettingKey;
-use crate::{config, settings};
-use adw::glib;
 use lazy_static::lazy_static;
 use std::fs;
 use std::path::PathBuf;
@@ -39,6 +39,18 @@ lazy_static! {
         path.push("assets");
         path
     };
+    static ref PROFILES_FILE_PATH: PathBuf = {
+        let mut path = glib::user_data_dir();
+        path.push(config::PKG_NAME);
+        path.push("profiles.json");
+        path
+    };
+    static ref INSTANCES_FILE_PATH: PathBuf = {
+        let mut path = glib::user_data_dir();
+        path.push(config::PKG_NAME);
+        path.push("instances.json");
+        path
+    };
 }
 
 pub fn init() -> std::io::Result<()> {
@@ -71,6 +83,22 @@ pub fn set_defaults() {
         settings::set_string(
             SettingKey::DefaultAssetsDir,
             &DEFAULT_ASSETS_DIR.to_string_lossy(),
+        );
+    }
+
+    let profiles_file_path = settings::get_string(SettingKey::ProfilesFilePath);
+    if profiles_file_path == "NULL" {
+        settings::set_string(
+            SettingKey::ProfilesFilePath,
+            &PROFILES_FILE_PATH.to_string_lossy(),
+        );
+    }
+
+    let instances_file_path = settings::get_string(SettingKey::InstancesFilePath);
+    if instances_file_path == "NULL" {
+        settings::set_string(
+            SettingKey::InstancesFilePath,
+            &INSTANCES_FILE_PATH.to_string_lossy(),
         );
     }
 }

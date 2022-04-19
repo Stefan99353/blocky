@@ -62,5 +62,15 @@
       <default>false</default>
       <summary>Window maximized state</summary>
     </key>
+
+    <!-- Other -->
+    <key name="profiles-file-path" type="s">
+      <default>"NULL"</default>
+      <summary>Default file for profile storage</summary>
+    </key>
+    <key name="instances-file-path" type="s">
+      <default>"NULL"</default>
+      <summary>Default file for instance storage</summary>
+    </key>
   </schema>
 </schemalist>
