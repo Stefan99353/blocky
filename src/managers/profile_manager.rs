@@ -124,6 +124,7 @@ impl BlockyProfileManager {
 
     pub async fn init(&self) {
         // Load profiles
+        self.profiles().remove_all();
         self.full_profiles()
             .await
             .into_iter()
@@ -134,7 +135,6 @@ impl BlockyProfileManager {
                 GBlockyProfile::new(&uuid, &username)
             })
             .for_each(|p| {
-                self.profiles().remove_all();
                 self.profiles().append(&p);
             });
 

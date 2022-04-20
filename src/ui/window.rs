@@ -104,6 +104,7 @@ impl BlockyApplicationWindow {
 
         profile_manager.profiles().connect_items_changed(
             glib::clone!(@weak self as this => move |_,_,_,_| {
+                debug!("Profiles changed");
                 this.update_profiles();
             }),
         );
@@ -113,11 +114,15 @@ impl BlockyApplicationWindow {
 
             if let Some(id) = id {
                 let uuid = Uuid::from_str(id.as_str()).unwrap();
-                let profile = profile_manager.profile_by_uuid(&uuid);
 
-                if let Some(profile) = profile {
-                    profile_manager.set_current_profile(&profile);
-                }
+                glib::MainContext::default().spawn(async move {
+                    let profile_manager = BlockyProfileManager::default();
+                    let profile = profile_manager.profile_by_uuid(&uuid);
+
+                    if let Some(profile) = profile {
+                        profile_manager.set_current_profile(&profile);
+                    }
+                });
             }
         });
     }

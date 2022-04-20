@@ -38,10 +38,8 @@ pub async fn save_profile(
 
     let _old = profiles.insert(profile.uuid, profile);
 
-    let mut file = fs::File::create(&path).await?;
     let profiles = serde_json::to_string(&profiles)?;
-    file.write(profiles.as_bytes()).await?;
-    file.flush().await?;
+    fs::write(&path, profiles.as_bytes()).await?;
 
     Ok(())
 }

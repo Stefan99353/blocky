@@ -139,20 +139,6 @@ impl BlockyApplication {
         let action_add_instance = gio::SimpleAction::new("add-instance", None);
         action_add_instance.connect_activate(move |_, _| {
             debug!("Show add-instance window");
-            RUNTIME.spawn(async move {
-                let mut file = tokio::fs::File::create("./testfile.json").await.unwrap();
-                file.write(
-                    crate::settings::get_string(crate::settings::SettingKey::ProfilesFilePath)
-                        .as_bytes(),
-                )
-                .await
-                .unwrap();
-                file.flush().await.unwrap();
-                drop(file);
-
-                let x = tokio::fs::read_to_string("./testfile.json").await.unwrap();
-                debug!("{x}");
-            });
         });
         self.add_action(&action_add_instance);
 
