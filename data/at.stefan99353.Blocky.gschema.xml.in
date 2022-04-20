@@ -50,6 +50,10 @@
     </key>
 
     <!-- State -->
+    <key name="default-profile" type="s">
+      <default>""</default>
+      <summary>Default profile</summary>
+    </key>
     <key name="window-width" type="i">
       <default>640</default>
       <summary>Window width</summary>
@@ -63,7 +67,7 @@
       <summary>Window maximized state</summary>
     </key>
 
-    <!-- Other -->
+    <!-- Storage -->
     <key name="profiles-file-path" type="s">
       <default>"NULL"</default>
       <summary>Default file for profile storage</summary>

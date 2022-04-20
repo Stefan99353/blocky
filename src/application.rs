@@ -76,6 +76,9 @@ mod imp {
                 return;
             }
 
+            debug!("Initializing managers");
+            app.init_profile_manager();
+
             debug!("Create new application window");
             let window = app.create_window();
             window.present();
@@ -208,6 +211,15 @@ impl BlockyApplication {
 
     pub fn profile_manager(&self) -> BlockyProfileManager {
         self.property("profile-manager")
+    }
+
+    fn init_profile_manager(&self) {
+        let fut = async move {
+            let pm = BlockyProfileManager::default();
+            pm.init().await;
+        };
+
+        gtk_macros::spawn!(fut);
     }
 }
 

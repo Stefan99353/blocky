@@ -4,6 +4,7 @@ use glib::IsA;
 
 #[derive(Clone, Debug)]
 pub enum SettingKey {
+    // Instance settings
     DefaultInstancesDir,
     DefaultLibrariesDir,
     DefaultAssetsDir,
@@ -15,8 +16,11 @@ pub enum SettingKey {
     DefaultJavaExec,
     DefaultUseJvmArgs,
     DefaultJvmArgs,
+    // Storage
     ProfilesFilePath,
     InstancesFilePath,
+    // State
+    DefaultProfile,
     WindowWidth,
     WindowHeight,
     IsMaximized,
@@ -38,6 +42,7 @@ impl SettingKey {
             SettingKey::DefaultJvmArgs => "default-jvm-args",
             SettingKey::ProfilesFilePath => "profiles-file-path",
             SettingKey::InstancesFilePath => "instances-file-path",
+            SettingKey::DefaultProfile => "default-profile",
             SettingKey::WindowWidth => "window-width",
             SettingKey::WindowHeight => "window-height",
             SettingKey::IsMaximized => "is-maximized",

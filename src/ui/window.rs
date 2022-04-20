@@ -1,3 +1,4 @@
+use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
 use crate::ui::BlockyContentBox;
 use crate::{config, settings, BlockyApplication};
@@ -5,6 +6,9 @@ use adw::subclass::prelude::*;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
+use libblocky::gobject::GBlockyProfile;
+use std::str::FromStr;
+use uuid::Uuid;
 
 mod imp {
     use super::*;
@@ -50,6 +54,10 @@ mod imp {
             // Load latest window state
             obj.load_window_size();
 
+            // Update Profiles
+            obj.setup_signals();
+            obj.update_profiles();
+
             self.parent_constructed(obj);
         }
     }
@@ -81,6 +89,82 @@ impl BlockyApplicationWindow {
     pub fn new(app: &BlockyApplication) -> Self {
         glib::Object::new(&[("application", app)])
             .expect("Failed to create ExampleApplicationWindow")
+    }
+
+    fn setup_signals(&self) {
+        let imp = imp::BlockyApplicationWindow::from_instance(self);
+        let profile_manager = BlockyProfileManager::default();
+
+        profile_manager.connect_notify_local(
+            Some("current-profile"),
+            glib::clone!(@weak self as this => move |_,_| {
+                this.update_current_profile();
+            }),
+        );
+
+        profile_manager.profiles().connect_items_changed(
+            glib::clone!(@weak self as this => move |_,_,_,_| {
+                this.update_profiles();
+            }),
+        );
+
+        imp.profile_combo_box.connect_changed(move |combobox| {
+            let id = combobox.active_id();
+
+            if let Some(id) = id {
+                let uuid = Uuid::from_str(id.as_str()).unwrap();
+                let profile = profile_manager.profile_by_uuid(&uuid);
+
+                if let Some(profile) = profile {
+                    profile_manager.set_current_profile(&profile);
+                }
+            }
+        });
+    }
+
+    fn update_current_profile(&self) {
+        let imp = imp::BlockyApplicationWindow::from_instance(self);
+        let profile_manager = BlockyProfileManager::default();
+
+        let new_profile = profile_manager
+            .current_profile()
+            .map(|p| p.uuid().to_string());
+        let old_profile = imp.profile_combo_box.active_id().map(|p| p.to_string());
+
+        if new_profile != old_profile {
+            // Update ComboBoxText
+            match new_profile {
+                None => {
+                    imp.profile_combo_box.set_active_id(None);
+                }
+                Some(id) => {
+                    imp.profile_combo_box.set_active_id(Some(&id));
+                }
+            }
+        }
+    }
+
+    fn update_profiles(&self) {
+        let imp = imp::BlockyApplicationWindow::from_instance(self);
+        let profile_manager = BlockyProfileManager::default();
+
+        let profiles = profile_manager.profiles();
+        imp.profile_combo_box.remove_all();
+
+        for pos in 0..profiles.n_items() {
+            let profile = profiles
+                .item(pos)
+                .unwrap()
+                .downcast::<GBlockyProfile>()
+                .unwrap();
+
+            let uuid = profile.uuid().to_string();
+            let username = profile.username();
+
+            imp.profile_combo_box.append(Some(&uuid), &username);
+        }
+
+        self.update_current_profile()
     }
 
     fn save_window_size(&self) {

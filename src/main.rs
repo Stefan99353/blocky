@@ -16,6 +16,10 @@ fn main() {
     // Initialize logger
     pretty_env_logger::init();
 
+    if cfg!(debug_assertions) {
+        warn!("Debug Build");
+    }
+
     // Initialize GTK and libadwaita
     gtk::init().expect("Failed to initialize GTK");
     adw::init();

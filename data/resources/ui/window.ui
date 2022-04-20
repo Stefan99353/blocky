@@ -37,11 +37,7 @@
                 <!-- Profile ComboBox -->
                 <child type="end">
                   <object class="GtkComboBoxText" id="profile_combo_box">
-                    <items>
-                      <item id="1">stefan99353</item>
-                      <item id="2">EinSchlagMann</item>
-                      <item id="3">FhOsAn</item>
-                    </items>
+                    <property name="width_request">200</property>
                   </object>
                 </child>
               </object>

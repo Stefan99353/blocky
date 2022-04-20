@@ -9,6 +9,7 @@ license = "MIT"
 gettext-rs = { version = "0.7.0", features = ["gettext-system"] }
 gio = "0.15.10"
 glib = "0.15.10"
+gtk-macros = "0.3.0"
 lazy_static = "1.4.0"
 libblocky = { path = "libblocky", features = ["gobject", "helpers"] }
 log = "0.4.16"
