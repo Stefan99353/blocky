@@ -17,7 +17,7 @@ fn main() {
     pretty_env_logger::init();
 
     if cfg!(debug_assertions) {
-        warn!("Debug Build");
+        warn!("===== This is a debug build =====");
     }
 
     // Initialize GTK and libadwaita

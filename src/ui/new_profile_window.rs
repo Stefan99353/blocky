@@ -145,12 +145,9 @@ impl BlockyNewProfileWindow {
     }
 
     fn add_profile(&self, profile: libblocky::BlockyProfile) {
-        glib::MainContext::default().spawn_local(glib::clone!(@weak self as this => async move {
-            let profile_manager = BlockyProfileManager::default();
-            profile_manager.add_profile(profile).await;
-
-            this.close();
-        }));
+        let profile_manager = BlockyProfileManager::default();
+        profile_manager.add_profile(profile);
+        self.close();
     }
 
     fn setup_widgets(&self) {

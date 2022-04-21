@@ -8,7 +8,7 @@ license = "MIT"
 [features]
 default = ["gobject", "helpers"]
 gobject = ["gio", "glib", "once_cell"]
-helpers = ["tokio"]
+helpers = []
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
@@ -23,7 +23,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha1 = "0.10"
 thiserror = "1.0"
-tokio = { version = "1", features = ["fs"], optional = true }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 webbrowser = "0.6"
 zip = "0.6"

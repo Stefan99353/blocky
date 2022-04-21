@@ -9,10 +9,6 @@ use gtk::gdk;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use once_cell::sync::{Lazy, OnceCell};
-use tokio::io::AsyncWriteExt;
-
-pub static RUNTIME: Lazy<tokio::runtime::Runtime> =
-    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to start Tokio runtime"));
 
 mod imp {
     use super::*;
@@ -200,12 +196,8 @@ impl BlockyApplication {
     }
 
     fn init_profile_manager(&self) {
-        let fut = async move {
-            let pm = BlockyProfileManager::default();
-            pm.init().await;
-        };
-
-        gtk_macros::spawn!(fut);
+        let profile_manager = BlockyProfileManager::default();
+        profile_manager.initialize()
     }
 }
 

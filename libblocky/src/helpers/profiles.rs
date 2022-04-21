@@ -1,16 +1,16 @@
 use super::HelperError;
 use crate::BlockyProfile;
 use std::collections::HashMap;
+use std::fs;
+use std::io::Write;
 use std::path::Path;
-use tokio::fs;
-use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 type ProfileStorage = HashMap<Uuid, BlockyProfile>;
 
-pub async fn load_profiles(path: impl AsRef<Path>) -> Result<Vec<BlockyProfile>, HelperError> {
+pub fn load_profiles(path: impl AsRef<Path>) -> Result<Vec<BlockyProfile>, HelperError> {
     debug!("Reading profiles from disk");
-    let profiles = read_file(&path).await?;
+    let profiles = read_file(&path)?;
 
     let profiles = profiles
         .into_iter()
@@ -20,38 +20,49 @@ pub async fn load_profiles(path: impl AsRef<Path>) -> Result<Vec<BlockyProfile>,
     Ok(profiles)
 }
 
-pub async fn find_profile(
+pub fn find_profile(
     uuid: Uuid,
     path: impl AsRef<Path>,
 ) -> Result<Option<BlockyProfile>, HelperError> {
-    let profiles = read_file(&path).await?;
+    let profiles = read_file(&path)?;
     let profile = profiles.get(&uuid).cloned();
     Ok(profile)
 }
 
-pub async fn save_profile(
-    profile: BlockyProfile,
-    path: impl AsRef<Path>,
-) -> Result<(), HelperError> {
+pub fn save_profile(profile: BlockyProfile, path: impl AsRef<Path>) -> Result<(), HelperError> {
     debug!("Saving a new profile to disk or updating existing one");
-    let mut profiles = read_file(&path).await?;
+    let mut profiles = read_file(&path)?;
 
     let _old = profiles.insert(profile.uuid, profile);
 
-    let profiles = serde_json::to_string(&profiles)?;
-    fs::write(&path, profiles.as_bytes()).await?;
-
-    Ok(())
+    write_file(profiles, path)
 }
 
-async fn read_file(path: impl AsRef<Path>) -> Result<ProfileStorage, HelperError> {
+pub fn remove_profile(uuid: Uuid, path: impl AsRef<Path>) -> Result<(), HelperError> {
+    debug!("Removing a profile from disk");
+    let mut profiles = read_file(&path)?;
+
+    let _old = profiles.remove(&uuid);
+
+    write_file(profiles, path)
+}
+
+fn read_file(path: impl AsRef<Path>) -> Result<ProfileStorage, HelperError> {
     let mut profiles = HashMap::new();
 
     if path.as_ref().is_file() {
-        debug!("Trying to read existing profiles");
-        let profiles_string = fs::read_to_string(&path).await?;
+        let profiles_string = fs::read_to_string(&path)?;
         profiles = serde_json::from_str::<ProfileStorage>(&profiles_string)?;
     }
 
     Ok(profiles)
+}
+
+fn write_file(profiles: ProfileStorage, path: impl AsRef<Path>) -> Result<(), HelperError> {
+    let mut file = fs::File::create(&path)?;
+    let content = serde_json::to_vec(&profiles)?;
+    file.write_all(&content)?;
+    file.flush()?;
+
+    Ok(())
 }
