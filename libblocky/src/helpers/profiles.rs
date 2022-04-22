@@ -1,35 +1,32 @@
 use super::HelperError;
-use crate::BlockyProfile;
+use crate::Profile;
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 use uuid::Uuid;
 
-type ProfileStorage = HashMap<Uuid, BlockyProfile>;
+type ProfileStorage = HashMap<Uuid, Profile>;
 
-pub fn load_profiles(path: impl AsRef<Path>) -> Result<Vec<BlockyProfile>, HelperError> {
+pub fn load_profiles(path: impl AsRef<Path>) -> Result<Vec<Profile>, HelperError> {
     debug!("Reading profiles from disk");
     let profiles = read_file(&path)?;
 
     let profiles = profiles
         .into_iter()
         .map(|(_, profile)| profile)
-        .collect::<Vec<BlockyProfile>>();
+        .collect::<Vec<Profile>>();
 
     Ok(profiles)
 }
 
-pub fn find_profile(
-    uuid: Uuid,
-    path: impl AsRef<Path>,
-) -> Result<Option<BlockyProfile>, HelperError> {
+pub fn find_profile(uuid: Uuid, path: impl AsRef<Path>) -> Result<Option<Profile>, HelperError> {
     let profiles = read_file(&path)?;
     let profile = profiles.get(&uuid).cloned();
     Ok(profile)
 }
 
-pub fn save_profile(profile: BlockyProfile, path: impl AsRef<Path>) -> Result<(), HelperError> {
+pub fn save_profile(profile: Profile, path: impl AsRef<Path>) -> Result<(), HelperError> {
     debug!("Saving a new profile to disk or updating existing one");
     let mut profiles = read_file(&path)?;
 

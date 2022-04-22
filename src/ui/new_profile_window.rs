@@ -69,7 +69,7 @@ impl BlockyNewProfileWindow {
         self.set_view(View::Loading);
 
         let (sender, receiver) = glib::MainContext::channel::<
-            utils::StatusUpdate<String, libblocky::BlockyProfile>,
+            utils::StatusUpdate<String, libblocky::Profile>,
         >(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
@@ -78,7 +78,7 @@ impl BlockyNewProfileWindow {
                     "Authenticating at Microsoft",
                 )))
                 .expect("Could not send through channel");
-            let mut profile = libblocky::BlockyProfile::authenticate_microsoft(
+            let mut profile = libblocky::Profile::authenticate_microsoft(
                 config::MS_GRAPH_ID,
                 config::MS_GRAPH_SECRET,
             )
@@ -144,7 +144,7 @@ impl BlockyNewProfileWindow {
         );
     }
 
-    fn add_profile(&self, profile: libblocky::BlockyProfile) {
+    fn add_profile(&self, profile: libblocky::Profile) {
         let profile_manager = BlockyProfileManager::default();
         profile_manager.add_profile(profile);
         self.close();

@@ -1,5 +1,5 @@
 use super::AuthenticationError;
-use super::BlockyProfile;
+use super::Profile;
 use crate::consts;
 use crate::profile::entitlements::Entitlements;
 use crate::profile::error::TokenKind;
@@ -19,11 +19,11 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use uuid::Uuid;
 
-impl BlockyProfile {
+impl Profile {
     pub fn authenticate_microsoft(
         client_id: &str,
         client_secret: &str,
-    ) -> Result<Self, crate::Error> {
+    ) -> Result<Self, crate::error::Error> {
         debug!("Authenticate with Microsoft");
 
         trace!("Setting up TCP listener");
@@ -86,7 +86,7 @@ impl BlockyProfile {
         Ok(profile)
     }
 
-    pub fn authenticate_xbox_live(&mut self) -> Result<(), crate::Error> {
+    pub fn authenticate_xbox_live(&mut self) -> Result<(), crate::error::Error> {
         debug!("Authenticate with XBox Live");
 
         self.microsoft.check_expired()?;
@@ -97,7 +97,7 @@ impl BlockyProfile {
         Ok(())
     }
 
-    pub fn authenticate_xbox_live_security(&mut self) -> Result<(), crate::Error> {
+    pub fn authenticate_xbox_live_security(&mut self) -> Result<(), crate::error::Error> {
         debug!("Authenticate with XBox Live Security");
 
         match &self.xbox_live {
@@ -113,7 +113,7 @@ impl BlockyProfile {
         }
     }
 
-    pub fn authenticate_minecraft(&mut self) -> Result<(), crate::Error> {
+    pub fn authenticate_minecraft(&mut self) -> Result<(), crate::error::Error> {
         debug!("Authenticate with Minecraft");
 
         match &self.xbox_live_security {
@@ -134,7 +134,7 @@ impl BlockyProfile {
         }
     }
 
-    pub fn set_entitlements(&mut self) -> Result<(), crate::Error> {
+    pub fn set_entitlements(&mut self) -> Result<(), crate::error::Error> {
         debug!("Get Minecraft entitlements");
 
         match &self.minecraft {
@@ -150,7 +150,7 @@ impl BlockyProfile {
         }
     }
 
-    pub fn set_profile(&mut self) -> Result<(), crate::Error> {
+    pub fn set_profile(&mut self) -> Result<(), crate::error::Error> {
         debug!("Get Minecraft profile");
 
         match &self.minecraft {

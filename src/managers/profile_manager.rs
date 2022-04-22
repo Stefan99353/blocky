@@ -163,7 +163,7 @@ impl BlockyProfileManager {
         );
     }
 
-    pub fn full_profiles(&self) -> glib::Receiver<Vec<libblocky::BlockyProfile>> {
+    pub fn full_profiles(&self) -> glib::Receiver<Vec<libblocky::Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
@@ -190,7 +190,7 @@ impl BlockyProfileManager {
     pub fn find_full_profile(
         &self,
         profile: &GBlockyProfile,
-    ) -> glib::Receiver<Option<libblocky::BlockyProfile>> {
+    ) -> glib::Receiver<Option<libblocky::Profile>> {
         let uuid = profile.uuid();
         self.find_full_profile_by_uuid(uuid)
     }
@@ -198,7 +198,7 @@ impl BlockyProfileManager {
     pub fn find_full_profile_by_uuid(
         &self,
         uuid: Uuid,
-    ) -> glib::Receiver<Option<libblocky::BlockyProfile>> {
+    ) -> glib::Receiver<Option<libblocky::Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
@@ -222,7 +222,7 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn full_current_profile(&self) -> glib::Receiver<Option<libblocky::BlockyProfile>> {
+    pub fn full_current_profile(&self) -> glib::Receiver<Option<libblocky::Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         if let Some(current_profile) = self.current_profile() {
@@ -254,7 +254,7 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn add_profile(&self, profile: libblocky::BlockyProfile) {
+    pub fn add_profile(&self, profile: libblocky::Profile) {
         // Add to ListStore
         let uuid = profile.uuid;
         let username = profile.minecraft_profile.as_ref().unwrap().name.clone();
