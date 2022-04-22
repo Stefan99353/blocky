@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <template class="BlockyNewProfileWindow" parent="GtkDialog">
+    <template class="BlockyNewProfileDialog" parent="GtkDialog">
         <property name="width_request">480</property>
         <property name="height_request">240</property>
         <property name="title" translatable="yes">Add New Profile</property>

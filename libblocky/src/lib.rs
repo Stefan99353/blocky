@@ -10,7 +10,6 @@ pub mod gobject;
 #[cfg(feature = "helpers")]
 pub mod helpers;
 mod instance;
-mod minecraft;
 mod os;
 mod profile;
 

@@ -14,7 +14,7 @@ mod imp {
 
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/new_profile_window.ui")]
-    pub struct BlockyNewProfileWindow {
+    pub struct BlockyNewProfileDialog {
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
@@ -26,9 +26,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for BlockyNewProfileWindow {
-        const NAME: &'static str = "BlockyNewProfileWindow";
-        type Type = super::BlockyNewProfileWindow;
+    impl ObjectSubclass for BlockyNewProfileDialog {
+        const NAME: &'static str = "BlockyNewProfileDialog";
+        type Type = super::BlockyNewProfileDialog;
         type ParentType = gtk::Dialog;
 
         fn class_init(klass: &mut Self::Class) {
@@ -41,7 +41,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for BlockyNewProfileWindow {
+    impl ObjectImpl for BlockyNewProfileDialog {
         fn constructed(&self, obj: &Self::Type) {
             obj.setup_widgets();
 
@@ -49,20 +49,20 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for BlockyNewProfileWindow {}
+    impl WidgetImpl for BlockyNewProfileDialog {}
 
-    impl WindowImpl for BlockyNewProfileWindow {}
+    impl WindowImpl for BlockyNewProfileDialog {}
 
-    impl DialogImpl for BlockyNewProfileWindow {}
+    impl DialogImpl for BlockyNewProfileDialog {}
 }
 
 glib::wrapper! {
-    pub struct BlockyNewProfileWindow(ObjectSubclass<imp::BlockyNewProfileWindow>)
+    pub struct BlockyNewProfileDialog(ObjectSubclass<imp::BlockyNewProfileDialog>)
     @extends gtk::Widget, gtk::Window, adw::Window, gtk::Dialog;
 }
 
 #[gtk::template_callbacks]
-impl BlockyNewProfileWindow {
+impl BlockyNewProfileDialog {
     #[template_callback]
     fn start_button_clicked(&self) {
         debug!("Start authentication sequence");
@@ -127,7 +127,7 @@ impl BlockyNewProfileWindow {
         receiver.attach(
             None,
             glib::clone!(@weak self as this => @default-return glib::Continue(false), move |update| {
-                let imp = imp::BlockyNewProfileWindow::from_instance(&this);
+                let imp = imp::BlockyNewProfileDialog::from_instance(&this);
 
                 match update {
                     utils::StatusUpdate::Update(msg) => {
@@ -156,7 +156,7 @@ impl BlockyNewProfileWindow {
     }
 
     fn set_view(&self, view: View) {
-        let imp = imp::BlockyNewProfileWindow::from_instance(self);
+        let imp = imp::BlockyNewProfileDialog::from_instance(self);
         imp.spinner.set_spinning(false);
 
         match view {
@@ -171,7 +171,7 @@ impl BlockyNewProfileWindow {
     }
 }
 
-impl Default for BlockyNewProfileWindow {
+impl Default for BlockyNewProfileDialog {
     fn default() -> Self {
         let dialog: Self = glib::Object::new(&[("use-header-bar", &1)]).unwrap();
 
