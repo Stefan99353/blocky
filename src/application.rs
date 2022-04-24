@@ -1,5 +1,8 @@
 use crate::managers::BlockyProfileManager;
-use crate::ui::{BlockyApplicationWindow, BlockyNewProfileDialog, BlockyPreferencesWindow};
+use crate::ui::{
+    BlockyApplicationWindow, BlockyNewInstanceDialog, BlockyNewProfileDialog,
+    BlockyPreferencesWindow,
+};
 use crate::{config, settings};
 use adw::subclass::prelude::*;
 use gio::subclass::prelude::{ApplicationImpl, ApplicationImplExt};
@@ -135,6 +138,7 @@ impl BlockyApplication {
         let action_add_instance = gio::SimpleAction::new("add-instance", None);
         action_add_instance.connect_activate(move |_, _| {
             debug!("Show add-instance window");
+            BlockyNewInstanceDialog::new().show();
         });
         self.add_action(&action_add_instance);
 
@@ -142,7 +146,7 @@ impl BlockyApplication {
         let action_add_profile = gio::SimpleAction::new("add-profile", None);
         action_add_profile.connect_activate(move |_, _| {
             debug!("Show add-profile window");
-            BlockyNewProfileDialog::default().show();
+            BlockyNewProfileDialog::new().show();
         });
         self.add_action(&action_add_profile);
 

@@ -13,7 +13,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/at/stefan99353/Blocky/ui/new_profile_window.ui")]
+    #[template(resource = "/at/stefan99353/Blocky/ui/new_profile_dialog.ui")]
     pub struct BlockyNewProfileDialog {
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
@@ -63,6 +63,16 @@ glib::wrapper! {
 
 #[gtk::template_callbacks]
 impl BlockyNewProfileDialog {
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        let dialog: Self = glib::Object::new(&[("use-header-bar", &1)]).unwrap();
+
+        let window = BlockyApplicationWindow::default();
+        dialog.set_transient_for(Some(&window));
+
+        dialog
+    }
+
     #[template_callback]
     fn start_button_clicked(&self) {
         debug!("Start authentication sequence");
@@ -168,17 +178,6 @@ impl BlockyNewProfileDialog {
         }
 
         imp.stack.set_visible_child_name(view.get_name())
-    }
-}
-
-impl Default for BlockyNewProfileDialog {
-    fn default() -> Self {
-        let dialog: Self = glib::Object::new(&[("use-header-bar", &1)]).unwrap();
-
-        let window = BlockyApplicationWindow::default();
-        dialog.set_transient_for(Some(&window));
-
-        dialog
     }
 }
 

@@ -5,6 +5,8 @@
     <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/preferences_window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/new_profile_dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/new_instance_dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/version_summary_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/content_box.ui</file>
     <file compressed="true">style.css</file>
   </gresource>

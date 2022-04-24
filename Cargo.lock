@@ -116,6 +116,7 @@ dependencies = [
  "glib",
  "gtk-macros",
  "gtk4",
+ "itertools",
  "lazy_static",
  "libadwaita",
  "libblocky",

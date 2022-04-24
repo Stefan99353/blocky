@@ -9,7 +9,7 @@ pub mod error;
 pub mod gobject;
 #[cfg(feature = "helpers")]
 pub mod helpers;
-mod instance;
+pub mod instance;
 mod os;
 mod profile;
 

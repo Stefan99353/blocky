@@ -52,7 +52,10 @@ mod imp {
             match pspec.name() {
                 "uuid" => self.uuid.set(value.get().unwrap()).unwrap(),
                 "username" => self.username.set(value.get().unwrap()).unwrap(),
-                _ => unimplemented!(),
+                x => {
+                    error!("Property {} not a member of GBlockyProfile", x);
+                    unimplemented!()
+                }
             }
         }
 
@@ -65,10 +68,6 @@ mod imp {
                     unimplemented!()
                 }
             }
-        }
-
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
         }
     }
 }
@@ -84,8 +83,8 @@ impl GBlockyProfile {
     }
 
     pub fn uuid(&self) -> Uuid {
-        let id: String = self.property("uuid");
-        Uuid::from_str(&id).unwrap()
+        let uuid: String = self.property("uuid");
+        Uuid::from_str(&uuid).unwrap()
     }
 
     pub fn username(&self) -> String {

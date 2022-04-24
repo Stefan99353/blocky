@@ -7,24 +7,10 @@ impl Instance {
     }
 
     pub fn libraries_path(&self) -> PathBuf {
-        match &self.game.libraries_path {
-            None => {
-                let mut path = PathBuf::from(&self.instance_path);
-                path.push(".minecraft/libraries");
-                path
-            }
-            Some(path) => PathBuf::from(path),
-        }
+        PathBuf::from(&self.game.libraries_path)
     }
 
     pub fn assets_path(&self) -> PathBuf {
-        match &self.game.assets_path {
-            None => {
-                let mut path = PathBuf::from(&self.instance_path);
-                path.push(".minecraft/assets");
-                path
-            }
-            Some(path) => PathBuf::from(path),
-        }
+        PathBuf::from(&self.game.assets_path)
     }
 }

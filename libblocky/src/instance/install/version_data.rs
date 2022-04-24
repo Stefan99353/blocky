@@ -15,16 +15,10 @@ impl Instance {
         let manifest = version_manifest().map_err(Error::Request)?;
 
         // Figure out version
-        let version_summary = match &self.version {
-            None => manifest
-                .versions
-                .get(&manifest.latest.release)
-                .ok_or_else(|| InstallationError::Version(manifest.latest.release.clone()))?,
-            Some(version) => manifest
-                .versions
-                .get(version)
-                .ok_or_else(|| InstallationError::Version(version.clone()))?,
-        };
+        let version_summary = manifest
+            .versions
+            .get(&self.version)
+            .ok_or_else(|| InstallationError::Version(self.version.clone()))?;
         debug!(
             "Downloading version data for version '{}'",
             &version_summary.id

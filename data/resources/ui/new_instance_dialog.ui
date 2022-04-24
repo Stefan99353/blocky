@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="BlockyNewInstanceDialog" parent="GtkDialog">
+        <property name="width_request">800</property>
+        <property name="height_request">600</property>
+        <property name="title" translatable="yes">Add Instance</property>
+        <property name="modal">True</property>
+        <!-- Add Button -->
+        <child type="action">
+            <object class="GtkButton" id="add_button">
+                <property name="label" translatable="yes">Add</property>
+                <property name="use-underline">True</property>
+                <property name="sensitive">False</property>
+                <signal name="clicked" handler="add_button_clicked" swapped="true"/>
+                <style>
+                    <class name="suggested-action"/>
+                </style>
+            </object>
+        </child>
+        <!-- Cancel Button -->
+        <child type="action">
+            <object class="GtkButton" id="cancel_button">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Cancel</property>
+                <property name="action-name">window.close</property>
+            </object>
+        </child>
+        <!-- Content -->
+        <child>
+            <object class="GtkScrolledWindow">
+                <property name="hscrollbar-policy">never</property>
+                <child>
+                    <object class="AdwClamp">
+                        <property name="margin-start">12</property>
+                        <property name="margin-end">12</property>
+                        <property name="margin-top">24</property>
+                        <property name="margin-bottom">24</property>
+                        <child>
+                            <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">24</property>
+                                <!-- Invalid Label -->
+                                <child>
+                                    <object class="GtkLabel" id="error_label">
+                                        <property name="wrap">True</property>
+                                        <property name="xalign">0</property>
+                                        <property name="visible">False</property>
+                                        <style>
+                                            <class name="error"/>
+                                            <class name="dim-label"/>
+                                        </style>
+                                    </object>
+                                </child>
+                                <!-- General -->
+                                <child>
+                                    <object class="AdwPreferencesGroup">
+                                        <property name="title" translatable="yes">General</property>
+                                        <!-- Instance Name -->
+                                        <child>
+                                            <object class="AdwActionRow">
+                                                <property name="title" translatable="yes">Name</property>
+                                                <property name="focusable">False</property>
+                                                <child>
+                                                    <object class="GtkEntry" id="name_entry">
+                                                        <property name="valign">center</property>
+                                                        <property name="placeholder-text" translatable="yes">My Instance</property>
+                                                        <property name="activates_default">True</property>
+                                                        <!-- TODO: Validate Name handler -->
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                        <!-- Instance Description -->
+                                        <child>
+                                            <object class="AdwActionRow">
+                                                <property name="title" translatable="yes">Description</property>
+                                                <property name="focusable">False</property>
+                                                <child>
+                                                    <object class="GtkEntry" id="description_entry">
+                                                        <property name="valign">center</property>
+                                                        <property name="placeholder-text" translatable="yes">Optional</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                                <!-- Version -->
+                                <child>
+                                    <object class="AdwPreferencesGroup">
+                                        <property name="title" translatable="yes">Game Version</property>
+                                        <!-- Version List -->
+                                        <child>
+                                            <object class="AdwExpanderRow" id="version_expander">
+                                                <property name="title" translatable="yes">Version</property>
+                                                <!-- Versions -->
+                                                <child>
+                                                    <object class="GtkScrolledWindow">
+                                                        <property name="hscrollbar-policy">never</property>
+                                                        <property name="min-content-height">200</property>
+                                                        <property name="max-content-height">200</property>
+                                                        <child>
+                                                            <object class="GtkListView" id="version_list">
+                                                                <property name="show_separators">True</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                        <!-- Version Filter -->
+                                        <child>
+                                            <object class="AdwExpanderRow">
+                                                <property name="title" translatable="yes">Filter</property>
+                                                <!-- Releases -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Releases</property>
+                                                        <property name="activatable_widget">releases_filter_switch</property>
+                                                        <child>
+                                                            <object class="GtkSwitch" id="releases_filter_switch">
+                                                                <property name="valign">center</property>
+                                                                <property name="active">True</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                                <!-- Snapshots -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Snapshots</property>
+                                                        <property name="activatable_widget">snapshots_filter_switch</property>
+                                                        <child>
+                                                            <object class="GtkSwitch" id="snapshots_filter_switch">
+                                                                <property name="valign">center</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                                <!-- Old Betas -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Old Betas</property>
+                                                        <property name="activatable_widget">betas_filter_switch</property>
+                                                        <child>
+                                                            <object class="GtkSwitch" id="betas_filter_switch">
+                                                                <property name="valign">center</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                                <!-- Old Alphas -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Old Alphas</property>
+                                                        <property name="activatable_widget">alphas_filter_switch</property>
+                                                        <child>
+                                                            <object class="GtkSwitch" id="alphas_filter_switch">
+                                                                <property name="valign">center</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                                <!-- Advanced -->
+                                <child>
+                                    <object class="AdwPreferencesGroup">
+                                        <child>
+                                            <object class="AdwExpanderRow">
+                                                <property name="title" translatable="yes">Advanced</property>
+                                                <!-- Instance Path -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Instance Directory</property>
+                                                        <property name="subtitle" translatable="yes">Folder where instance folder resides</property>
+                                                        <property name="use_underline">True</property>
+                                                        <child>
+                                                            <object class="GtkButton" id="instance_dir_button">
+                                                                <property name="valign">center</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <property name="spacing">6</property>
+                                                                        <child>
+                                                                            <object class="GtkImage">
+                                                                                <property name="icon_name">folder-symbolic</property>
+                                                                            </object>
+                                                                        </child>
+                                                                        <child>
+                                                                            <object class="GtkLabel" id="instance_dir_label">
+                                                                                <property name="ellipsize">start</property>
+                                                                                <property name="max_width_chars">20</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                                <!-- Libraries Path -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Libraries Directory</property>
+                                                        <property name="subtitle" translatable="yes">Folder where libraries reside</property>
+                                                        <property name="use_underline">True</property>
+                                                        <child>
+                                                            <object class="GtkButton" id="libraries_dir_button">
+                                                                <property name="valign">center</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <property name="spacing">6</property>
+                                                                        <child>
+                                                                            <object class="GtkImage">
+                                                                                <property name="icon_name">folder-symbolic</property>
+                                                                            </object>
+                                                                        </child>
+                                                                        <child>
+                                                                            <object class="GtkLabel" id="libraries_dir_label">
+                                                                                <property name="ellipsize">start</property>
+                                                                                <property name="max_width_chars">20</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                                <!-- Assets Path -->
+                                                <child>
+                                                    <object class="AdwActionRow">
+                                                        <property name="title" translatable="yes">Assets Directory</property>
+                                                        <property name="subtitle" translatable="yes">Folder where assets reside</property>
+                                                        <property name="use_underline">True</property>
+                                                        <child>
+                                                            <object class="GtkButton" id="assets_dir_button">
+                                                                <property name="valign">center</property>
+                                                                <child>
+                                                                    <object class="GtkBox">
+                                                                        <property name="spacing">6</property>
+                                                                        <child>
+                                                                            <object class="GtkImage">
+                                                                                <property name="icon_name">folder-symbolic</property>
+                                                                            </object>
+                                                                        </child>
+                                                                        <child>
+                                                                            <object class="GtkLabel" id="assets_dir_label">
+                                                                                <property name="ellipsize">start</property>
+                                                                                <property name="max_width_chars">20</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <action-widgets>
+            <action-widget response="cancel">cancel_button</action-widget>
+            <action-widget response="ok" default="true">add_button</action-widget>
+        </action-widgets>
+        <object class="GtkSizeGroup">
+            <property name="mode">horizontal</property>
+            <widgets>
+                <widget name="name_entry"/>
+                <widget name="description_entry"/>
+                <widget name="instance_dir_button"/>
+                <widget name="libraries_dir_button"/>
+                <widget name="assets_dir_button"/>
+            </widgets>
+        </object>
+    </template>
+</interface>
