@@ -52,7 +52,7 @@ pub struct ProcessProperties {
     #[builder(default)]
     pub java_executable: String,
     #[builder(default)]
-    pub use_custom_jvm_argumemts: bool,
+    pub use_custom_jvm_arguments: bool,
     #[builder(default)]
     pub jvm_arguments: String,
     #[builder(default)]

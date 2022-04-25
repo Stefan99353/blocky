@@ -1,3 +1,4 @@
+use crate::managers::BlockyInstanceManager;
 use crate::settings;
 use crate::settings::SettingKey;
 use crate::ui::{BlockyApplicationWindow, BlockyVersionSummaryRow};
@@ -6,7 +7,7 @@ use gettextrs::gettext;
 use gio::ListStore;
 use glib::subclass::prelude::*;
 use glib::subclass::{InitializingObject, InitializingType, Signal};
-use glib::{ParamSpec, Value};
+use glib::{Object, ParamSpec, Value};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{
@@ -17,6 +18,7 @@ use itertools::Itertools;
 use libblocky::gobject::{GBlockyInstance, GBlockyVersionSummary};
 use libblocky::helpers::HelperError;
 use libblocky::instance::models::{VersionSummary, VersionType};
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -31,6 +33,8 @@ mod imp {
     pub struct BlockyNewInstanceDialog {
         #[template_child]
         pub add_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub version_error_label: TemplateChild<gtk::Label>,
 
         // General
         #[template_child]
@@ -70,6 +74,9 @@ mod imp {
         pub manifest: RefCell<HashMap<String, VersionSummary>>,
         pub version_list_store: ListStore,
         pub version_selection_model: SingleSelection,
+
+        pub name_valid: Cell<bool>,
+        pub version_valid: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -88,6 +95,7 @@ mod imp {
 
             Self {
                 add_button: Default::default(),
+                version_error_label: Default::default(),
                 name_entry: Default::default(),
                 description_entry: Default::default(),
                 version_expander: Default::default(),
@@ -106,6 +114,8 @@ mod imp {
                 manifest: Default::default(),
                 version_list_store: list_store,
                 version_selection_model: selection,
+                name_valid: Default::default(),
+                version_valid: Default::default(),
             }
         }
 
@@ -144,7 +154,66 @@ glib::wrapper! {
 impl BlockyNewInstanceDialog {
     #[template_callback]
     fn add_button_clicked(&self) {
-        debug!("Add button clicked");
+        let imp = imp::BlockyNewInstanceDialog::from_instance(self);
+
+        let name = imp.name_entry.text().to_string();
+        let description = imp.description_entry.text().to_string();
+        let version = match imp.version_selection_model.selected_item() {
+            None => {
+                error!("No version is selected");
+                return;
+            }
+            Some(version) => version.downcast::<GBlockyVersionSummary>().unwrap().id(),
+        };
+        let instance_dir = imp.instance_dir_label.label().to_string();
+        let libraries_dir = imp.libraries_dir_label.label().to_string();
+        let assets_dir = imp.assets_dir_label.label().to_string();
+
+        let mut instance_builder = libblocky::instance::InstanceBuilder::default();
+        instance_builder
+            .name(name)
+            .version(version)
+            .instance_path(instance_dir);
+
+        if !description.is_empty() {
+            instance_builder.description(description);
+        }
+
+        let game_properties = libblocky::instance::GamePropertiesBuilder::default()
+            .libraries_path(libraries_dir)
+            .assets_path(assets_dir)
+            .build()
+            .unwrap();
+
+        let process_properties = libblocky::instance::ProcessProperties::default();
+
+        let instance = instance_builder
+            .game(game_properties)
+            .process(process_properties)
+            .build()
+            .unwrap();
+
+        let instance_manager = BlockyInstanceManager::default();
+        instance_manager.add_instance(instance);
+
+        self.close();
+    }
+
+    #[template_callback]
+    fn validate_name(&self) {
+        let imp = imp::BlockyNewInstanceDialog::from_instance(self);
+
+        imp.instance_dir_label.set_label("");
+
+        if imp.name_entry.text().is_empty() {
+            imp.name_entry.add_css_class("error");
+            imp.name_valid.set(false);
+        } else {
+            imp.name_entry.remove_css_class("error");
+            imp.name_valid.set(true);
+        }
+
+        self.update_add_button();
     }
 }
 
@@ -185,18 +254,8 @@ impl BlockyNewInstanceDialog {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
         imp.version_selection_model.connect_selected_notify(
-            glib::clone!(@weak self as this => move |selection| {
-                let imp = imp::BlockyNewInstanceDialog::from_instance(&this);
-
-                if let Some(item) = selection.selected_item() {
-                    let summary = item
-                        .downcast::<GBlockyVersionSummary>()
-                        .unwrap();
-
-                    imp.version_expander.set_subtitle(&summary.id());
-                }else {
-                    imp.version_expander.set_subtitle("");
-                }
+            glib::clone!(@weak self as this => move |_| {
+                this.set_version();
             }),
         );
 
@@ -273,6 +332,24 @@ impl BlockyNewInstanceDialog {
                 this.refresh_version_list();
             }),
         );
+    }
+
+    fn set_version(&self) {
+        let imp = imp::BlockyNewInstanceDialog::from_instance(self);
+
+        if let Some(item) = imp.version_selection_model.selected_item() {
+            let summary = item.downcast::<GBlockyVersionSummary>().unwrap();
+
+            imp.version_expander.set_subtitle(&summary.id());
+            imp.version_error_label.set_visible(false);
+            imp.version_valid.set(true);
+        } else {
+            imp.version_expander.set_subtitle("");
+            imp.version_error_label.set_visible(true);
+            imp.version_valid.set(false);
+        }
+
+        self.update_add_button();
     }
 
     fn fetch_manifest(&self) {
@@ -359,15 +436,19 @@ impl BlockyNewInstanceDialog {
 
         imp.version_list_store
             .splice(0, imp.version_list_store.n_items(), &versions);
+
         if !versions.is_empty() {
             imp.version_selection_model.set_selected(0);
         }
 
-        if let Some(selected) = imp.version_selection_model.selected_item() {
-            let summary = selected.downcast::<GBlockyVersionSummary>().unwrap();
+        self.set_version();
+    }
 
-            imp.version_expander.set_subtitle(&summary.id());
-        }
+    fn update_add_button(&self) {
+        let imp = imp::BlockyNewInstanceDialog::from_instance(self);
+
+        let sensitive = imp.name_valid.get() && imp.version_valid.get();
+        imp.add_button.set_sensitive(sensitive);
     }
 
     fn folder_chooser(&self, title: &str, sender: glib::Sender<String>) {

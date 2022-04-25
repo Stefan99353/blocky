@@ -124,6 +124,13 @@ mod imp {
                         false,
                         ParamFlags::READWRITE,
                     ),
+                    ParamSpecBoolean::new(
+                        "use-custom-java-executable",
+                        "Use Custom Java Executable",
+                        "Use Custom Java Executable",
+                        false,
+                        ParamFlags::READWRITE,
+                    ),
                     ParamSpecString::new(
                         "java-executable",
                         "Java Executable",
@@ -131,11 +138,25 @@ mod imp {
                         None,
                         ParamFlags::READWRITE,
                     ),
+                    ParamSpecBoolean::new(
+                        "use-custom-jvm-arguments",
+                        "Use Custom JVM Arguments",
+                        "Use Custom JVM Arguments",
+                        false,
+                        ParamFlags::READWRITE,
+                    ),
                     ParamSpecString::new(
                         "jvm-arguments",
                         "JVM Arguments",
                         "JVM Arguments",
                         None,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecBoolean::new(
+                        "use-custom-memory",
+                        "Use Custom Memory",
+                        "Use Custom Memory",
+                        false,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecUInt::new(
@@ -173,17 +194,17 @@ mod imp {
                 "assets-path" => *self.assets_path.borrow_mut() = value.get().unwrap(),
                 "custom-width" => self.custom_width.set(value.get().unwrap()),
                 "custom-height" => self.custom_height.set(value.get().unwrap()),
-                "use-costom-resolution" => self.use_custom_resolution.set(value.get().unwrap()),
+                "use-custom-resolution" => self.use_custom_resolution.set(value.get().unwrap()),
                 "use-fullscreen" => self.use_fullscreen.set(value.get().unwrap()),
-                "use-costom-java-executable" => {
+                "use-custom-java-executable" => {
                     self.use_custom_java_executable.set(value.get().unwrap())
                 }
                 "java-executable" => *self.java_executable.borrow_mut() = value.get().unwrap(),
-                "use-costom-jvm-arguments" => {
+                "use-custom-jvm-arguments" => {
                     self.use_custom_jvm_arguments.set(value.get().unwrap())
                 }
                 "jvm-arguments" => *self.jvm_arguments.borrow_mut() = value.get().unwrap(),
-                "use-costom-memory" => self.use_custom_memory.set(value.get().unwrap()),
+                "use-custom-memory" => self.use_custom_memory.set(value.get().unwrap()),
                 "jvm-min-memory" => self.jvm_min_memory.set(value.get().unwrap()),
                 "jvm-max-memory" => self.jvm_max_memory.set(value.get().unwrap()),
                 x => {
@@ -206,11 +227,11 @@ mod imp {
                 "custom-height" => self.custom_height.get().to_value(),
                 "use-costom-resolution" => self.use_custom_resolution.get().to_value(),
                 "use-fullscreen" => self.use_fullscreen.get().to_value(),
-                "use-costom-java-executable" => self.use_custom_java_executable.get().to_value(),
+                "use-custom-java-executable" => self.use_custom_java_executable.get().to_value(),
                 "java-executable" => self.java_executable.borrow().to_value(),
-                "use-costom-jvm-arguments" => self.use_custom_jvm_arguments.get().to_value(),
+                "use-custom-jvm-arguments" => self.use_custom_jvm_arguments.get().to_value(),
                 "jvm-arguments" => self.jvm_arguments.borrow().to_value(),
-                "use-costom-memory" => self.use_custom_memory.get().to_value(),
+                "use-custom-memory" => self.use_custom_memory.get().to_value(),
                 "jvm-min-memory" => self.jvm_min_memory.get().to_value(),
                 "jvm-max-memory" => self.jvm_max_memory.get().to_value(),
                 x => {

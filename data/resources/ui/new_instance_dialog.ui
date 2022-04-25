@@ -39,18 +39,6 @@
                             <object class="GtkBox">
                                 <property name="orientation">vertical</property>
                                 <property name="spacing">24</property>
-                                <!-- Invalid Label -->
-                                <child>
-                                    <object class="GtkLabel" id="error_label">
-                                        <property name="wrap">True</property>
-                                        <property name="xalign">0</property>
-                                        <property name="visible">False</property>
-                                        <style>
-                                            <class name="error"/>
-                                            <class name="dim-label"/>
-                                        </style>
-                                    </object>
-                                </child>
                                 <!-- General -->
                                 <child>
                                     <object class="AdwPreferencesGroup">
@@ -65,7 +53,10 @@
                                                         <property name="valign">center</property>
                                                         <property name="placeholder-text" translatable="yes">My Instance</property>
                                                         <property name="activates_default">True</property>
-                                                        <!-- TODO: Validate Name handler -->
+                                                        <signal name="notify::text" handler="validate_name" swapped="true"/>
+                                                        <style>
+                                                            <class name="error"/>
+                                                        </style>
                                                     </object>
                                                 </child>
                                             </object>
@@ -83,6 +74,19 @@
                                                 </child>
                                             </object>
                                         </child>
+                                    </object>
+                                </child>
+                                <!-- Invalid Label -->
+                                <child>
+                                    <object class="GtkLabel" id="version_error_label">
+                                        <property name="wrap">True</property>
+                                        <property name="xalign">0</property>
+                                        <property name="visible">False</property>
+                                        <property name="label" translatable="yes">No version is selected</property>
+                                        <style>
+                                            <class name="error"/>
+                                            <class name="dim-label"/>
+                                        </style>
                                     </object>
                                 </child>
                                 <!-- Version -->

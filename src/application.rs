@@ -1,4 +1,4 @@
-use crate::managers::BlockyProfileManager;
+use crate::managers::{BlockyInstanceManager, BlockyProfileManager};
 use crate::ui::{
     BlockyApplicationWindow, BlockyNewInstanceDialog, BlockyNewProfileDialog,
     BlockyPreferencesWindow,
@@ -15,9 +15,11 @@ use once_cell::sync::{Lazy, OnceCell};
 
 mod imp {
     use super::*;
+    use crate::managers::BlockyInstanceManager;
 
     pub struct BlockyApplication {
         pub profile_manager: BlockyProfileManager,
+        pub instance_manager: BlockyInstanceManager,
 
         pub window: OnceCell<WeakRef<BlockyApplicationWindow>>,
         pub settings: gio::Settings,
@@ -31,9 +33,11 @@ mod imp {
 
         fn new() -> Self {
             let profile_manager = BlockyProfileManager::new();
+            let instance_manager = BlockyInstanceManager::new();
 
             Self {
                 profile_manager,
+                instance_manager,
                 window: OnceCell::new(),
                 settings: settings::get_settings(),
             }
@@ -43,13 +47,22 @@ mod imp {
     impl ObjectImpl for BlockyApplication {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
-                vec![ParamSpecObject::new(
-                    "profile-manager",
-                    "Profile Manager",
-                    "Profile Manager",
-                    BlockyProfileManager::static_type(),
-                    ParamFlags::READABLE,
-                )]
+                vec![
+                    ParamSpecObject::new(
+                        "profile-manager",
+                        "Profile Manager",
+                        "Profile Manager",
+                        BlockyProfileManager::static_type(),
+                        ParamFlags::READABLE,
+                    ),
+                    ParamSpecObject::new(
+                        "instance-manager",
+                        "Instance Manager",
+                        "Instance Manager",
+                        BlockyInstanceManager::static_type(),
+                        ParamFlags::READABLE,
+                    ),
+                ]
             });
 
             PROPERTIES.as_ref()
@@ -58,7 +71,11 @@ mod imp {
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
                 "profile-manager" => self.profile_manager.to_value(),
-                _ => unimplemented!(),
+                "instance-manager" => self.instance_manager.to_value(),
+                x => {
+                    error!("Property {} not a member of BlockyApplication", x);
+                    unimplemented!()
+                }
             }
         }
     }
@@ -77,6 +94,7 @@ mod imp {
 
             debug!("Initializing managers");
             app.init_profile_manager();
+            app.init_instance_manager();
 
             debug!("Create new application window");
             let window = app.create_window();
@@ -199,9 +217,18 @@ impl BlockyApplication {
         self.property("profile-manager")
     }
 
+    pub fn instance_manager(&self) -> BlockyInstanceManager {
+        self.property("instance-manager")
+    }
+
     fn init_profile_manager(&self) {
         let profile_manager = BlockyProfileManager::default();
         profile_manager.initialize()
+    }
+
+    fn init_instance_manager(&self) {
+        let instance_manager = BlockyInstanceManager::default();
+        instance_manager.initialize()
     }
 }
 

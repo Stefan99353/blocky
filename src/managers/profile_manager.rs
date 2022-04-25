@@ -17,6 +17,7 @@ use uuid::Uuid;
 mod imp {
     use super::*;
 
+    #[derive(Debug)]
     pub struct BlockyProfileManager {
         pub profiles: ListStore,
         pub current_profile: RefCell<GBlockyProfile>,
@@ -66,7 +67,10 @@ mod imp {
             match pspec.name() {
                 "profiles" => self.profiles.to_value(),
                 "current-profile" => self.current_profile.borrow().to_value(),
-                _ => unimplemented!(),
+                x => {
+                    error!("Property {} not a member of BlockyProfileManager", x);
+                    unimplemented!()
+                }
             }
         }
     }
@@ -136,16 +140,16 @@ impl BlockyProfileManager {
             None,
             glib::clone!(@weak self as this => @default-return glib::Continue(false), move |profiles| {
                 // Add profiles
-                profiles.into_iter()
+                let profiles = profiles.into_iter()
                     .map(|p| {
                         let uuid = p.uuid;
                         let username = p.minecraft_profile.as_ref().unwrap().name.clone();
 
                         GBlockyProfile::new(&uuid, &username)
                     })
-                    .for_each(|p| {
-                        this.profiles().append(&p);
-                    });
+                    .collect::<Vec<GBlockyProfile>>();
+
+                this.profiles().splice(0, this.profiles().n_items(), &profiles);
 
                 // Set default
                 let default = settings::get_string(SettingKey::DefaultProfile);
