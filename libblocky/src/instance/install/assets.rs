@@ -30,7 +30,8 @@ impl Instance {
                 &asset_sub_folder,
                 &info.hash
             );
-            download_file_check(&url, &asset_path, Some(info.hash.as_bytes()))?;
+            let sha = hex::decode(&info.hash)?;
+            download_file_check(&url, &asset_path, Some(sha))?;
         }
 
         Ok(())

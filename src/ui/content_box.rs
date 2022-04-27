@@ -1,9 +1,13 @@
 use crate::config;
+use crate::managers::BlockyInstanceManager;
+use crate::ui::BlockyInstanceRow;
 use adw::prelude::*;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
+use glib::types::instance_of;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
+use libblocky::gobject::GBlockyInstance;
 
 mod imp {
     use super::*;
@@ -37,6 +41,7 @@ mod imp {
     impl ObjectImpl for BlockyContentBox {
         fn constructed(&self, obj: &Self::Type) {
             obj.setup_widgets();
+            obj.setup_signals();
 
             self.parent_constructed(obj);
         }
@@ -61,6 +66,28 @@ impl BlockyContentBox {
 
         // Init View
         self.set_view(View::Ready)
+    }
+
+    fn setup_signals(&self) {
+        let imp = imp::BlockyContentBox::from_instance(self);
+        let instance_manager = BlockyInstanceManager::default();
+
+        instance_manager.connect_notify_local(
+            Some("instances"),
+            glib::clone!(@weak self as this => move |_, _| {
+                this.update_instances_view();
+            }),
+        );
+    }
+
+    fn update_instances_view(&self) {
+        let instances = BlockyInstanceManager::default().instances();
+
+        if instances.n_items() == 0 {
+            self.set_view(View::Ready);
+        } else {
+            self.set_view(View::Instances);
+        }
     }
 
     fn set_view(&self, view: View) {

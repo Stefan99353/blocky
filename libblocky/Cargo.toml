@@ -15,6 +15,7 @@ chrono = { version = "0.4", features = ["serde"] }
 derive_builder = "0.11"
 gio = { version = "0.15", optional = true }
 glib = { version = "0.15", optional = true }
+hex = "0.4.3"
 itertools = "0.10"
 log = "0.4"
 oauth2 = "4.1"

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="BlockyInstanceGroup" parent="AdwPreferencesGroup">
+        <child>
+            <object class="GtkListBox" id="listbox">
+                <property name="selection_mode">none</property>
+                <style>
+                    <class name="content"/>
+                </style>
+            </object>
+        </child>
+    </template>
+</interface>

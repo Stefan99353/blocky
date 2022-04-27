@@ -2,8 +2,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Platform {
+    #[serde(alias = "linux")]
     Linux,
+    #[serde(alias = "osx")]
     MacOs,
+    #[serde(alias = "windows")]
     Windows,
     Other,
 }

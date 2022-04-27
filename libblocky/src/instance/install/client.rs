@@ -18,11 +18,8 @@ impl Instance {
 
             // Download file
             client_path.push(format!("minecraft-{}-client.jar", &version_data.id));
-            download_file_check(
-                &downloads.client.url,
-                &client_path,
-                Some(downloads.client.sha1.as_bytes()),
-            )?;
+            let sha = hex::decode(&downloads.client.sha1)?;
+            download_file_check(&downloads.client.url, &client_path, Some(sha))?;
         }
 
         Ok(())

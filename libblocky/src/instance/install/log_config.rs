@@ -1,10 +1,10 @@
-use crate::error::Error;
+use crate::error;
 use crate::instance::download::download_file_check;
 use crate::Instance;
 use std::fs;
 
 impl Instance {
-    pub fn install_log_config(&self) -> Result<(), Error> {
+    pub fn install_log_config(&self) -> error::Result<()> {
         debug!("Installing log config");
 
         let version_data = self.read_version_data()?;
@@ -14,15 +14,12 @@ impl Instance {
             config_path.push("log_configs");
 
             // Create folder
-            fs::create_dir_all(&config_path).map_err(Error::Filesystem)?;
+            fs::create_dir_all(&config_path).map_err(error::Error::Filesystem)?;
 
             // Download file
             config_path.push(&logging_info.client.file.id);
-            download_file_check(
-                &logging_info.client.file.url,
-                &config_path,
-                Some(&logging_info.client.file.sha1.as_bytes()),
-            )?;
+            let sha = hex::decode(&logging_info.client.file.sha1)?;
+            download_file_check(&logging_info.client.file.url, &config_path, Some(sha))?;
         }
 
         Ok(())

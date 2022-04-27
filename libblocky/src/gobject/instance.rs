@@ -225,7 +225,7 @@ mod imp {
                 "assets-path" => self.assets_path.borrow().to_value(),
                 "custom-width" => self.custom_width.get().to_value(),
                 "custom-height" => self.custom_height.get().to_value(),
-                "use-costom-resolution" => self.use_custom_resolution.get().to_value(),
+                "use-custom-resolution" => self.use_custom_resolution.get().to_value(),
                 "use-fullscreen" => self.use_fullscreen.get().to_value(),
                 "use-custom-java-executable" => self.use_custom_java_executable.get().to_value(),
                 "java-executable" => self.java_executable.borrow().to_value(),
@@ -299,7 +299,7 @@ impl From<Instance> for GBlockyInstance {
             ("java-executable", &instance.process.java_executable),
             (
                 "use-custom-jvm-arguments",
-                &instance.process.use_custom_jvm_argumemts,
+                &instance.process.use_custom_jvm_arguments,
             ),
             ("jvm-arguments", &instance.process.jvm_arguments),
             ("use-custom-memory", &instance.process.use_custom_memory),
@@ -343,7 +343,7 @@ impl From<GBlockyInstance> for Instance {
         process_builder
             .use_custom_java_executable(instance.property("use-custom-java-executable"))
             .java_executable(instance.property("java-executable"))
-            .use_custom_jvm_argumemts(instance.property("use-custom-jvm-arguments"))
+            .use_custom_jvm_arguments(instance.property("use-custom-jvm-arguments"))
             .jvm_arguments(instance.property("jvm-arguments"))
             .use_custom_memory(instance.property("use-custom-memory"))
             .jvm_min_memory(instance.property("jvm-min-memory"))

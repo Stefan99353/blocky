@@ -11,7 +11,7 @@
                     <object class="GtkStackPage">
                         <property name="name">instances</property>
                         <property name="child">
-                            <object class="GtkBox"/>
+                            <object class="BlockyInstancePage"/>
                         </property>
                     </object>
                 </child>

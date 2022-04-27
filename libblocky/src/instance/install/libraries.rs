@@ -37,11 +37,8 @@ impl Instance {
             let jar_name = format!("{}-{}.jar", name, version);
             let mut jar_path = library_path.clone();
             jar_path.push(&jar_name);
-            download_file_check(
-                &library.downloads.artifact.url,
-                &jar_path,
-                Some(library.downloads.artifact.sha1.as_bytes()),
-            )?;
+            let sha = hex::decode(&library.downloads.artifact.sha1)?;
+            download_file_check(&library.downloads.artifact.url, &jar_path, Some(sha))?;
 
             // Native library
             if let Some(native) = &library.get_native() {

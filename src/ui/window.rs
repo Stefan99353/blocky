@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 mod imp {
     use super::*;
+    use crate::ui::{BlockyInstanceGroup, BlockyInstancePage};
 
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/window.ui")]
@@ -35,6 +36,7 @@ mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
+            BlockyInstancePage::static_type();
             Self::bind_template(klass);
         }
 

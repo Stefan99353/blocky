@@ -203,8 +203,6 @@ impl BlockyNewInstanceDialog {
     fn validate_name(&self) {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
-        imp.instance_dir_label.set_label("");
-
         if imp.name_entry.text().is_empty() {
             imp.name_entry.add_css_class("error");
             imp.name_valid.set(false);

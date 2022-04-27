@@ -3,8 +3,8 @@ use sha1::{Digest, Sha1};
 use std::fs::File;
 use std::path::Path;
 
-pub fn download_file(url: &str, dest: impl AsRef<Path>) -> crate::error::Result<()> {
-    debug!("Downloading file: {}", url);
+fn download_file(url: &str, dest: impl AsRef<Path>) -> crate::error::Result<()> {
+    trace!("Downloading file: {}", url);
 
     let mut response = reqwest::blocking::get(url)
         .map_err(Error::Request)?
@@ -21,33 +21,41 @@ pub fn download_file(url: &str, dest: impl AsRef<Path>) -> crate::error::Result<
 pub fn download_file_check(
     url: &str,
     dest: impl AsRef<Path>,
-    sha1: Option<&[u8]>,
+    remote_sha: Option<Vec<u8>>,
 ) -> crate::error::Result<()> {
-    debug!("Download file if newer or not exists: {}", url);
+    debug!("Checked download of file: {}", url);
 
     if dest.as_ref().exists() {
-        // Check SHA1
-        if let Some(sha1) = sha1 {
-            let hash = get_sha1(&dest)?;
-            if hash == sha1 {
-                trace!("File exists in newest form: {}", url);
+        trace!("File already exists");
+
+        match &remote_sha {
+            None => {
+                trace!("Existing file is assumed correct");
                 return Ok(());
-            } else {
-                trace!("File exists but corrupt/outdated: {}", url);
-                download_file(url, &dest)?;
             }
-        } else {
-            trace!("File exists: {}", url);
+            Some(remote_sha) => {
+                let local_sha = get_sha1(&dest)?;
+
+                if remote_sha == &local_sha {
+                    trace!("Existing file is correct");
+                    return Ok(());
+                } else {
+                    trace!("Existing file does not match checksum");
+                    download_file(url, &dest)?;
+                }
+            }
         }
     } else {
-        // Download
+        trace!("File does not exist yet");
+
         download_file(url, &dest)?;
     }
 
-    if let Some(sha1) = sha1 {
-        let hash = get_sha1(dest)?;
-        if hash != sha1 {
-            // Download is not correct
+    if let Some(remote_sha) = &remote_sha {
+        let local_sha = get_sha1(&dest)?;
+        if remote_sha != &local_sha {
+            // debug!("Local SHA1: {}", String::from_utf8_lossy(&hash));
+            // debug!("Remote SHA1: {}", String::from_utf8_lossy(&sha1));
             return Err(Error::Sha1Mismatch(url.to_string()));
         }
     }

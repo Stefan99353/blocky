@@ -54,6 +54,10 @@ lazy_static! {
 }
 
 pub fn init() -> std::io::Result<()> {
+    debug!("Data directory: '{}'", DATA.to_string_lossy());
+    debug!("Config directory: '{}'", CONFIG.to_string_lossy());
+    debug!("Cache directory: '{}'", CACHE.to_string_lossy());
+
     fs::create_dir_all(DATA.clone())?;
     fs::create_dir_all(CONFIG.clone())?;
     fs::create_dir_all(CACHE.clone())?;

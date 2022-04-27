@@ -1,5 +1,6 @@
 use crate::settings::SettingKey;
 use crate::{settings, BlockyApplication};
+use anyhow::anyhow;
 use gio::prelude::ListModelExt;
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -103,6 +104,7 @@ impl BlockyInstanceManager {
                     .collect::<Vec<GBlockyInstance>>();
 
                 this.instances().splice(0, this.instances().n_items(), &instances);
+                this.notify("instances");
 
                 glib::Continue(true)
             })
@@ -172,6 +174,7 @@ impl BlockyInstanceManager {
         // Add to ListStore
         let g_instance = GBlockyInstance::from(instance.clone());
         self.instances().append(&g_instance);
+        self.notify("instances");
 
         // Add to disk
         thread::spawn(move || {
@@ -203,11 +206,24 @@ impl BlockyInstanceManager {
             }
         }
 
+        self.notify("instances");
+
         // Remove from disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
             if let Err(err) = libblocky::helpers::remove_instance(uuid, path) {
                 error!("Error while removing instance - {}", err);
+            }
+        });
+    }
+
+    pub fn launch_instance(&self, uuid: Uuid) {
+        info!("Launching instance '{}'", &uuid);
+
+        thread::spawn(move || {
+            if let Err(err) = launch(uuid) {
+                error!("Error during instance installation");
+                error!("{}", err);
             }
         });
     }
@@ -217,4 +233,15 @@ impl Default for BlockyInstanceManager {
     fn default() -> Self {
         BlockyApplication::default().instance_manager()
     }
+}
+
+fn launch(uuid: Uuid) -> anyhow::Result<()> {
+    let path = settings::get_string(SettingKey::InstancesFilePath);
+
+    let instance =
+        libblocky::helpers::find_instance(uuid, path)?.ok_or(anyhow!("Could not find instance"))?;
+
+    instance.full_install()?;
+
+    Ok(())
 }

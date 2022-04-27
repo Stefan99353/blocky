@@ -21,11 +21,8 @@ impl Instance {
 
             // Download file
             indexes_path.push(format!("{}.json", &version_data.assets));
-            download_file_check(
-                &asset_index.url,
-                indexes_path,
-                Some(asset_index.sha1.as_bytes()),
-            )?;
+            let sha = hex::decode(&asset_index.sha1)?;
+            download_file_check(&asset_index.url, indexes_path, Some(sha))?;
         }
 
         Ok(())

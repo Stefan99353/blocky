@@ -6,6 +6,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
+anyhow = "1.0.57"
 gettext-rs = { version = "0.7.0", features = ["gettext-system"] }
 gio = "0.15.10"
 glib = "0.15.10"
