@@ -9,5 +9,5 @@ pub struct AssetIndexData {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AssetInfo {
     pub hash: String,
-    pub size: i64,
+    pub size: usize,
 }

@@ -2,16 +2,28 @@ use crate::error::Error;
 use crate::instance::download::download_file_check;
 use crate::instance::install::error::InstallationError;
 use crate::instance::models::AssetIndexData;
+use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType};
 use crate::Instance;
 use std::fs;
 use std::path::PathBuf;
 
 impl Instance {
-    pub fn install_asset_index(&self) -> Result<(), Error> {
+    pub fn install_asset_index(
+        &self,
+        sender: crossbeam_channel::Sender<crate::error::Result<ResourceInstallationUpdate>>,
+    ) -> Result<(), Error> {
         debug!("Installing asset index");
 
         let version_data = self.read_version_data()?;
         if let Some(asset_index) = &version_data.asset_index {
+            let _ = sender.send(Ok(ResourceInstallationUpdate {
+                resource_type: ResourceType::AssetIndex,
+                url: asset_index.url.to_string(),
+                total: 1,
+                n: 1,
+                size: Some(asset_index.size),
+            }));
+
             // Index is stored in "indexes" dir in natives dir
             let mut indexes_path = self.assets_path();
             indexes_path.push("indexes");

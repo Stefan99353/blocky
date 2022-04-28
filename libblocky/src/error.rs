@@ -22,6 +22,9 @@ pub enum Error {
 
     #[error("Provided SHA could not be decoded: {0}")]
     Sha1Decode(hex::FromHexError),
+
+    #[error("HelperError: {0}")]
+    Helper(crate::helpers::HelperError),
 }
 
 impl From<AuthenticationError> for Error {
@@ -33,6 +36,12 @@ impl From<AuthenticationError> for Error {
 impl From<InstallationError> for Error {
     fn from(err: InstallationError) -> Self {
         Self::Installation(err)
+    }
+}
+
+impl From<crate::helpers::HelperError> for Error {
+    fn from(err: crate::helpers::HelperError) -> Self {
+        Self::Helper(err)
     }
 }
 

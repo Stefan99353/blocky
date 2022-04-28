@@ -17,6 +17,6 @@ pub struct Client {
 pub struct File {
     pub id: String,
     pub sha1: String,
-    pub size: i64,
+    pub size: usize,
     pub url: String,
 }

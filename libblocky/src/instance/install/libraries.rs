@@ -3,19 +3,31 @@ use crate::consts;
 use crate::error::Error;
 use crate::instance::download::download_file_check;
 use crate::instance::extract::extract_native;
+use crate::instance::models::Library;
+use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType};
 use crate::Instance;
 use itertools::Itertools;
 use std::fs;
 use std::path::PathBuf;
 
 impl Instance {
-    pub fn install_libraries(&self) -> Result<(), Error> {
+    pub fn install_libraries(
+        &self,
+        sender: crossbeam_channel::Sender<crate::error::Result<ResourceInstallationUpdate>>,
+    ) -> Result<(), Error> {
         debug!("Installing libraries");
 
         let version_data = self.read_version_data()?;
 
         // Filter libraries needed
-        for library in version_data.libraries.iter().filter(|l| l.check_use()) {
+        let libraries = version_data
+            .libraries
+            .iter()
+            .filter(|l| l.check_use())
+            .collect::<Vec<&Library>>();
+        let total = libraries.len();
+
+        for (n, library) in libraries.into_iter().enumerate() {
             // Get library information
             let (mut package, name, version): (String, String, String) = library
                 .name
@@ -33,12 +45,23 @@ impl Instance {
             // Create path
             fs::create_dir_all(&library_path).map_err(Error::Filesystem)?;
 
-            // Safe library file
-            let jar_name = format!("{}-{}.jar", name, version);
-            let mut jar_path = library_path.clone();
-            jar_path.push(&jar_name);
-            let sha = hex::decode(&library.downloads.artifact.sha1)?;
-            download_file_check(&library.downloads.artifact.url, &jar_path, Some(sha))?;
+            if let Some(artifact) = &library.downloads.artifact {
+                // Safe library file
+                let jar_name = format!("{}-{}.jar", name, version);
+                let mut jar_path = library_path.clone();
+                jar_path.push(&jar_name);
+
+                // Send update
+                let _ = sender.send(Ok(ResourceInstallationUpdate {
+                    resource_type: ResourceType::Library,
+                    url: artifact.url.to_string(),
+                    total,
+                    n,
+                    size: Some(artifact.size),
+                }));
+                let sha = hex::decode(&artifact.sha1)?;
+                download_file_check(&artifact.url, &jar_path, Some(sha))?;
+            }
 
             // Native library
             if let Some(native) = &library.get_native() {
@@ -55,6 +78,13 @@ impl Instance {
                     &version,
                     &native_jar_name
                 );
+                let _ = sender.send(Ok(ResourceInstallationUpdate {
+                    resource_type: ResourceType::Library,
+                    url: native_download_url.to_string(),
+                    total,
+                    n,
+                    size: None,
+                }));
                 download_file_check(&native_download_url, &native_jar_path, None)?;
 
                 // Extract

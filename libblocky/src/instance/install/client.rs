@@ -1,15 +1,27 @@
 use crate::error::Error;
 use crate::instance::download::download_file_check;
+use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType};
 use crate::Instance;
 use std::fs;
 use std::path::PathBuf;
 
 impl Instance {
-    pub fn install_client(&self) -> Result<(), Error> {
+    pub fn install_client(
+        &self,
+        sender: crossbeam_channel::Sender<crate::error::Result<ResourceInstallationUpdate>>,
+    ) -> Result<(), Error> {
         debug!("Installing game client");
 
         let version_data = self.read_version_data()?;
         if let Some(downloads) = &version_data.downloads {
+            let _ = sender.send(Ok(ResourceInstallationUpdate {
+                resource_type: ResourceType::Client,
+                url: downloads.client.url.to_string(),
+                total: 1,
+                n: 1,
+                size: Some(downloads.client.size),
+            }));
+
             let mut client_path = self.instance_path();
             client_path.push(".minecraft/bin");
 

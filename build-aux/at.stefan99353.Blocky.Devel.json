@@ -11,7 +11,7 @@
         "--socket=fallback-x11",
         "--socket=wayland",
         "--device=dri",
-        "--env=RUST_LOG=info,blocky=trace,libblocky=trace",
+        "--env=RUST_LOG=info,blocky=trace,libblocky=info",
         "--env=G_MESSAGES_DEBUG=none",
         "--env=RUST_BACKTRACE=1",
         "--share=network"
@@ -26,7 +26,7 @@
             "--share=network"
         ],
         "env" : {
-            "RUST_LOG" : "info,blocky=trace,libblocky=trace"
+            "RUST_LOG" : "info,blocky=trace,libblocky=info"
         }
     },
     "modules" : [

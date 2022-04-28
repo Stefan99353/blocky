@@ -4,6 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct Artifact {
     pub path: String,
     pub sha1: String,
-    pub size: i64,
+    pub size: usize,
     pub url: String,
 }

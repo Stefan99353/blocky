@@ -10,6 +10,7 @@ use glib::{ParamFlags, ParamSpecObject, ToValue};
 use glib::{ParamSpec, Value};
 use libblocky::gobject::GBlockyInstance;
 use libblocky::helpers::HelperError;
+use libblocky::instance::resource_update::ResourceInstallationUpdate;
 use libblocky::Instance;
 use once_cell::sync::Lazy;
 use std::thread;
@@ -217,15 +218,25 @@ impl BlockyInstanceManager {
         });
     }
 
-    pub fn launch_instance(&self, uuid: Uuid) {
+    pub fn launch_instance(
+        &self,
+        uuid: Uuid,
+    ) -> glib::Receiver<libblocky::error::Result<ResourceInstallationUpdate>> {
         info!("Launching instance '{}'", &uuid);
+        let (g_sender, g_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
-            if let Err(err) = launch(uuid) {
-                error!("Error during instance installation");
-                error!("{}", err);
+            let path = settings::get_string(SettingKey::InstancesFilePath);
+            let receiver = libblocky::helpers::install_threaded(uuid, path);
+
+            while let Ok(update) = receiver.recv() {
+                g_sender
+                    .send(update)
+                    .expect("Could not send update through channel");
             }
         });
+
+        g_receiver
     }
 }
 
@@ -233,15 +244,4 @@ impl Default for BlockyInstanceManager {
     fn default() -> Self {
         BlockyApplication::default().instance_manager()
     }
-}
-
-fn launch(uuid: Uuid) -> anyhow::Result<()> {
-    let path = settings::get_string(SettingKey::InstancesFilePath);
-
-    let instance =
-        libblocky::helpers::find_instance(uuid, path)?.ok_or(anyhow!("Could not find instance"))?;
-
-    instance.full_install()?;
-
-    Ok(())
 }

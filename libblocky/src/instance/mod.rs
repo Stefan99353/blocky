@@ -7,6 +7,7 @@ mod extract;
 pub(crate) mod install;
 pub mod models;
 mod paths;
+pub mod resource_update;
 pub(crate) mod utils;
 
 #[derive(Builder, Clone, Debug, Deserialize, Serialize)]

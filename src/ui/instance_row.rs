@@ -123,7 +123,20 @@ impl BlockyInstanceRow {
         let instance_manager = BlockyInstanceManager::default();
         let uuid = self.instance().uuid();
 
-        instance_manager.launch_instance(uuid);
+        let receiver = instance_manager.launch_instance(uuid);
+
+        receiver.attach(None, move |update| {
+            match update {
+                Ok(update) => {
+                    info!("{:?}", update);
+                }
+                Err(err) => {
+                    error!("Error during installation: {}", err);
+                }
+            }
+
+            glib::Continue(true)
+        });
     }
 
     pub fn instance(&self) -> GBlockyInstance {
