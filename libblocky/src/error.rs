@@ -1,4 +1,5 @@
 use crate::instance::install::error::InstallationError;
+use crate::instance::launch::error::LaunchError;
 use crate::profile::AuthenticationError;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -16,6 +17,9 @@ pub enum Error {
 
     #[error("InstallationError: {0}")]
     Installation(InstallationError),
+
+    #[error("LaunchError: {0}")]
+    Launch(LaunchError),
 
     #[error("The checksum does not match hash of file: {0}")]
     Sha1Mismatch(String),
@@ -36,6 +40,12 @@ impl From<AuthenticationError> for Error {
 impl From<InstallationError> for Error {
     fn from(err: InstallationError) -> Self {
         Self::Installation(err)
+    }
+}
+
+impl From<LaunchError> for Error {
+    fn from(err: LaunchError) -> Self {
+        Self::Launch(err)
     }
 }
 

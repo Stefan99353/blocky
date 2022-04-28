@@ -2,7 +2,7 @@ mod authentication;
 mod entitlements;
 mod error;
 mod microsoft;
-mod minecraft;
+pub(crate) mod minecraft;
 mod xbox_live;
 mod xbox_live_security;
 

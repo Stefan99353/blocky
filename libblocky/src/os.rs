@@ -24,6 +24,13 @@ impl Platform {
     pub fn matches_current(&self) -> bool {
         self == &Self::current()
     }
+
+    pub fn classpath_seperator(&self) -> char {
+        match self {
+            Platform::Windows => ';',
+            _ => ':',
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

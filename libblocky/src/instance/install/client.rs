@@ -22,8 +22,8 @@ impl Instance {
                 size: Some(downloads.client.size),
             }));
 
-            let mut client_path = self.instance_path();
-            client_path.push(".minecraft/bin");
+            let mut client_path = self.dot_minecraft_path();
+            client_path.push("bin");
 
             // Create folder
             fs::create_dir_all(&client_path).map_err(Error::Filesystem)?;

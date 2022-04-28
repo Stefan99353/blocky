@@ -5,6 +5,7 @@ use uuid::Uuid;
 mod download;
 mod extract;
 pub(crate) mod install;
+pub(crate) mod launch;
 pub mod models;
 mod paths;
 pub mod resource_update;

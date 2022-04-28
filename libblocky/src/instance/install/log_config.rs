@@ -22,8 +22,7 @@ impl Instance {
             }));
 
             // Log config is stored in "log_configs" dir in natives dir
-            let mut config_path = self.assets_path();
-            config_path.push("log_configs");
+            let mut config_path = self.log_configs_path();
 
             // Create folder
             fs::create_dir_all(&config_path).map_err(error::Error::Filesystem)?;

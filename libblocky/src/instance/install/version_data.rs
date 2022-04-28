@@ -35,7 +35,7 @@ impl Instance {
         debug!("Version '{}'", &version_summary.id);
 
         // Create instance folder
-        let mut instance_path = PathBuf::from(&self.instance_path);
+        let mut instance_path = self.instance_path();
         trace!(
             "Creating instance folder: '{}'",
             &instance_path.to_string_lossy()
@@ -43,8 +43,7 @@ impl Instance {
         fs::create_dir_all(&instance_path).map_err(Error::Filesystem)?;
 
         // Save version data
-        let mut version_data_path = instance_path;
-        version_data_path.push("version.json");
+        let version_data_path = self.version_data_path();
         trace!(
             "Downloading version data to: '{}'",
             &version_data_path.to_string_lossy()
@@ -64,8 +63,7 @@ impl Instance {
     pub fn read_version_data(&self) -> Result<VersionData, Error> {
         debug!("Reading version data from disk");
 
-        let mut version_data_path = PathBuf::from(&self.instance_path);
-        version_data_path.push("version.json");
+        let version_data_path = self.version_data_path();
 
         trace!(
             "Reading from disk: '{}'",

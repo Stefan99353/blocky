@@ -89,8 +89,7 @@ impl Instance {
 
                 // Extract
                 if let Some(extract) = &library.extract {
-                    let mut natives_dir = PathBuf::from(&self.instance_path);
-                    natives_dir.push("natives");
+                    let mut natives_dir = self.natives_path();
                     extract_native(&native_jar_path, natives_dir, &extract.exclude)?;
                 }
             }

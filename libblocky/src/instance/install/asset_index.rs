@@ -25,8 +25,7 @@ impl Instance {
             }));
 
             // Index is stored in "indexes" dir in natives dir
-            let mut indexes_path = self.assets_path();
-            indexes_path.push("indexes");
+            let mut indexes_path = self.asset_index_path();
 
             // Create folder
             fs::create_dir_all(&indexes_path).map_err(Error::Filesystem)?;
@@ -43,8 +42,7 @@ impl Instance {
     pub fn read_asset_index(&self) -> Result<AssetIndexData, Error> {
         let version_data = self.read_version_data()?;
 
-        let mut asset_index_path = self.assets_path();
-        asset_index_path.push("indexes");
+        let mut asset_index_path = self.asset_index_path();
         asset_index_path.push(format!("{}.json", &version_data.assets));
 
         let asset_index = fs::read_to_string(&asset_index_path).map_err(Error::Filesystem)?;
