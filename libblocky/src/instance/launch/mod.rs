@@ -10,7 +10,7 @@ use utils::{classpath, java_executable, jvm_arguments};
 
 mod argument_replacements;
 pub mod error;
-mod launch_options;
+pub mod launch_options;
 mod utils;
 
 impl Instance {
@@ -40,7 +40,9 @@ impl Instance {
             classpath,
         );
         let jvm_arguments = jvm_arguments(self, options, &version_data, &arg_replacers);
+        dbg!(&jvm_arguments);
         let game_arguments = game_arguments(&version_data, &arg_replacers);
+        dbg!(&game_arguments);
 
         // Build command
         let mut command = Command::new(java_executable(&self, &options));

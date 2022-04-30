@@ -9,7 +9,8 @@ use itertools::Itertools;
 pub fn classpath(instance: &Instance, version_data: &VersionData) -> crate::error::Result<String> {
     let mut classpath = String::new();
 
-    for library in version_data.libraries.iter().find(|l| l.check_use()) {
+    for library in version_data.libraries.iter().filter(|l| l.check_use()) {
+        warn!("{}", &library.name);
         let (mut package, name, version): (String, String, String) = library
             .name
             .split(':')
@@ -87,18 +88,18 @@ pub fn jvm_arguments(
     }
 
     // Essentials
-    if arguments
-        .iter()
-        .any(|arg| arg.starts_with("-Djava.library.path="))
-    {
-        let arg = "-Djava.library.path=${natives_directory}";
-        arguments.push(arg_replacers.replace(arg));
-    }
-    if arguments.iter().any(|arg| arg.starts_with("-cp")) {
-        let arg = "${classpath}";
-        arguments.push("-cp".to_string());
-        arguments.push(arg_replacers.replace(arg));
-    }
+    // if arguments
+    //     .iter()
+    //     .any(|arg| arg.starts_with("-Djava.library.path="))
+    // {
+    //     let arg = "-Djava.library.path=${natives_directory}";
+    //     arguments.push(arg_replacers.replace(arg));
+    // }
+    // if arguments.iter().any(|arg| arg.starts_with("-cp")) {
+    //     let arg = "${classpath}";
+    //     arguments.push("-cp".to_string());
+    //     arguments.push(arg_replacers.replace(arg));
+    // }
 
     arguments
 }

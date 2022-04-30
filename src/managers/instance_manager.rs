@@ -1,3 +1,4 @@
+use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
 use crate::{settings, BlockyApplication};
 use anyhow::anyhow;
@@ -10,6 +11,7 @@ use glib::{ParamFlags, ParamSpecObject, ToValue};
 use glib::{ParamSpec, Value};
 use libblocky::gobject::GBlockyInstance;
 use libblocky::helpers::HelperError;
+use libblocky::instance::launch_options::{GlobalLaunchOptions, GlobalLaunchOptionsBuilder};
 use libblocky::instance::resource_update::ResourceInstallationUpdate;
 use libblocky::Instance;
 use once_cell::sync::Lazy;
@@ -227,13 +229,27 @@ impl BlockyInstanceManager {
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            let receiver = libblocky::helpers::install_threaded(uuid, path);
+            let receiver = libblocky::helpers::install_threaded(uuid, path.clone());
 
             while let Ok(update) = receiver.recv() {
                 g_sender
                     .send(update)
                     .expect("Could not send update through channel");
             }
+            drop(g_sender);
+
+            // TODO: error handling
+            let profile_manager = BlockyProfileManager::default();
+            let profiles_path = settings::get_string(SettingKey::ProfilesFilePath);
+            let profile_uuid = profile_manager.current_profile().unwrap().uuid();
+            let profile = libblocky::helpers::find_profile(profile_uuid, profiles_path)
+                .unwrap()
+                .unwrap();
+            let options = GlobalLaunchOptionsBuilder::default()
+                .java_executable(settings::get_string(SettingKey::DefaultJavaExec))
+                .build()
+                .unwrap();
+            libblocky::helpers::launch_instance(uuid, path, &profile, &options);
         });
 
         g_receiver
