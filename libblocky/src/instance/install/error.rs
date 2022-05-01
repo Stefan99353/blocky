@@ -19,4 +19,7 @@ pub enum InstallationError {
 
     #[error("Error while extracting file: {0}")]
     Extract(zip::result::ZipError),
+
+    #[error("Installation canceled")]
+    Cancelled,
 }

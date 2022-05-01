@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="BlockyInstallProgressDialog" parent="GtkDialog">
+        <property name="width_request">480</property>
+        <property name="height_request">240</property>
+        <property name="title" translatable="yes">Installing</property>
+        <property name="modal">True</property>
+        <!-- Cancel Button -->
+        <child type="action">
+            <object class="GtkButton" id="cancel_button">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Cancel</property>
+                <property name="action-name">install.cancel</property>
+            </object>
+        </child>
+        <!-- Content -->
+        <child>
+            <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">24</property>
+                <property name="hexpand">True</property>
+                <property name="valign">center</property>
+                <property name="margin_start">12</property>
+                <property name="margin_end">12</property>
+                <child>
+                    <object class="GtkSpinner" id="spinner">
+                        <property name="spinning">True</property>
+                        <property name="halign">center</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkProgressBar" id="progress_bar">
+                        <property name="show_text">False</property>
+                        <property name="hexpand">True</property>
+                        <style>
+                            <class name="row-progressbar"/>
+                        </style>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkLabel" id="status_label">
+                        <property name="halign">center</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <action-widgets>
+            <action-widget response="cancel">cancel_button</action-widget>
+        </action-widgets>
+    </template>
+</interface>

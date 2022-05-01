@@ -12,6 +12,9 @@ pub enum Error {
     #[error("Error while getting resource from web: {0}")]
     Request(reqwest::Error),
 
+    #[error("Error while serializing/deserializing struct: {0}")]
+    Serde(serde_json::Error),
+
     #[error("AuthenticationError: {0}")]
     Authentication(AuthenticationError),
 
@@ -27,8 +30,11 @@ pub enum Error {
     #[error("Provided SHA could not be decoded: {0}")]
     Sha1Decode(hex::FromHexError),
 
-    #[error("HelperError: {0}")]
-    Helper(crate::helpers::HelperError),
+    #[error("Instance UUID '{0}' was not found on disk")]
+    InstanceNotFound(uuid::Uuid),
+
+    #[error("Profile UUID '{0}' was not found on disk")]
+    ProfileNotFound(uuid::Uuid),
 }
 
 impl From<AuthenticationError> for Error {
@@ -46,12 +52,6 @@ impl From<InstallationError> for Error {
 impl From<LaunchError> for Error {
     fn from(err: LaunchError) -> Self {
         Self::Launch(err)
-    }
-}
-
-impl From<crate::helpers::HelperError> for Error {
-    fn from(err: crate::helpers::HelperError) -> Self {
-        Self::Helper(err)
     }
 }
 

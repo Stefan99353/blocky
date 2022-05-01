@@ -6,12 +6,14 @@ data/at.stefan99353.Blocky.metainfo.xml.in.in
 data/resources/ui/shortcuts.ui
 data/resources/ui/content_box.ui
 data/resources/ui/preferences_window.ui
-data/resources/ui/new_profile_window.ui
+data/resources/ui/new_profile_dialog.ui
 data/resources/ui/new_instance_dialog.ui
+data/resources/ui/install_progress_dialog.ui
 data/resources/ui/version_summary_row.ui
 data/resources/ui/instance_row.ui
 data/resources/ui/instance_page.ui
 data/resources/ui/instance_group.ui
+data/resources/ui/instance_menu.ui
 data/resources/ui/window.ui
 
 # Rust

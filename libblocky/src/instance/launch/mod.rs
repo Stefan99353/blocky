@@ -4,8 +4,10 @@ use crate::instance::launch::launch_options::GlobalLaunchOptions;
 use crate::instance::launch::utils::game_arguments;
 use crate::profile::AuthenticationError;
 use crate::{Instance, Profile};
+use fork::Fork;
 use glib::types::instance_of;
-use std::process::Command;
+use std::os::linux::raw::stat;
+use std::process::{Command, Stdio};
 use utils::{classpath, java_executable, jvm_arguments};
 
 mod argument_replacements;
@@ -14,6 +16,37 @@ pub mod launch_options;
 mod utils;
 
 impl Instance {
+    pub fn launch(
+        &self,
+        profile: &Profile,
+        options: &GlobalLaunchOptions,
+    ) -> crate::error::Result<()> {
+        debug!("Launching instance");
+        let mut command = self.launch_command(profile, options)?;
+        command
+            .stdout(Stdio::null())
+            .stdin(Stdio::null())
+            .stderr(Stdio::null());
+
+        match fork::fork() {
+            Ok(fork::Fork::Parent(_)) => {
+                return Ok(());
+            }
+            Ok(fork::Fork::Child) => {
+                debug!("Command: {:?}", command);
+                let mut child = command.spawn().expect("Could not spawn new command");
+                let status = child.wait().expect("Could not wait for command to finish");
+
+                info!("Game exited with status '{:?}'", status.code());
+            }
+            Err(err) => {
+                return Err(LaunchError::Forking.into());
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn launch_command(
         &self,
         profile: &Profile,
@@ -40,12 +73,10 @@ impl Instance {
             classpath,
         );
         let jvm_arguments = jvm_arguments(self, options, &version_data, &arg_replacers);
-        dbg!(&jvm_arguments);
         let game_arguments = game_arguments(&version_data, &arg_replacers);
-        dbg!(&game_arguments);
 
         // Build command
-        let mut command = Command::new(java_executable(&self, &options));
+        let mut command = Command::new(java_executable(self, options));
         command.current_dir(&self.dot_minecraft_path());
 
         // Add JVM Arguments

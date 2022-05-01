@@ -1,12 +1,16 @@
 use crate::managers::BlockyInstanceManager;
+use crate::ui::BlockyApplicationWindow;
+use crate::ui::BlockyInstallProgressDialog;
 use glib::subclass::{InitializingObject, InitializingType, Signal};
 use glib::ToValue;
 use glib::{IsA, ObjectExt, ParamSpec, Value};
 use glib::{ParamFlags, ParamSpecObject, StaticType};
+use gtk::gdk;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libblocky::gobject::GBlockyInstance;
+use libblocky::instance::resource_update::ResourceInstallationUpdate;
 use once_cell::sync::Lazy;
 use once_cell::sync::OnceCell;
 
@@ -26,6 +30,7 @@ mod imp {
         #[template_child]
         pub launch_button: TemplateChild<gtk::Button>,
 
+        pub popover_menu: OnceCell<gtk::PopoverMenu>,
         pub instance: OnceCell<GBlockyInstance>,
     }
 
@@ -83,7 +88,13 @@ mod imp {
             obj.setup_widgets();
             obj.setup_signals();
 
+            install_actions(&obj.instance(), obj.clone().upcast());
+
             self.parent_constructed(obj);
+        }
+
+        fn dispose(&self, _obj: &Self::Type) {
+            self.popover_menu.get().unwrap().unparent();
         }
     }
 
@@ -108,35 +119,40 @@ impl BlockyInstanceRow {
         self.bind_property("name", &imp.name_label.get(), "label");
         self.bind_property("description", &imp.description_label.get(), "label");
         self.bind_property("version", &imp.version_label.get(), "label");
+
+        // Popover
+        let builder = gtk::Builder::from_resource("/at/stefan99353/Blocky/ui/instance_menu.ui");
+        let menu: gio::MenuModel = builder.object("instance_menu").unwrap();
+        let popover_menu = gtk::PopoverMenu::from_model(Some(&menu));
+        popover_menu.set_parent(self);
+        imp.popover_menu.set(popover_menu).unwrap();
     }
 
     fn setup_signals(&self) {
-        let imp = imp::BlockyInstanceRow::from_instance(self);
-
-        imp.launch_button
-            .connect_clicked(glib::clone!(@weak self as this => move |_| {
-                this.launch();
-            }));
+        // Right click menu
+        let controller = gtk::GestureClick::new();
+        controller.set_button(gdk::BUTTON_SECONDARY);
+        controller.connect_pressed(glib::clone!(@weak self as this => move |c, _, x, y| this.show_context_menu(Some(c), x, y)));
+        self.add_controller(&controller);
     }
 
-    fn launch(&self) {
-        let instance_manager = BlockyInstanceManager::default();
-        let uuid = self.instance().uuid();
+    fn show_context_menu<G>(&self, controller: Option<&G>, x: f64, y: f64)
+    where
+        G: IsA<gtk::Gesture>,
+    {
+        let imp = imp::BlockyInstanceRow::from_instance(&self);
 
-        let receiver = instance_manager.launch_instance(uuid);
+        if let Some(controller) = controller {
+            controller.set_state(gtk::EventSequenceState::Claimed);
+        }
 
-        receiver.attach(None, move |update| {
-            match update {
-                Ok(update) => {
-                    info!("{:?}", update);
-                }
-                Err(err) => {
-                    error!("Error during installation: {}", err);
-                }
-            }
+        let coordinates = gdk::Rectangle::new(x as i32, y as i32, 0, 0);
 
-            glib::Continue(true)
-        });
+        imp.popover_menu
+            .get()
+            .unwrap()
+            .set_pointing_to(Some(&coordinates));
+        imp.popover_menu.get().unwrap().popup();
     }
 
     pub fn instance(&self) -> GBlockyInstance {
@@ -153,5 +169,73 @@ impl BlockyInstanceRow {
             .bind_property(prop_name, widget, widget_prop_name)
             .flags(glib::BindingFlags::SYNC_CREATE)
             .build();
+    }
+}
+
+fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
+    let actions = gio::SimpleActionGroup::new();
+    widget.insert_action_group("instance", Some(&actions));
+    let instance_manager = BlockyInstanceManager::default();
+
+    // instance.launch
+    let launch_action = gio::SimpleAction::new("launch", None);
+    launch_action.connect_activate(
+        glib::clone!(@weak instance, @weak instance_manager => move |_, _| {
+            instance_manager.launch_instance(instance.uuid());
+        }),
+    );
+    launch_action.set_enabled(false);
+    actions.add_action(&launch_action);
+
+    instance_manager.check_instance_installed(instance.uuid()).attach(
+        None,
+        glib::clone!(@weak launch_action => @default-return glib::Continue(false), move |status| {
+            launch_action.set_enabled(status);
+            glib::Continue(true)
+        }
+    ));
+
+    // instance.install
+    let install_action = gio::SimpleAction::new("install", None);
+    install_action.connect_activate(glib::clone!(@weak instance, @weak launch_action => move |_, _| {
+        let instance_manager = BlockyInstanceManager::default();
+        let dialog = BlockyInstallProgressDialog::new();
+        dialog.show();
+
+        let receiver = instance_manager.install_instance(instance.uuid());
+        receiver.attach(
+            None,
+            glib::clone!(@weak dialog, @weak launch_action => @default-return glib::Continue(false), move |update| {
+                process_install_update(update, dialog.clone().upcast(), launch_action);
+                glib::Continue(true)
+            }
+        ));
+    }));
+    actions.add_action(&install_action);
+}
+
+fn process_install_update(
+    update: libblocky::error::Result<Option<ResourceInstallationUpdate>>,
+    dialog: gtk::Dialog,
+    launch_action: gio::SimpleAction,
+) {
+    match update {
+        Ok(update) => {
+            match update {
+                None => {
+                    // Update finished
+                    launch_action.set_enabled(true);
+                    dialog.close();
+                }
+                Some(update) => {
+                    let dialog = dialog.downcast::<BlockyInstallProgressDialog>().unwrap();
+                    dialog.update_widgets(update);
+                }
+            }
+        }
+        Err(err) => {
+            error!("Error while installing instance: {}", err);
+            dialog.close();
+        }
     }
 }

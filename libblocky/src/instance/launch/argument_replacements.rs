@@ -18,10 +18,6 @@ impl ArgumentReplacements {
         classpath: String,
     ) -> Self {
         let replacements = vec![
-            ("${auth_uuid}", profile.id.clone()),
-            ("${auth_player_name}", profile.name.clone()),
-            ("${auth_access_token}", minecraft_token.to_string()),
-            ("${user_type}", "msa".to_string()),
             (
                 "${game_directory}",
                 instance.dot_minecraft_path().to_string_lossy().to_string(),

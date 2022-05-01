@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <menu id="instance_menu">
+        <section>
+            <item>
+                <attribute name="label" translatable="yes">Launch</attribute>
+                <attribute name="action">instance.launch</attribute>
+                <attribute name="hidden-when">action-disabled</attribute>
+            </item>
+            <item>
+                <attribute name="label" translatable="yes">Install / Repair</attribute>
+                <attribute name="action">instance.install</attribute>
+            </item>
+        </section>
+        <section>
+            <item>
+                <attribute name="label" translatable="yes">Remove</attribute>
+                <attribute name="action">instance.remove</attribute>
+            </item>
+        </section>
+    </menu>
+</interface>

@@ -9,11 +9,14 @@ use crate::Instance;
 use itertools::Itertools;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 impl Instance {
     pub fn install_libraries(
         &self,
-        sender: crossbeam_channel::Sender<crate::error::Result<ResourceInstallationUpdate>>,
+        sender: crossbeam_channel::Sender<crate::error::Result<Option<ResourceInstallationUpdate>>>,
+        cancel: Arc<AtomicBool>,
     ) -> Result<(), Error> {
         debug!("Installing libraries");
 
@@ -52,13 +55,17 @@ impl Instance {
                 jar_path.push(&jar_name);
 
                 // Send update
-                let _ = sender.send(Ok(ResourceInstallationUpdate {
+                let _ = sender.send(Ok(Some(ResourceInstallationUpdate {
                     resource_type: ResourceType::Library,
                     url: artifact.url.to_string(),
                     total,
                     n,
                     size: Some(artifact.size),
-                }));
+                })));
+                // Check cancel
+                if cancel.load(Ordering::Relaxed) {
+                    return Err(InstallationError::Cancelled.into());
+                }
                 let sha = hex::decode(&artifact.sha1)?;
                 download_file_check(&artifact.url, &jar_path, Some(sha))?;
             }
@@ -78,13 +85,17 @@ impl Instance {
                     &version,
                     &native_jar_name
                 );
-                let _ = sender.send(Ok(ResourceInstallationUpdate {
+                let _ = sender.send(Ok(Some(ResourceInstallationUpdate {
                     resource_type: ResourceType::Library,
                     url: native_download_url.to_string(),
                     total,
                     n,
                     size: None,
-                }));
+                })));
+                // Check cancel
+                if cancel.load(Ordering::Relaxed) {
+                    return Err(InstallationError::Cancelled.into());
+                }
                 download_file_check(&native_download_url, &native_jar_path, None)?;
 
                 // Extract

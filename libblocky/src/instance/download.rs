@@ -63,7 +63,7 @@ pub fn download_file_check(
     Ok(())
 }
 
-fn get_sha1(file: impl AsRef<Path>) -> crate::error::Result<Vec<u8>> {
+pub fn get_sha1(file: impl AsRef<Path>) -> crate::error::Result<Vec<u8>> {
     debug!(
         "Generathing SHA1 for file {}",
         file.as_ref().to_string_lossy()

@@ -7,4 +7,7 @@ pub enum LaunchError {
 
     #[error("Minecraft token is missing")]
     Unauthenticated,
+
+    #[error("Forking the game process failed")]
+    Forking,
 }

@@ -1,13 +1,18 @@
 use crate::error::Error;
 use crate::instance::download::download_file_check;
+use crate::instance::install::error::InstallationError;
 use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType};
 use crate::{consts, Instance};
 use std::fs;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 impl Instance {
     pub fn install_assets(
         &self,
-        sender: crossbeam_channel::Sender<crate::error::Result<ResourceInstallationUpdate>>,
+        sender: crossbeam_channel::Sender<crate::error::Result<Option<ResourceInstallationUpdate>>>,
+        cancel: Arc<AtomicBool>,
     ) -> Result<(), Error> {
         debug!("Installing assets");
 
@@ -37,13 +42,17 @@ impl Instance {
                 &info.hash
             );
 
-            let _ = sender.send(Ok(ResourceInstallationUpdate {
+            let _ = sender.send(Ok(Some(ResourceInstallationUpdate {
                 resource_type: ResourceType::Asset,
                 url: url.to_string(),
                 total,
                 n,
                 size: Some(info.size),
-            }));
+            })));
+            // Check cancel
+            if cancel.load(Ordering::Relaxed) {
+                return Err(InstallationError::Cancelled.into());
+            }
 
             let sha = hex::decode(&info.hash)?;
             download_file_check(&url, &asset_path, Some(sha))?;
