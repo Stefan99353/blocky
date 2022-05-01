@@ -5,6 +5,11 @@ authors = ["Stefan Rupertsberger <s.rupertsberger@gmail.com>"]
 edition = "2021"
 license = "MIT"
 
+[workspace]
+members = [
+    "libblocky"
+]
+
 [dependencies]
 anyhow = "1.0.57"
 gettext-rs = { version = "0.7.0", features = ["gettext-system"] }

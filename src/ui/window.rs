@@ -1,6 +1,7 @@
 use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
 use crate::ui::BlockyContentBox;
+use crate::ui::BlockyInstancePage;
 use crate::{config, settings, BlockyApplication};
 use adw::subclass::prelude::*;
 use gtk::prelude::*;
@@ -12,7 +13,6 @@ use uuid::Uuid;
 
 mod imp {
     use super::*;
-    use crate::ui::{BlockyInstanceGroup, BlockyInstancePage};
 
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/window.ui")]

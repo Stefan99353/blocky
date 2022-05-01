@@ -1,20 +1,17 @@
 use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
 use crate::{settings, BlockyApplication};
-use anyhow::anyhow;
-use gio::prelude::ListModelExt;
+use gio::prelude::*;
 use gio::ListStore;
 use glib::subclass::prelude::*;
-use glib::subclass::Signal;
-use glib::{Cast, MainContext, ObjectExt, StaticType};
-use glib::{ParamFlags, ParamSpecObject, ToValue};
-use glib::{ParamSpec, Value};
+use glib::{
+    Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
+    Value,
+};
 use libblocky::error::Error;
-use libblocky::gobject::{GBlockyInstance, GBlockyProfile};
-use libblocky::helpers::HelperError;
+use libblocky::gobject::GBlockyInstance;
 use libblocky::instance::launch_options::{GlobalLaunchOptions, GlobalLaunchOptionsBuilder};
 use libblocky::instance::resource_update::ResourceInstallationUpdate;
-use libblocky::Instance;
 use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -276,13 +273,17 @@ impl BlockyInstanceManager {
 
             let profile_uuid = current_profile.unwrap().uuid();
 
-            libblocky::helpers::launch_instance(
+            let launch_result = libblocky::helpers::launch_instance(
                 uuid,
                 instances_path,
                 profile_uuid,
                 profiles_path,
                 launch_options(),
             );
+
+            if let Err(err) = launch_result {
+                error!("Error while launching instance: {}", err);
+            }
         });
     }
 

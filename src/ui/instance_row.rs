@@ -1,7 +1,6 @@
 use crate::managers::BlockyInstanceManager;
-use crate::ui::BlockyApplicationWindow;
 use crate::ui::BlockyInstallProgressDialog;
-use glib::subclass::{InitializingObject, InitializingType, Signal};
+use glib::subclass::InitializingObject;
 use glib::ToValue;
 use glib::{IsA, ObjectExt, ParamSpec, Value};
 use glib::{ParamFlags, ParamSpecObject, StaticType};
@@ -140,7 +139,7 @@ impl BlockyInstanceRow {
     where
         G: IsA<gtk::Gesture>,
     {
-        let imp = imp::BlockyInstanceRow::from_instance(&self);
+        let imp = imp::BlockyInstanceRow::from_instance(self);
 
         if let Some(controller) = controller {
             controller.set_state(gtk::EventSequenceState::Claimed);
@@ -206,7 +205,7 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
         receiver.attach(
             None,
             glib::clone!(@weak dialog, @weak launch_action => @default-return glib::Continue(false), move |update| {
-                process_install_update(update, dialog.clone().upcast(), launch_action);
+                process_install_update(update, dialog.upcast(), launch_action);
                 glib::Continue(true)
             }
         ));

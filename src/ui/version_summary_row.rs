@@ -1,16 +1,14 @@
-use glib::subclass::{InitializingObject, InitializingType, Signal};
+use glib::subclass::InitializingObject;
 use glib::{IsA, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue, Value};
 use gtk::prelude::InitializingWidgetExt;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libblocky::gobject::GBlockyVersionSummary;
 use once_cell::sync::Lazy;
-use once_cell::sync::OnceCell;
 use std::cell::RefCell;
 
 mod imp {
     use super::*;
-    use glib::value::ValueTypeMismatchOrNoneError;
 
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/version_summary_row.ui")]
@@ -101,7 +99,7 @@ impl BlockyVersionSummaryRow {
     }
 
     fn setup_widgets(&self) {
-        let imp = imp::BlockyVersionSummaryRow::from_instance(&self);
+        let imp = imp::BlockyVersionSummaryRow::from_instance(self);
 
         self.bind_property("id", &imp.version_label.get(), "label");
         self.bind_property("type", &imp.type_label.get(), "label");

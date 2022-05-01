@@ -1,14 +1,10 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
-use glib::subclass::{InitializingObject, InitializingType, Signal};
-use glib::{ParamFlags, ParamSpecString};
-use glib::{ParamSpec, Value};
+use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libblocky::instance::resource_update::ResourceInstallationUpdate;
-use once_cell::sync::Lazy;
-use once_cell::sync::OnceCell;
 use std::str::FromStr;
 use uuid::Uuid;
 

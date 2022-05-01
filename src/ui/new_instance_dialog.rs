@@ -6,17 +6,14 @@ use adw::prelude::*;
 use gettextrs::gettext;
 use gio::ListStore;
 use glib::subclass::prelude::*;
-use glib::subclass::{InitializingObject, InitializingType, Signal};
-use glib::{Object, ParamSpec, Value};
-use gtk::prelude::*;
+use glib::subclass::InitializingObject;
 use gtk::subclass::prelude::*;
 use gtk::{
-    CompositeTemplate, FileChooserAction, FileChooserNative, Label, ListView, ResponseType,
-    SignalListItemFactory, SingleSelection, TemplateChild,
+    CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType, SignalListItemFactory,
+    SingleSelection, TemplateChild,
 };
 use itertools::Itertools;
-use libblocky::gobject::{GBlockyInstance, GBlockyVersionSummary};
-use libblocky::helpers::HelperError;
+use libblocky::gobject::GBlockyVersionSummary;
 use libblocky::instance::models::{VersionSummary, VersionType};
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -392,7 +389,7 @@ impl BlockyNewInstanceDialog {
             .manifest
             .borrow()
             .iter()
-            .filter(|(key, summary)| {
+            .filter(|(_key, summary)| {
                 (matches!(summary._type, VersionType::Release) && show_releases)
                     || (matches!(summary._type, VersionType::Snapshot) && show_snapshots)
                     || (matches!(summary._type, VersionType::OldBeta) && show_betas)

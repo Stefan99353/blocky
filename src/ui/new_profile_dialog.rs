@@ -1,6 +1,6 @@
 use crate::managers::BlockyProfileManager;
 use crate::ui::BlockyApplicationWindow;
-use crate::{config, utils, BlockyApplication};
+use crate::{config, utils};
 use gettextrs::gettext;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;

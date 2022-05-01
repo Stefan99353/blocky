@@ -1,8 +1,7 @@
 use crate::ui::BlockyInstanceRow;
 use adw::subclass::prelude::*;
 use gio::ListStore;
-use glib::subclass::prelude::*;
-use glib::subclass::{InitializingObject, InitializingType};
+use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
@@ -49,6 +48,7 @@ glib::wrapper! {
 }
 
 impl BlockyInstanceGroup {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).unwrap()
     }
@@ -58,7 +58,7 @@ impl BlockyInstanceGroup {
 
         imp.listbox.bind_model(Some(&model), |object| {
             let instance = object.downcast_ref::<GBlockyInstance>().unwrap();
-            BlockyInstanceRow::new(&instance).upcast::<gtk::Widget>()
+            BlockyInstanceRow::new(instance).upcast::<gtk::Widget>()
         });
 
         imp.listbox.connect_row_activated(move |_, _row| {

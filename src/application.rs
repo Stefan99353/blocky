@@ -5,8 +5,6 @@ use crate::ui::{
 };
 use crate::{config, settings};
 use adw::subclass::prelude::*;
-use gio::subclass::prelude::{ApplicationImpl, ApplicationImplExt};
-use glib::subclass::Signal;
 use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value, WeakRef};
 use gtk::gdk;
 use gtk::prelude::*;
@@ -15,7 +13,6 @@ use once_cell::sync::{Lazy, OnceCell};
 
 mod imp {
     use super::*;
-    use crate::managers::BlockyInstanceManager;
 
     pub struct BlockyApplication {
         pub profile_manager: BlockyProfileManager,

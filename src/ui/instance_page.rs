@@ -2,10 +2,7 @@ use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyInstanceGroup;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use glib::subclass::prelude::*;
-use glib::subclass::{InitializingObject, InitializingType, Signal};
-use glib::{ParamSpec, Value};
-use gtk::prelude::*;
+use glib::subclass::InitializingObject;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 
@@ -51,11 +48,9 @@ glib::wrapper! {
 
 impl BlockyInstancePage {
     fn setup_widgets(&self) {
-        let imp = imp::BlockyInstancePage::from_instance(self);
         let instance_manager = BlockyInstanceManager::default();
 
         let default_group = BlockyInstanceGroup::new();
-
         default_group.set_model(instance_manager.instances());
 
         self.add(&default_group);

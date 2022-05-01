@@ -1,13 +1,10 @@
 use crate::config;
 use crate::managers::BlockyInstanceManager;
-use crate::ui::BlockyInstanceRow;
 use adw::prelude::*;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
-use glib::types::instance_of;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
-use libblocky::gobject::GBlockyInstance;
 
 mod imp {
     use super::*;
@@ -69,7 +66,6 @@ impl BlockyContentBox {
     }
 
     fn setup_signals(&self) {
-        let imp = imp::BlockyContentBox::from_instance(self);
         let instance_manager = BlockyInstanceManager::default();
 
         instance_manager.connect_notify_local(
