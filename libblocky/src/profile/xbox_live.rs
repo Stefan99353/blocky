@@ -62,7 +62,7 @@ impl From<XboxLiveTokenResponse> for XboxLiveToken {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct XboxLiveTokenResponse {
-    issue_instant: DateTime<Utc>,
+    // issue_instant: DateTime<Utc>,
     not_after: DateTime<Utc>,
     token: String,
     display_claims: DisplayClaims,

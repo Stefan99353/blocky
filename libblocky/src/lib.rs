@@ -15,9 +15,3 @@ mod profile;
 
 pub use instance::Instance;
 pub use profile::Profile;
-
-fn test() {
-    let _x = instance::InstanceBuilder::default()
-        .name("asdf".to_string())
-        .build();
-}

@@ -7,7 +7,6 @@ use crate::profile::microsoft::MicrosoftToken;
 use crate::profile::minecraft::{MinecraftProfile, MinecraftToken};
 use crate::profile::xbox_live::XboxLiveToken;
 use crate::profile::xbox_live_security::XboxLiveSecurityToken;
-use itertools::min;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use oauth2::{

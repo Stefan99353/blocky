@@ -2,11 +2,7 @@ use crate::instance::launch::argument_replacements::ArgumentReplacements;
 use crate::instance::launch::error::LaunchError;
 use crate::instance::launch::launch_options::GlobalLaunchOptions;
 use crate::instance::launch::utils::game_arguments;
-use crate::profile::AuthenticationError;
 use crate::{Instance, Profile};
-use fork::Fork;
-use glib::types::instance_of;
-use std::os::linux::raw::stat;
 use std::process::{Command, Stdio};
 use utils::{classpath, java_executable, jvm_arguments};
 
@@ -39,7 +35,7 @@ impl Instance {
 
                 info!("Game exited with status '{:?}'", status.code());
             }
-            Err(err) => {
+            Err(_err) => {
                 return Err(LaunchError::Forking.into());
             }
         }

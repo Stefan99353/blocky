@@ -1,5 +1,3 @@
-use std::fmt::{Display, Formatter};
-
 #[derive(Debug, thiserror::Error)]
 pub enum InstallationError {
     #[error("Version '{0}' is invalid")]

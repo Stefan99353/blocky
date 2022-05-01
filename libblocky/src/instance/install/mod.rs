@@ -1,7 +1,6 @@
-use crate::instance::install::error::InstallationError;
 use crate::instance::resource_update::ResourceInstallationUpdate;
 use crate::Instance;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
 mod asset_index;
@@ -46,7 +45,7 @@ impl Instance {
             return;
         }
 
-        if let Err(err) = self.install_client(sender.clone(), cancel.clone()) {
+        if let Err(err) = self.install_client(sender.clone(), cancel) {
             let _ = sender.send(Err(err));
             return;
         }

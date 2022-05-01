@@ -1,4 +1,3 @@
-use super::HelperError;
 use crate::Profile;
 use std::collections::HashMap;
 use std::fs;

@@ -1,20 +1,18 @@
-use crate::instance::{
-    GameProperties, GamePropertiesBuilder, InstanceBuilder, ProcessPropertiesBuilder,
-};
+use crate::instance::{GamePropertiesBuilder, InstanceBuilder, ProcessPropertiesBuilder};
 use crate::Instance;
 use glib::subclass::prelude::*;
-use glib::subclass::Signal;
-use glib::{ObjectExt, ParamSpec, Value};
-use glib::{ParamFlags, ParamSpecBoolean, ParamSpecString, ParamSpecUInt};
+use glib::{
+    ObjectExt, ParamFlags, ParamSpec, ParamSpecBoolean, ParamSpecString, ParamSpecUInt, ToValue,
+    Value,
+};
 use once_cell::sync::{Lazy, OnceCell};
 use std::cell::{Cell, RefCell};
 use std::path::PathBuf;
 use std::str::FromStr;
-use uuid::{Error, Uuid};
+use uuid::Uuid;
 
 mod imp {
     use super::*;
-    use glib::ToValue;
 
     #[derive(Debug, Default)]
     pub struct GBlockyInstance {
@@ -277,10 +275,7 @@ impl From<Instance> for GBlockyInstance {
         glib::Object::new(&[
             ("uuid", &instance.uuid.to_string()),
             ("name", &instance.name),
-            (
-                "description",
-                &instance.description.unwrap_or(String::new()),
-            ),
+            ("description", &instance.description.unwrap_or_default()),
             ("version", &instance.version),
             ("instance-path", &instance.instance_path),
             ("libraries-path", &instance.game.libraries_path),
@@ -353,7 +348,7 @@ impl From<GBlockyInstance> for Instance {
         let uuid = instance.property::<String>("uuid");
         let uuid = match Uuid::from_str(&uuid) {
             Ok(uuid) => uuid,
-            Err(err) => {
+            Err(_err) => {
                 warn!("Instance UUID is not valid => Generating new one");
                 Uuid::new_v4()
             }

@@ -1,6 +1,4 @@
-use crate::helpers::HelperError;
 use crate::instance::resource_update::ResourceInstallationUpdate;
-use crate::Instance;
 use std::path::Path;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
@@ -22,7 +20,7 @@ pub fn check_install_state(
     instances_path: String,
 ) -> crate::error::Result<bool> {
     let instance = super::find_instance(instance_uuid, instances_path)?
-        .ok_or_else(|| crate::error::Error::InstanceNotFound(instance_uuid))?;
+        .ok_or(crate::error::Error::InstanceNotFound(instance_uuid))?;
 
     instance.check_installed()
 }
@@ -43,7 +41,7 @@ fn install(
             instance.unwrap()
         }
         Err(err) => {
-            let _ = sender.send(Err(err.into()));
+            let _ = sender.send(Err(err));
             return;
         }
     };

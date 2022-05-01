@@ -5,7 +5,6 @@ use crate::instance::models::AssetIndexData;
 use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType};
 use crate::Instance;
 use std::fs;
-use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;

@@ -1,8 +1,6 @@
 use glib::subclass::prelude::*;
-use glib::subclass::Signal;
 use glib::{ObjectExt, ParamFlags, ParamSpec, ParamSpecString, ToValue, Value};
 use once_cell::sync::{Lazy, OnceCell};
-use std::process::id;
 use std::str::FromStr;
 use uuid::Uuid;
 

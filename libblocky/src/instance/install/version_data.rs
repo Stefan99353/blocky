@@ -7,7 +7,6 @@ use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType}
 use crate::instance::utils::version_manifest;
 use crate::Instance;
 use std::fs;
-use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -42,7 +41,7 @@ impl Instance {
         debug!("Version '{}'", &version_summary.id);
 
         // Create instance folder
-        let mut instance_path = self.instance_path();
+        let instance_path = self.instance_path();
         trace!(
             "Creating instance folder: '{}'",
             &instance_path.to_string_lossy()

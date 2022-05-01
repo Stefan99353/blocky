@@ -80,8 +80,8 @@ impl From<MinecraftTokenResponse> for MinecraftToken {
 #[derive(Clone, Debug, Deserialize)]
 struct MinecraftTokenResponse {
     username: String,
-    roles: Vec<serde_json::Value>,
+    // roles: Vec<serde_json::Value>,
     access_token: String,
-    token_type: String,
+    // token_type: String,
     expires_in: u64,
 }

@@ -4,7 +4,6 @@ use crate::instance::install::error::InstallationError;
 use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType};
 use crate::Instance;
 use std::fs;
-use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 

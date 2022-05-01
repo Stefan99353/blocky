@@ -1,17 +1,13 @@
 use crate::instance::models::{VersionSummary, VersionType};
 use chrono::{DateTime, Utc};
 use glib::subclass::prelude::*;
-use glib::subclass::Signal;
-use glib::ParamFlags;
-use glib::{ObjectExt, ParamSpec, Value};
-use glib::{ParamSpecString, ToValue};
-use once_cell::sync::{Lazy, OnceCell};
+use glib::{ObjectExt, ParamFlags, ParamSpec, ParamSpecString, ToValue, Value};
+use once_cell::sync::Lazy;
+use std::cell::RefCell;
 use std::str::FromStr;
 
 mod imp {
     use super::*;
-    use glib::value::ValueTypeMismatchOrNoneError;
-    use std::cell::RefCell;
 
     #[derive(Debug, Default)]
     pub struct GBlockyVersionSummary {

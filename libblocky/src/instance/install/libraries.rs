@@ -8,7 +8,6 @@ use crate::instance::resource_update::{ResourceInstallationUpdate, ResourceType}
 use crate::Instance;
 use itertools::Itertools;
 use std::fs;
-use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -100,7 +99,7 @@ impl Instance {
 
                 // Extract
                 if let Some(extract) = &library.extract {
-                    let mut natives_dir = self.natives_path();
+                    let natives_dir = self.natives_path();
                     extract_native(&native_jar_path, natives_dir, &extract.exclude)?;
                 }
             }

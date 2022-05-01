@@ -1,7 +1,6 @@
 use crate::error::Error;
 use crate::instance::install::error::InstallationError;
 use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 
 pub fn extract_native(

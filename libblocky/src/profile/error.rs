@@ -1,5 +1,3 @@
-use std::fmt::{Display, Formatter};
-
 #[derive(Debug, thiserror::Error)]
 pub enum AuthenticationError {
     #[error("Failed to create TCP listener for oauth redirect url")]

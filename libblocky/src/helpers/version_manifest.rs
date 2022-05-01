@@ -1,4 +1,3 @@
-use super::HelperError;
 use crate::instance::models::VersionSummary;
 use crate::instance::utils::version_manifest;
 use std::collections::HashMap;
