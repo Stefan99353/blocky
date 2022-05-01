@@ -245,13 +245,8 @@ impl BlockyInstanceManager {
             let receiver = libblocky::helpers::install_threaded(uuid, path.clone(), cancel_flag);
 
             while let Ok(update) = receiver.recv() {
-                debug!("Received update: {:?}", &update);
-
                 g_sender
                     .send(update)
-                    .expect("Could not send update through channel");
-                g_sender
-                    .send(Ok(None))
                     .expect("Could not send update through channel");
             }
         });

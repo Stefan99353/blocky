@@ -22,37 +22,31 @@ impl Instance {
         debug!("Installing instance {}", &self.uuid);
 
         if let Err(err) = self.install_version_data(sender.clone(), cancel.clone()) {
-            warn!("{}", &err);
             let _ = sender.send(Err(err));
             return;
         }
 
         if let Err(err) = self.install_libraries(sender.clone(), cancel.clone()) {
-            warn!("{}", &err);
             let _ = sender.send(Err(err));
             return;
         }
 
         if let Err(err) = self.install_asset_index(sender.clone(), cancel.clone()) {
-            warn!("{}", &err);
             let _ = sender.send(Err(err));
             return;
         }
 
         if let Err(err) = self.install_assets(sender.clone(), cancel.clone()) {
-            warn!("{}", &err);
             let _ = sender.send(Err(err));
             return;
         }
 
         if let Err(err) = self.install_log_config(sender.clone(), cancel.clone()) {
-            warn!("{}", &err);
             let _ = sender.send(Err(err));
             return;
         }
 
         if let Err(err) = self.install_client(sender.clone(), cancel.clone()) {
-            warn!("{}", &err);
             let _ = sender.send(Err(err));
             return;
         }
