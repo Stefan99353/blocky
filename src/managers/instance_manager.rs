@@ -3,6 +3,7 @@ use crate::settings::SettingKey;
 use crate::{settings, BlockyApplication};
 use gio::prelude::*;
 use gio::ListStore;
+use glib::clone::Downgrade;
 use glib::subclass::prelude::*;
 use glib::{
     Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
@@ -185,6 +186,34 @@ impl BlockyInstanceManager {
         self.notify("instances");
 
         // Add to disk
+        thread::spawn(move || {
+            let path = settings::get_string(SettingKey::InstancesFilePath);
+            if let Err(err) = libblocky::helpers::save_instance(instance, path) {
+                error!("Error while saving instance - {}", err);
+            }
+        });
+    }
+
+    pub fn update_instance(&self, instance: libblocky::Instance) {
+        let uuid = instance.uuid;
+        let g_instance = GBlockyInstance::from(instance.clone());
+
+        let instances = self.instances();
+        for pos in 0..instances.n_items() {
+            let instance = instances
+                .item(pos)
+                .unwrap()
+                .downcast::<GBlockyInstance>()
+                .unwrap();
+
+            if instance.uuid() == uuid {
+                instances.splice(pos, 1, &vec![g_instance]);
+                self.notify("instances");
+                break;
+            }
+        }
+
+        // Save to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
             if let Err(err) = libblocky::helpers::save_instance(instance, path) {

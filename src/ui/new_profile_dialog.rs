@@ -1,6 +1,7 @@
+use crate::config;
 use crate::managers::BlockyProfileManager;
 use crate::ui::BlockyApplicationWindow;
-use crate::{config, utils};
+use crate::utils::update;
 use gettextrs::gettext;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
@@ -79,12 +80,12 @@ impl BlockyNewProfileDialog {
         self.set_view(View::Loading);
 
         let (sender, receiver) = glib::MainContext::channel::<
-            utils::StatusUpdate<String, libblocky::Profile>,
+            update::StatusUpdate<String, libblocky::Profile>,
         >(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             sender
-                .send(utils::StatusUpdate::Update(gettext(
+                .send(update::StatusUpdate::Update(gettext(
                     "Authenticating at Microsoft",
                 )))
                 .expect("Could not send through channel");
@@ -95,42 +96,42 @@ impl BlockyNewProfileDialog {
             .unwrap();
 
             sender
-                .send(utils::StatusUpdate::Update(gettext(
+                .send(update::StatusUpdate::Update(gettext(
                     "Authenticating at XBox Live",
                 )))
                 .expect("Could not send through channel");
             profile.authenticate_xbox_live().unwrap();
 
             sender
-                .send(utils::StatusUpdate::Update(gettext(
+                .send(update::StatusUpdate::Update(gettext(
                     "Authenticating at XBox Live Security",
                 )))
                 .expect("Could not send through channel");
             profile.authenticate_xbox_live_security().unwrap();
 
             sender
-                .send(utils::StatusUpdate::Update(gettext(
+                .send(update::StatusUpdate::Update(gettext(
                     "Authenticating at Minecraft",
                 )))
                 .expect("Could not send through channel");
             profile.authenticate_minecraft().unwrap();
 
             sender
-                .send(utils::StatusUpdate::Update(gettext(
+                .send(update::StatusUpdate::Update(gettext(
                     "Getting Minecraft entitlements",
                 )))
                 .expect("Could not send through channel");
             profile.set_entitlements().unwrap();
 
             sender
-                .send(utils::StatusUpdate::Update(gettext(
+                .send(update::StatusUpdate::Update(gettext(
                     "Getting Minecraft profile",
                 )))
                 .expect("Could not send through channel");
             profile.set_profile().unwrap();
 
             sender
-                .send(utils::StatusUpdate::Finish(profile))
+                .send(update::StatusUpdate::Finish(profile))
                 .expect("Could not send through channel");
         });
 
@@ -140,11 +141,11 @@ impl BlockyNewProfileDialog {
                 let imp = imp::BlockyNewProfileDialog::from_instance(&this);
 
                 match update {
-                    utils::StatusUpdate::Update(msg) => {
+                    update::StatusUpdate::Update(msg) => {
                         imp.spinner.set_spinning(true);
                         imp.status_label.set_label(&msg);
                     }
-                    utils::StatusUpdate::Finish(profile) => {
+                    update::StatusUpdate::Finish(profile) => {
                         this.add_profile(profile);
                     },
                 }

@@ -11,6 +11,10 @@
                 <attribute name="label" translatable="yes">Install / Repair</attribute>
                 <attribute name="action">instance.install</attribute>
             </item>
+            <item>
+                <attribute name="label" translatable="yes">Edit</attribute>
+                <attribute name="action">instance.edit</attribute>
+            </item>
         </section>
         <section>
             <item>

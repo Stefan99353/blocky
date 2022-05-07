@@ -1,5 +1,6 @@
 pub mod about;
 mod content_box;
+mod edit_instance_dialog;
 mod install_progress_dialog;
 mod instance_group;
 mod instance_page;

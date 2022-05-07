@@ -103,6 +103,7 @@ impl BlockyContentBox {
     }
 }
 
+#[allow(dead_code)]
 enum View {
     Ready,
     Instances,

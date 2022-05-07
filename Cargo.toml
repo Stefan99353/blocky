@@ -22,6 +22,7 @@ libblocky = { path = "libblocky", features = ["gobject", "helpers"] }
 log = "0.4.16"
 once_cell = "1.10.0"
 pretty_env_logger = "0.4.0"
+strum = { version = "0.24.0", features = ["derive"] }
 uuid = "0.8.2"
 
 [dependencies.adw]

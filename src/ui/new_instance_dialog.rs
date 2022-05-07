@@ -2,6 +2,7 @@ use crate::managers::BlockyInstanceManager;
 use crate::settings;
 use crate::settings::SettingKey;
 use crate::ui::{BlockyApplicationWindow, BlockyVersionSummaryRow};
+use crate::utils::version_summary::{fetch_manifest, filter_versions, version_list_factory};
 use adw::prelude::*;
 use gettextrs::gettext;
 use gio::ListStore;
@@ -168,6 +169,7 @@ impl BlockyNewInstanceDialog {
 
         let mut instance_builder = libblocky::instance::InstanceBuilder::default();
         instance_builder
+            .uuid(imp.uuid)
             .name(name)
             .version(version)
             .instance_path(instance_dir);
@@ -226,8 +228,7 @@ impl BlockyNewInstanceDialog {
     fn setup_widgets(&self) {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
-        imp.version_list
-            .set_factory(Some(&self.version_list_factory()));
+        imp.version_list.set_factory(Some(&version_list_factory()));
         imp.version_list
             .set_model(Some(&imp.version_selection_model));
 
@@ -242,7 +243,17 @@ impl BlockyNewInstanceDialog {
         imp.libraries_dir_label.set_text(&libraries_path);
         imp.assets_dir_label.set_text(&assets_path);
 
-        self.fetch_manifest();
+        fetch_manifest().attach(
+            None,
+            glib::clone!(@weak self as this => @default-return glib::Continue(false),
+                move |manifest| {
+                    let imp = imp::BlockyNewInstanceDialog::from_instance(&this);
+                    *imp.manifest.borrow_mut() = manifest;
+                    this.refresh_version_list();
+                    glib::Continue(true)
+                }
+            ),
+        );
     }
 
     fn setup_signals(&self) {
@@ -308,6 +319,7 @@ impl BlockyNewInstanceDialog {
             ),
         );
 
+        // Version filter
         imp.releases_filter_switch.connect_state_notify(
             glib::clone!(@weak self as this => move |_| {
                 this.refresh_version_list();
@@ -347,84 +359,23 @@ impl BlockyNewInstanceDialog {
         self.update_add_button();
     }
 
-    fn fetch_manifest(&self) {
-        // Get Version Manifest
-        let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-        thread::spawn(move || match libblocky::helpers::get_manifest() {
-            Ok(manifest) => {
-                sender
-                    .send(manifest)
-                    .expect("Could not send version manifest through channel");
-            }
-            Err(err) => {
-                error!("Error while getting version manifest: {}", err);
-                sender
-                    .send(HashMap::new())
-                    .expect("Could not send version manifest through channel");
-            }
-        });
-
-        receiver.attach(
-            None,
-            glib::clone!(@weak self as this => @default-return glib::Continue(false),
-                move |manifest| {
-                    let imp = imp::BlockyNewInstanceDialog::from_instance(&this);
-                    *imp.manifest.borrow_mut() = manifest;
-                    this.refresh_version_list();
-                    glib::Continue(true)
-                }
-            ),
-        );
-    }
-
-    fn filter_versions(&self) -> Vec<VersionSummary> {
+    fn get_filtered_versions(&self) -> Vec<VersionSummary> {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
-        let show_releases = imp.releases_filter_switch.state();
-        let show_snapshots = imp.snapshots_filter_switch.state();
-        let show_betas = imp.betas_filter_switch.state();
-        let show_alphas = imp.alphas_filter_switch.state();
-
-        let versions = imp
-            .manifest
-            .borrow()
-            .iter()
-            .filter(|(_key, summary)| {
-                (matches!(summary._type, VersionType::Release) && show_releases)
-                    || (matches!(summary._type, VersionType::Snapshot) && show_snapshots)
-                    || (matches!(summary._type, VersionType::OldBeta) && show_betas)
-                    || (matches!(summary._type, VersionType::OldAlpha) && show_alphas)
-            })
-            .sorted_by(|(_, a), (_, b)| Ord::cmp(&b.release_time, &a.release_time))
-            .map(|(_, summary)| summary.clone())
-            .collect();
-
-        versions
-    }
-
-    fn version_list_factory(&self) -> SignalListItemFactory {
-        let factory = SignalListItemFactory::new();
-
-        // Bind
-        factory.connect_bind(move |_, list_item| {
-            let version_summary = list_item
-                .item()
-                .unwrap()
-                .downcast::<GBlockyVersionSummary>()
-                .unwrap();
-
-            let row = BlockyVersionSummaryRow::new(&version_summary);
-            list_item.set_child(Some(&row));
-        });
-
-        factory
+        filter_versions(
+            &imp.manifest.borrow(),
+            imp.releases_filter_switch.state(),
+            imp.snapshots_filter_switch.state(),
+            imp.betas_filter_switch.state(),
+            imp.alphas_filter_switch.state(),
+        )
     }
 
     fn refresh_version_list(&self) {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
         let versions = self
-            .filter_versions()
+            .get_filtered_versions()
             .into_iter()
             .map(GBlockyVersionSummary::from)
             .collect::<Vec<GBlockyVersionSummary>>();

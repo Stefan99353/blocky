@@ -22,7 +22,6 @@ pub struct Instance {
     #[builder(setter(strip_option))]
     pub description: Option<String>,
     #[builder(default)]
-    #[builder(setter(strip_option))]
     pub version: String,
     #[builder(default = "String::from(\".\")")]
     pub instance_path: String,

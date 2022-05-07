@@ -47,13 +47,7 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpecString::new(
-                        "uuid",
-                        "UUID",
-                        "UUID",
-                        None,
-                        ParamFlags::READWRITE | ParamFlags::CONSTRUCT_ONLY,
-                    ),
+                    ParamSpecString::new("uuid", "UUID", "UUID", None, ParamFlags::READWRITE),
                     ParamSpecString::new("name", "Name", "Name", None, ParamFlags::READWRITE),
                     ParamSpecString::new(
                         "description",
@@ -267,6 +261,10 @@ impl GBlockyInstance {
     pub fn uuid(&self) -> Uuid {
         let uuid: String = self.property("uuid");
         Uuid::from_str(&uuid).unwrap()
+    }
+
+    pub fn name(&self) -> String {
+        self.property("name")
     }
 }
 

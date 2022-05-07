@@ -1,4 +1,5 @@
 use crate::managers::BlockyInstanceManager;
+use crate::ui::edit_instance_dialog::BlockyEditInstanceDialog;
 use crate::ui::BlockyInstallProgressDialog;
 use glib::subclass::InitializingObject;
 use glib::ToValue;
@@ -211,6 +212,15 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
         ));
     }));
     actions.add_action(&install_action);
+
+    // instance.edit
+    let edit_action = gio::SimpleAction::new("edit", None);
+    edit_action.connect_activate(glib::clone!(@weak instance => move |_, _| {
+        let instance = libblocky::Instance::from(instance);
+        let dialog = BlockyEditInstanceDialog::new(&instance.into());
+        dialog.show();
+    }));
+    actions.add_action(&edit_action);
 }
 
 fn process_install_update(

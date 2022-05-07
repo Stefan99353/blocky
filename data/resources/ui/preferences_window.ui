@@ -30,7 +30,7 @@
                                                 <child>
                                                     <object class="GtkLabel" id="default_instances_dir_label">
                                                         <property name="ellipsize">start</property>
-                                                        <property name="max_width_chars">20</property>
+                                                        <property name="max_width_chars">25</property>
                                                     </object>
                                                 </child>
                                             </object>
@@ -59,7 +59,7 @@
                                                 <child>
                                                     <object class="GtkLabel" id="default_libraries_dir_label">
                                                         <property name="ellipsize">start</property>
-                                                        <property name="max_width_chars">20</property>
+                                                        <property name="max_width_chars">25</property>
                                                     </object>
                                                 </child>
                                             </object>
@@ -88,7 +88,7 @@
                                                 <child>
                                                     <object class="GtkLabel" id="default_assets_dir_label">
                                                         <property name="ellipsize">start</property>
-                                                        <property name="max_width_chars">20</property>
+                                                        <property name="max_width_chars">25</property>
                                                     </object>
                                                 </child>
                                             </object>
@@ -268,7 +268,7 @@
                                                 <child>
                                                     <object class="GtkLabel" id="default_java_exec_label">
                                                         <property name="ellipsize">start</property>
-                                                        <property name="max_width_chars">20</property>
+                                                        <property name="max_width_chars">25</property>
                                                     </object>
                                                 </child>
                                             </object>

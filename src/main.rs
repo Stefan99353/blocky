@@ -8,7 +8,7 @@ mod managers;
 mod paths;
 mod settings;
 mod ui;
-mod utils;
+pub(crate) mod utils;
 
 use application::BlockyApplication;
 
