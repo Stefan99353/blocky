@@ -1,22 +1,14 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
-use crate::utils::version_summary::{fetch_manifest, filter_versions, version_list_factory};
 use adw::prelude::*;
-use gio::ListStore;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
-use glib::subclass::Signal;
 use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value};
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use gtk::SingleSelection;
-use libblocky::gobject::{GBlockyInstance, GBlockyVersionSummary};
-use libblocky::instance::models::VersionSummary;
+use libblocky::gobject::GBlockyInstance;
 use once_cell::sync::{Lazy, OnceCell};
 use std::cell::Cell;
-use std::cell::RefCell;
-use std::collections::HashMap;
 use strum::{EnumIter, IntoEnumIterator};
 
 mod imp {

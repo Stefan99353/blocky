@@ -1,7 +1,7 @@
 use crate::managers::BlockyInstanceManager;
 use crate::settings;
 use crate::settings::SettingKey;
-use crate::ui::{BlockyApplicationWindow, BlockyVersionSummaryRow};
+use crate::ui::BlockyApplicationWindow;
 use crate::utils::version_summary::{fetch_manifest, filter_versions, version_list_factory};
 use adw::prelude::*;
 use gettextrs::gettext;
@@ -10,17 +10,15 @@ use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
 use gtk::subclass::prelude::*;
 use gtk::{
-    CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType, SignalListItemFactory,
-    SingleSelection, TemplateChild,
+    CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType, SingleSelection,
+    TemplateChild,
 };
-use itertools::Itertools;
 use libblocky::gobject::GBlockyVersionSummary;
-use libblocky::instance::models::{VersionSummary, VersionType};
+use libblocky::instance::models::VersionSummary;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::thread;
 use uuid::Uuid;
 
 mod imp {

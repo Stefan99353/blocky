@@ -59,7 +59,7 @@ pub fn game_arguments(
     // Old style
     if let Some(args) = &version_data.minecraft_arguments {
         for argument in args.split_whitespace() {
-            arguments.push(arg_replacers.replace(&argument));
+            arguments.push(arg_replacers.replace(argument));
         }
     }
 

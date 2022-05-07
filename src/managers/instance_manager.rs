@@ -3,7 +3,6 @@ use crate::settings::SettingKey;
 use crate::{settings, BlockyApplication};
 use gio::prelude::*;
 use gio::ListStore;
-use glib::clone::Downgrade;
 use glib::subclass::prelude::*;
 use glib::{
     Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
@@ -207,7 +206,7 @@ impl BlockyInstanceManager {
                 .unwrap();
 
             if instance.uuid() == uuid {
-                instances.splice(pos, 1, &vec![g_instance]);
+                instances.splice(pos, 1, &[g_instance]);
                 self.notify("instances");
                 break;
             }
