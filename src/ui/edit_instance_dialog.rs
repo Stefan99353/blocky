@@ -1,11 +1,12 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
 use adw::prelude::*;
+use gettextrs::gettext;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
 use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value};
 use gtk::subclass::prelude::*;
-use gtk::CompositeTemplate;
+use gtk::{CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType};
 use libblocky::gobject::GBlockyInstance;
 use once_cell::sync::{Lazy, OnceCell};
 use std::cell::Cell;
@@ -39,6 +40,34 @@ mod imp {
         pub libraries_location_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub assets_location_label: TemplateChild<gtk::Label>,
+
+        // Java
+        #[template_child]
+        pub use_custom_java_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub java_exec_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub java_exec_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub use_custom_jvm_args_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub jvm_args_entry: TemplateChild<gtk::Entry>,
+        #[template_child]
+        pub use_custom_memory_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub min_memory_spinbutton: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub max_memory_spinbutton: TemplateChild<gtk::SpinButton>,
+
+        // Game
+        #[template_child]
+        pub fullscreen_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub use_custom_resolution_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub window_width_spinbutton: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub window_height_spinbutton: TemplateChild<gtk::SpinButton>,
 
         pub instance: OnceCell<GBlockyInstance>,
         pub name_valid: Cell<bool>,
@@ -163,6 +192,7 @@ impl BlockyEditInstanceDialog {
             imp.pages_list.append(&row);
         }
 
+        // General
         self.bind_property("name", &imp.name_entry.get(), "text");
         self.bind_property("description", &imp.description_entry.get(), "text");
         self.bind_property("version", &imp.version_label.get(), "label");
@@ -174,6 +204,41 @@ impl BlockyEditInstanceDialog {
             "label",
         );
         self.bind_property("assets-path", &imp.assets_location_label.get(), "label");
+
+        // Java
+        self.bind_property(
+            "use-custom-java-executable",
+            &imp.use_custom_java_expander.get(),
+            "enable-expansion",
+        );
+        self.bind_property("java-executable", &imp.java_exec_label.get(), "label");
+        self.bind_property(
+            "use-custom-jvm-arguments",
+            &imp.use_custom_jvm_args_expander.get(),
+            "enable-expansion",
+        );
+        self.bind_property("jvm-arguments", &imp.jvm_args_entry.get(), "text");
+        self.bind_property(
+            "use-custom-memory",
+            &imp.use_custom_memory_expander.get(),
+            "enable-expansion",
+        );
+        self.bind_property("jvm-min-memory", &imp.min_memory_spinbutton.get(), "value");
+        self.bind_property("jvm-max-memory", &imp.max_memory_spinbutton.get(), "value");
+
+        // Game
+        self.bind_property("use-fullscreen", &imp.fullscreen_switch.get(), "state");
+        self.bind_property(
+            "use-custom-resolution",
+            &imp.use_custom_resolution_expander.get(),
+            "enable-expansion",
+        );
+        self.bind_property("custom-width", &imp.window_width_spinbutton.get(), "value");
+        self.bind_property(
+            "custom-height",
+            &imp.window_height_spinbutton.get(),
+            "value",
+        );
     }
 
     fn setup_signals(&self) {
@@ -187,6 +252,24 @@ impl BlockyEditInstanceDialog {
                     this.set_view(view);
                 }
             }));
+
+        // Java executable
+        let (java_sender, java_receiver) =
+            glib::MainContext::channel::<String>(glib::PRIORITY_DEFAULT);
+        imp.java_exec_button
+            .connect_clicked(glib::clone!(@weak self as this => move |_| {
+                this.file_chooser(&gettext("Select Java Executable"), java_sender.clone());
+            }));
+        java_receiver.attach(
+            None,
+            glib::clone!(@weak self as this => @default-return glib::Continue(false),
+                move |path| {
+                    let imp = imp::BlockyEditInstanceDialog::from_instance(&this);
+                    imp.java_exec_label.set_label(&path);
+                    glib::Continue(true)
+                }
+            ),
+        );
     }
 
     fn update_save_button(&self) {
@@ -194,6 +277,34 @@ impl BlockyEditInstanceDialog {
 
         let sensitive = imp.name_valid.get();
         imp.save_button.set_sensitive(sensitive);
+    }
+
+    fn file_chooser(&self, title: &str, sender: glib::Sender<String>) {
+        let dialog = FileChooserNative::new(
+            Some(title),
+            Some(self),
+            FileChooserAction::Open,
+            Some(&gettext("Select")),
+            Some(&gettext("Cancel")),
+        );
+
+        dialog.connect_response(
+            glib::clone!(@strong dialog, @weak self as this => move |_, resp| {
+                dialog.destroy();
+                if resp == ResponseType::Accept {
+                    if let Some(file) = dialog.file() {
+                        if let Some(path) = file.path() {
+                            if let Some(path_string) = path.to_str() {
+                                debug!("Selected file: {}", path_string);
+                                sender.send(path_string.to_string()).expect("Could not send path through channel");
+                            }
+                        }
+                    }
+                }
+            }),
+        );
+
+        dialog.show();
     }
 
     fn set_view(&self, view: View) {

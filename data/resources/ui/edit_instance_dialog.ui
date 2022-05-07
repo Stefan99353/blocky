@@ -198,6 +198,139 @@
                                                     <object class="GtkBox">
                                                         <property name="orientation">vertical</property>
                                                         <property name="spacing">24</property>
+                                                        <!-- Group Executable -->
+                                                        <child>
+                                                            <object class="AdwPreferencesGroup">
+                                                                <property name="title" translatable="yes">Executable</property>
+                                                                <!-- Executable -->
+                                                                <child>
+                                                                    <object class="AdwExpanderRow" id="use_custom_java_expander">
+                                                                        <property name="title" translatable="yes">Custom Java Executable</property>
+                                                                        <property name="show_enable_switch">True</property>
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Java Executable</property>
+                                                                                <child>
+                                                                                    <object class="GtkButton" id="java_exec_button">
+                                                                                        <property name="valign">center</property>
+                                                                                        <child>
+                                                                                            <object class="GtkBox">
+                                                                                                <property name="spacing">6</property>
+                                                                                                <child>
+                                                                                                    <object class="GtkImage">
+                                                                                                        <property name="icon_name">folder-symbolic</property>
+                                                                                                    </object>
+                                                                                                </child>
+                                                                                                <child>
+                                                                                                    <object class="GtkLabel" id="java_exec_label">
+                                                                                                        <property name="ellipsize">start</property>
+                                                                                                        <property name="max_width_chars">25</property>
+                                                                                                    </object>
+                                                                                                </child>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                                <!-- JVM Arguments -->
+                                                                <child>
+                                                                    <object class="AdwExpanderRow" id="use_custom_jvm_args_expander">
+                                                                        <property name="title" translatable="yes">Custom JMV Arguments</property>
+                                                                        <property name="show_enable_switch">True</property>
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">JMV Arguments</property>
+                                                                                <child>
+                                                                                    <object class="GtkEntry" id="jvm_args_entry">
+                                                                                        <property name="valign">center</property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+                                                        <!-- Group Memory -->
+                                                        <child>
+                                                            <object class="AdwPreferencesGroup">
+                                                                <property name="title" translatable="yes">Memory</property>
+                                                                <!-- Memory -->
+                                                                <child>
+                                                                    <object class="AdwExpanderRow" id="use_custom_memory_expander">
+                                                                        <property name="title" translatable="yes">Custom Memory</property>
+                                                                        <property name="show_enable_switch">True</property>
+                                                                        <!-- Minimum -->
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Minimum Memory</property>
+                                                                                <child>
+                                                                                    <object class="GtkBox" id="min_memory_box">
+                                                                                        <property name="orientation">horizontal</property>
+                                                                                        <property name="spacing">6</property>
+                                                                                        <child>
+                                                                                            <object class="GtkSpinButton" id="min_memory_spinbutton">
+                                                                                                <property name="valign">center</property>
+                                                                                                <property name="adjustment">
+                                                                                                    <object class="GtkAdjustment">
+                                                                                                        <property name="upper">131072</property>
+                                                                                                        <property name="lower">512</property>
+                                                                                                        <property name="step_increment">1</property>
+                                                                                                        <property name="page_increment">10</property>
+                                                                                                    </object>
+                                                                                                </property>
+                                                                                                <property name="numeric">True</property>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                        <child>
+                                                                                            <object class="GtkLabel">
+                                                                                                <property name="label">MiB</property>
+                                                                                                <property name="valign">center</property>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                        <!-- Maximum -->
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Maximum Memory</property>
+                                                                                <child>
+                                                                                    <object class="GtkBox" id="max_memory_box">
+                                                                                        <property name="orientation">horizontal</property>
+                                                                                        <property name="spacing">6</property>
+                                                                                        <child>
+                                                                                            <object class="GtkSpinButton" id="max_memory_spinbutton">
+                                                                                                <property name="valign">center</property>
+                                                                                                <property name="adjustment">
+                                                                                                    <object class="GtkAdjustment">
+                                                                                                        <property name="upper">262144</property>
+                                                                                                        <property name="lower">1024</property>
+                                                                                                        <property name="step_increment">1</property>
+                                                                                                        <property name="page_increment">10</property>
+                                                                                                    </object>
+                                                                                                </property>
+                                                                                                <property name="numeric">True</property>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                        <child>
+                                                                                            <object class="GtkLabel">
+                                                                                                <property name="label">MiB</property>
+                                                                                                <property name="valign">center</property>
+                                                                                            </object>
+                                                                                        </child>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
                                                     </object>
                                                 </child>
                                             </object>
@@ -223,6 +356,71 @@
                                                     <object class="GtkBox">
                                                         <property name="orientation">vertical</property>
                                                         <property name="spacing">24</property>
+                                                        <!-- Group Window -->
+                                                        <child>
+                                                            <object class="AdwPreferencesGroup">
+                                                                <property name="title" translatable="yes">Window</property>
+                                                                <!-- Fullscreen -->
+                                                                <child>
+                                                                    <object class="AdwActionRow">
+                                                                        <property name="title" translatable="yes">Fullscreen</property>
+                                                                        <property name="activatable_widget">fullscreen_switch</property>
+                                                                        <child>
+                                                                            <object class="GtkSwitch" id="fullscreen_switch">
+                                                                                <property name="valign">center</property>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                                <!-- Resolution -->
+                                                                <child>
+                                                                    <object class="AdwExpanderRow" id="use_custom_resolution_expander">
+                                                                        <property name="title" translatable="yes">Custom Resolution</property>
+                                                                        <property name="show_enable_switch">True</property>
+                                                                        <!-- Width -->
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Window Width</property>
+                                                                                <child>
+                                                                                    <object class="GtkSpinButton" id="window_width_spinbutton">
+                                                                                        <property name="valign">center</property>
+                                                                                        <property name="adjustment">
+                                                                                            <object class="GtkAdjustment">
+                                                                                                <property name="upper">7680</property>
+                                                                                                <property name="lower">100</property>
+                                                                                                <property name="step_increment">1</property>
+                                                                                                <property name="page_increment">10</property>
+                                                                                            </object>
+                                                                                        </property>
+                                                                                        <property name="numeric">True</property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                        <!-- Width -->
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Window Height</property>
+                                                                                <child>
+                                                                                    <object class="GtkSpinButton" id="window_height_spinbutton">
+                                                                                        <property name="valign">center</property>
+                                                                                        <property name="adjustment">
+                                                                                            <object class="GtkAdjustment">
+                                                                                                <property name="upper">4320</property>
+                                                                                                <property name="lower">100</property>
+                                                                                                <property name="step_increment">1</property>
+                                                                                                <property name="page_increment">10</property>
+                                                                                            </object>
+                                                                                        </property>
+                                                                                        <property name="numeric">True</property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
                                                     </object>
                                                 </child>
                                             </object>
@@ -348,6 +546,8 @@
                 <widget name="instance_location_label"/>
                 <widget name="libraries_location_label"/>
                 <widget name="assets_location_label"/>
+                <widget name="java_exec_button"/>
+                <widget name="jvm_args_entry"/>
             </widgets>
         </object>
     </template>

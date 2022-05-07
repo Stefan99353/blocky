@@ -59,9 +59,9 @@ pub struct ProcessProperties {
     pub jvm_arguments: String,
     #[builder(default)]
     pub use_custom_memory: bool,
-    #[builder(default)]
+    #[builder(default = "512")]
     pub jvm_min_memory: u32,
-    #[builder(default)]
+    #[builder(default = "1024")]
     pub jvm_max_memory: u32,
     #[builder(default)]
     pub use_environment_variables: bool,
