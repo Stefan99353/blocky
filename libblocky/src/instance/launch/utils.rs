@@ -49,8 +49,16 @@ pub fn game_arguments(
 ) -> Vec<String> {
     let mut arguments = vec![];
 
+    // New arguments
     if let Some(args) = &version_data.arguments {
         for argument in args.game_arguments() {
+            arguments.push(arg_replacers.replace(&argument));
+        }
+    }
+
+    // Old style
+    if let Some(args) = &version_data.minecraft_arguments {
+        for argument in args.split_whitespace() {
             arguments.push(arg_replacers.replace(&argument));
         }
     }

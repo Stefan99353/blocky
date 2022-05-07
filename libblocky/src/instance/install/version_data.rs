@@ -40,14 +40,6 @@ impl Instance {
             .ok_or_else(|| InstallationError::Version(self.version.clone()))?;
         debug!("Version '{}'", &version_summary.id);
 
-        // Create instance folder
-        let instance_path = self.instance_path();
-        trace!(
-            "Creating instance folder: '{}'",
-            &instance_path.to_string_lossy()
-        );
-        fs::create_dir_all(&instance_path).map_err(Error::Filesystem)?;
-
         // Save version data
         let version_data_path = self.version_data_path();
         trace!(

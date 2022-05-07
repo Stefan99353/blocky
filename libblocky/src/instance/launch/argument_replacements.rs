@@ -21,6 +21,7 @@ impl ArgumentReplacements {
             ("${auth_uuid}", profile.id.clone()),
             ("${auth_player_name}", profile.name.clone()),
             ("${auth_access_token}", minecraft_token.to_string()),
+            ("${auth_session}", minecraft_token.to_string()),
             ("${user_type}", "msa".to_string()),
             (
                 "${game_directory}",
@@ -28,6 +29,10 @@ impl ArgumentReplacements {
             ),
             ("${assets_index_name}", version_data.assets.clone()),
             ("${assets_root}", instance.game.assets_path.clone()),
+            (
+                "${game_assets}",
+                instance.virtual_assets_path().to_string_lossy().to_string(),
+            ),
             (
                 "${natives_directory}",
                 instance.natives_path().to_string_lossy().to_string(),

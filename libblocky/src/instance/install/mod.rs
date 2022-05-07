@@ -1,3 +1,4 @@
+use crate::error::Error;
 use crate::instance::resource_update::ResourceInstallationUpdate;
 use crate::Instance;
 use std::sync::atomic::AtomicBool;
@@ -10,6 +11,7 @@ mod client;
 pub mod error;
 mod libraries;
 mod log_config;
+mod paths;
 mod version_data;
 
 impl Instance {
@@ -19,6 +21,12 @@ impl Instance {
         cancel: Arc<AtomicBool>,
     ) {
         debug!("Installing instance {}", &self.uuid);
+
+        // Create folders
+        if let Err(err) = self.install_paths() {
+            let _ = sender.send(Err(Error::Filesystem(err)));
+            return;
+        }
 
         if let Err(err) = self.install_version_data(sender.clone(), cancel.clone()) {
             let _ = sender.send(Err(err));

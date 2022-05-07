@@ -26,6 +26,18 @@ impl Instance {
         PathBuf::from(&self.game.assets_path)
     }
 
+    pub fn resources_path(&self) -> PathBuf {
+        let mut path = self.assets_path();
+        path.push("resources");
+        path
+    }
+
+    pub fn virtual_assets_path(&self) -> PathBuf {
+        let mut path = self.dot_minecraft_path();
+        path.push("assets");
+        path
+    }
+
     pub fn asset_index_path(&self) -> PathBuf {
         let mut path = self.assets_path();
         path.push("indexes");
@@ -41,6 +53,12 @@ impl Instance {
     pub fn dot_minecraft_path(&self) -> PathBuf {
         let mut path = self.instance_path();
         path.push(".minecraft");
+        path
+    }
+
+    pub fn dot_minecraft_resources_path(&self) -> PathBuf {
+        let mut path = self.dot_minecraft_path();
+        path.push("resources");
         path
     }
 }

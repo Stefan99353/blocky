@@ -19,6 +19,8 @@ pub struct VersionData {
     pub logging: Option<LoggingInfo>,
     #[serde(alias = "mainClass")]
     pub main_class: String,
+    #[serde(alias = "minecraftArguments")]
+    pub minecraft_arguments: Option<String>,
     #[serde(alias = "minimumLauncherVersion")]
     pub minimum_launcher_version: i32,
     #[serde(alias = "releaseTime")]
