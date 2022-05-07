@@ -61,11 +61,9 @@ impl BlockyInstanceGroup {
             BlockyInstanceRow::new(instance).upcast::<gtk::Widget>()
         });
 
-        imp.listbox.connect_row_activated(move |_, _row| {
-            info!("Activated row");
+        imp.listbox.connect_row_activated(move |_, row| {
+            row.activate_action("instance.edit", None);
         });
-
-        // model.connect_items_changed()
 
         *imp.model.borrow_mut() = Some(model);
     }

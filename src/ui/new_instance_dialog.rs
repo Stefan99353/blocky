@@ -199,13 +199,26 @@ impl BlockyNewInstanceDialog {
     #[template_callback]
     fn validate_name(&self) {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
+        let mut instance_path =
+            PathBuf::from(settings::get_string(SettingKey::DefaultInstancesDir));
 
         if imp.name_entry.text().is_empty() {
             imp.name_entry.add_css_class("error");
             imp.name_valid.set(false);
+
+            // Set path
+            instance_path.push(imp.uuid.to_string());
+            imp.instance_dir_label
+                .set_text(&instance_path.to_string_lossy().to_string());
         } else {
             imp.name_entry.remove_css_class("error");
             imp.name_valid.set(true);
+
+            // Set path
+            let name = imp.name_entry.text().to_string().replace(' ', " ");
+            instance_path.push(name);
+            imp.instance_dir_label
+                .set_text(&instance_path.to_string_lossy().to_string());
         }
 
         self.update_add_button();
