@@ -5,6 +5,11 @@ impl Instance {
     pub fn check_installed(&self) -> crate::error::Result<bool> {
         debug!("Checking if instance is installed");
 
+        let version_data_path = self.version_data_path();
+        if !version_data_path.is_file() {
+            return Ok(false);
+        }
+
         let version_data = self.read_version_data()?;
         if let Some(downloads) = &version_data.downloads {
             let mut client_path = self.dot_minecraft_path();

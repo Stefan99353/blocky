@@ -11,6 +11,25 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use uuid::Uuid;
 
+pub const UUID: &'static str = "uuid";
+pub const NAME: &'static str = "name";
+pub const DESCRIPTION: &'static str = "description";
+pub const VERSION: &'static str = "version";
+pub const INSTANCE_PATH: &'static str = "instance-path";
+pub const LIBRARIES_PATH: &'static str = "libraries-path";
+pub const ASSETS_PATH: &'static str = "assets-path";
+pub const USE_FULLSCREEN: &'static str = "use-fullscreen";
+pub const ENABLE_WINDOW_SIZE: &'static str = "enable-window-size";
+pub const WINDOW_WIDTH: &'static str = "window-width";
+pub const WINDOW_HEIGHT: &'static str = "window-height";
+pub const ENABLE_MEMORY: &'static str = "enable-memory";
+pub const MIN_MEMORY: &'static str = "min-memory";
+pub const MAX_MEMORY: &'static str = "max-memory";
+pub const ENABLE_JAVA_EXEC: &'static str = "enable-java-exec";
+pub const JAVA_EXEC: &'static str = "java-exec";
+pub const ENABLE_JVM_ARGS: &'static str = "enable-jvm-args";
+pub const JVM_ARGS: &'static str = "jvm-args";
+
 mod imp {
     use super::*;
 
@@ -23,17 +42,17 @@ mod imp {
         pub instance_path: RefCell<String>,
         pub libraries_path: RefCell<String>,
         pub assets_path: RefCell<String>,
-        pub custom_width: Cell<u32>,
-        pub custom_height: Cell<u32>,
-        pub use_custom_resolution: Cell<bool>,
         pub use_fullscreen: Cell<bool>,
-        pub use_custom_java_executable: Cell<bool>,
-        pub java_executable: RefCell<String>,
-        pub use_custom_jvm_arguments: Cell<bool>,
-        pub jvm_arguments: RefCell<String>,
-        pub use_custom_memory: Cell<bool>,
-        pub jvm_min_memory: Cell<u32>,
-        pub jvm_max_memory: Cell<u32>,
+        pub enable_window_size: Cell<bool>,
+        pub window_width: Cell<u32>,
+        pub window_height: Cell<u32>,
+        pub enable_memory: Cell<bool>,
+        pub min_memory: Cell<u32>,
+        pub max_memory: Cell<u32>,
+        pub enable_java_exec: Cell<bool>,
+        pub java_exec: RefCell<String>,
+        pub enable_jvm_args: Cell<bool>,
+        pub jvm_args: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -47,45 +66,59 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpecString::new("uuid", "UUID", "UUID", None, ParamFlags::READWRITE),
-                    ParamSpecString::new("name", "Name", "Name", None, ParamFlags::READWRITE),
+                    ParamSpecString::new(UUID, "UUID", "UUID", None, ParamFlags::READWRITE),
+                    ParamSpecString::new(NAME, "Name", "Name", None, ParamFlags::READWRITE),
                     ParamSpecString::new(
-                        "description",
+                        DESCRIPTION,
                         "Description",
                         "Description",
                         None,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecString::new(
-                        "version",
+                        VERSION,
                         "Version",
                         "Version",
                         None,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecString::new(
-                        "instance-path",
+                        INSTANCE_PATH,
                         "Instance Path",
                         "Instance Path",
                         None,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecString::new(
-                        "libraries-path",
+                        LIBRARIES_PATH,
                         "Libraries Path",
                         "Libraries Path",
                         None,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecString::new(
-                        "assets-path",
+                        ASSETS_PATH,
                         "Assets Path",
                         "Assets Path",
                         None,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecBoolean::new(
+                        USE_FULLSCREEN,
+                        "Use Fullscreen",
+                        "Use Fullscreen",
+                        false,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecBoolean::new(
+                        ENABLE_WINDOW_SIZE,
+                        "Use Custom Resolution",
+                        "Use Custom Resolution",
+                        false,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecUInt::new(
-                        "custom-width",
+                        WINDOW_WIDTH,
                         "Custom Width",
                         "Custom Width",
                         0,
@@ -94,7 +127,7 @@ mod imp {
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecUInt::new(
-                        "custom-height",
+                        WINDOW_HEIGHT,
                         "Custom Height",
                         "Custom Height",
                         0,
@@ -103,56 +136,14 @@ mod imp {
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecBoolean::new(
-                        "use-custom-resolution",
-                        "Use Custom Resolution",
-                        "Use Custom Resolution",
-                        false,
-                        ParamFlags::READWRITE,
-                    ),
-                    ParamSpecBoolean::new(
-                        "use-fullscreen",
-                        "Use Fullscreen",
-                        "Use Fullscreen",
-                        false,
-                        ParamFlags::READWRITE,
-                    ),
-                    ParamSpecBoolean::new(
-                        "use-custom-java-executable",
-                        "Use Custom Java Executable",
-                        "Use Custom Java Executable",
-                        false,
-                        ParamFlags::READWRITE,
-                    ),
-                    ParamSpecString::new(
-                        "java-executable",
-                        "Java Executable",
-                        "Java Executable",
-                        None,
-                        ParamFlags::READWRITE,
-                    ),
-                    ParamSpecBoolean::new(
-                        "use-custom-jvm-arguments",
-                        "Use Custom JVM Arguments",
-                        "Use Custom JVM Arguments",
-                        false,
-                        ParamFlags::READWRITE,
-                    ),
-                    ParamSpecString::new(
-                        "jvm-arguments",
-                        "JVM Arguments",
-                        "JVM Arguments",
-                        None,
-                        ParamFlags::READWRITE,
-                    ),
-                    ParamSpecBoolean::new(
-                        "use-custom-memory",
+                        ENABLE_MEMORY,
                         "Use Custom Memory",
                         "Use Custom Memory",
                         false,
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecUInt::new(
-                        "jvm-min-memory",
+                        MIN_MEMORY,
                         "JVM Min Memory",
                         "JVM Min Memory",
                         0,
@@ -161,12 +152,40 @@ mod imp {
                         ParamFlags::READWRITE,
                     ),
                     ParamSpecUInt::new(
-                        "jvm-max-memory",
+                        MAX_MEMORY,
                         "JVM Max Memory",
                         "JVM Max Memory",
                         0,
                         u32::MAX,
                         1024,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecBoolean::new(
+                        ENABLE_JAVA_EXEC,
+                        "Use Custom Java Executable",
+                        "Use Custom Java Executable",
+                        false,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecString::new(
+                        JAVA_EXEC,
+                        "Java Executable",
+                        "Java Executable",
+                        None,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecBoolean::new(
+                        ENABLE_JVM_ARGS,
+                        "Use Custom JVM Arguments",
+                        "Use Custom JVM Arguments",
+                        false,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecString::new(
+                        JVM_ARGS,
+                        "JVM Arguments",
+                        "JVM Arguments",
+                        None,
                         ParamFlags::READWRITE,
                     ),
                 ]
@@ -177,28 +196,24 @@ mod imp {
 
         fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
             match pspec.name() {
-                "uuid" => self.uuid.set(value.get().unwrap()).unwrap(),
-                "name" => *self.name.borrow_mut() = value.get().unwrap(),
-                "description" => *self.description.borrow_mut() = value.get().unwrap(),
-                "version" => *self.version.borrow_mut() = value.get().unwrap(),
-                "instance-path" => *self.instance_path.borrow_mut() = value.get().unwrap(),
-                "libraries-path" => *self.libraries_path.borrow_mut() = value.get().unwrap(),
-                "assets-path" => *self.assets_path.borrow_mut() = value.get().unwrap(),
-                "custom-width" => self.custom_width.set(value.get().unwrap()),
-                "custom-height" => self.custom_height.set(value.get().unwrap()),
-                "use-custom-resolution" => self.use_custom_resolution.set(value.get().unwrap()),
-                "use-fullscreen" => self.use_fullscreen.set(value.get().unwrap()),
-                "use-custom-java-executable" => {
-                    self.use_custom_java_executable.set(value.get().unwrap())
-                }
-                "java-executable" => *self.java_executable.borrow_mut() = value.get().unwrap(),
-                "use-custom-jvm-arguments" => {
-                    self.use_custom_jvm_arguments.set(value.get().unwrap())
-                }
-                "jvm-arguments" => *self.jvm_arguments.borrow_mut() = value.get().unwrap(),
-                "use-custom-memory" => self.use_custom_memory.set(value.get().unwrap()),
-                "jvm-min-memory" => self.jvm_min_memory.set(value.get().unwrap()),
-                "jvm-max-memory" => self.jvm_max_memory.set(value.get().unwrap()),
+                UUID => self.uuid.set(value.get().unwrap()).unwrap(),
+                NAME => *self.name.borrow_mut() = value.get().unwrap(),
+                DESCRIPTION => *self.description.borrow_mut() = value.get().unwrap(),
+                VERSION => *self.version.borrow_mut() = value.get().unwrap(),
+                INSTANCE_PATH => *self.instance_path.borrow_mut() = value.get().unwrap(),
+                LIBRARIES_PATH => *self.libraries_path.borrow_mut() = value.get().unwrap(),
+                ASSETS_PATH => *self.assets_path.borrow_mut() = value.get().unwrap(),
+                USE_FULLSCREEN => self.use_fullscreen.set(value.get().unwrap()),
+                ENABLE_WINDOW_SIZE => self.enable_window_size.set(value.get().unwrap()),
+                WINDOW_WIDTH => self.window_width.set(value.get().unwrap()),
+                WINDOW_HEIGHT => self.window_height.set(value.get().unwrap()),
+                ENABLE_MEMORY => self.enable_memory.set(value.get().unwrap()),
+                MIN_MEMORY => self.min_memory.set(value.get().unwrap()),
+                MAX_MEMORY => self.max_memory.set(value.get().unwrap()),
+                ENABLE_JAVA_EXEC => self.enable_java_exec.set(value.get().unwrap()),
+                JAVA_EXEC => *self.java_exec.borrow_mut() = value.get().unwrap(),
+                ENABLE_JVM_ARGS => self.enable_jvm_args.set(value.get().unwrap()),
+                JVM_ARGS => *self.jvm_args.borrow_mut() = value.get().unwrap(),
                 x => {
                     error!("Property {} not a member of GBlockyInstance", x);
                     unimplemented!()
@@ -208,24 +223,24 @@ mod imp {
 
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
-                "uuid" => self.uuid.get().to_value(),
-                "name" => self.name.borrow().to_value(),
-                "description" => self.description.borrow().to_value(),
-                "version" => self.version.borrow().to_value(),
-                "instance-path" => self.instance_path.borrow().to_value(),
-                "libraries-path" => self.libraries_path.borrow().to_value(),
-                "assets-path" => self.assets_path.borrow().to_value(),
-                "custom-width" => self.custom_width.get().to_value(),
-                "custom-height" => self.custom_height.get().to_value(),
-                "use-custom-resolution" => self.use_custom_resolution.get().to_value(),
-                "use-fullscreen" => self.use_fullscreen.get().to_value(),
-                "use-custom-java-executable" => self.use_custom_java_executable.get().to_value(),
-                "java-executable" => self.java_executable.borrow().to_value(),
-                "use-custom-jvm-arguments" => self.use_custom_jvm_arguments.get().to_value(),
-                "jvm-arguments" => self.jvm_arguments.borrow().to_value(),
-                "use-custom-memory" => self.use_custom_memory.get().to_value(),
-                "jvm-min-memory" => self.jvm_min_memory.get().to_value(),
-                "jvm-max-memory" => self.jvm_max_memory.get().to_value(),
+                UUID => self.uuid.get().to_value(),
+                NAME => self.name.borrow().to_value(),
+                DESCRIPTION => self.description.borrow().to_value(),
+                VERSION => self.version.borrow().to_value(),
+                INSTANCE_PATH => self.instance_path.borrow().to_value(),
+                LIBRARIES_PATH => self.libraries_path.borrow().to_value(),
+                ASSETS_PATH => self.assets_path.borrow().to_value(),
+                USE_FULLSCREEN => self.use_fullscreen.get().to_value(),
+                ENABLE_WINDOW_SIZE => self.enable_window_size.get().to_value(),
+                WINDOW_WIDTH => self.window_width.get().to_value(),
+                WINDOW_HEIGHT => self.window_height.get().to_value(),
+                ENABLE_MEMORY => self.enable_memory.get().to_value(),
+                MIN_MEMORY => self.min_memory.get().to_value(),
+                MAX_MEMORY => self.max_memory.get().to_value(),
+                ENABLE_JAVA_EXEC => self.enable_java_exec.get().to_value(),
+                JAVA_EXEC => self.java_exec.borrow().to_value(),
+                ENABLE_JVM_ARGS => self.enable_jvm_args.get().to_value(),
+                JVM_ARGS => self.jvm_args.borrow().to_value(),
                 x => {
                     error!("Property {} not a member of GBlockyInstance", x);
                     unimplemented!()
@@ -247,57 +262,45 @@ impl GBlockyInstance {
         instance_path.push(&uuid);
 
         glib::Object::new(&[
-            ("uuid", &uuid.to_string()),
-            (
-                "instance-path",
-                &instance_path.to_string_lossy().to_string(),
-            ),
-            ("libraries-path", &libraries_path),
-            ("assets-path", &assets_path),
+            (UUID, &uuid.to_string()),
+            (INSTANCE_PATH, &instance_path.to_string_lossy().to_string()),
+            (LIBRARIES_PATH, &libraries_path),
+            (ASSETS_PATH, &assets_path),
         ])
         .unwrap()
     }
 
     pub fn uuid(&self) -> Uuid {
-        let uuid: String = self.property("uuid");
+        let uuid: String = self.property(UUID);
         Uuid::from_str(&uuid).unwrap()
     }
 
     pub fn name(&self) -> String {
-        self.property("name")
+        self.property(NAME)
     }
 }
 
 impl From<Instance> for GBlockyInstance {
     fn from(instance: Instance) -> Self {
         glib::Object::new(&[
-            ("uuid", &instance.uuid.to_string()),
-            ("name", &instance.name),
-            ("description", &instance.description.unwrap_or_default()),
-            ("version", &instance.version),
-            ("instance-path", &instance.instance_path),
-            ("libraries-path", &instance.game.libraries_path),
-            ("assets-path", &instance.game.assets_path),
-            ("custom-width", &instance.game.custom_width),
-            ("custom-height", &instance.game.custom_height),
-            (
-                "use-custom-resolution",
-                &instance.game.use_custom_resolution,
-            ),
-            ("use-fullscreen", &instance.game.use_fullscreen),
-            (
-                "use-custom-java-executable",
-                &instance.process.use_custom_java_executable,
-            ),
-            ("java-executable", &instance.process.java_executable),
-            (
-                "use-custom-jvm-arguments",
-                &instance.process.use_custom_jvm_arguments,
-            ),
-            ("jvm-arguments", &instance.process.jvm_arguments),
-            ("use-custom-memory", &instance.process.use_custom_memory),
-            ("jvm-min-memory", &instance.process.jvm_min_memory),
-            ("jvm-max-memory", &instance.process.jvm_max_memory),
+            (UUID, &instance.uuid.to_string()),
+            (NAME, &instance.name),
+            (DESCRIPTION, &instance.description.unwrap_or_default()),
+            (VERSION, &instance.version),
+            (INSTANCE_PATH, &instance.instance_path),
+            (LIBRARIES_PATH, &instance.game.libraries_path),
+            (ASSETS_PATH, &instance.game.assets_path),
+            (USE_FULLSCREEN, &instance.game.use_fullscreen),
+            (ENABLE_WINDOW_SIZE, &instance.game.enable_window_size),
+            (WINDOW_WIDTH, &instance.game.window_width),
+            (WINDOW_HEIGHT, &instance.game.window_height),
+            (ENABLE_MEMORY, &instance.process.enable_memory),
+            (MIN_MEMORY, &instance.process.min_memory),
+            (MAX_MEMORY, &instance.process.max_memory),
+            (ENABLE_JAVA_EXEC, &instance.process.enable_java_exec),
+            (JAVA_EXEC, &instance.process.java_exec),
+            (ENABLE_JVM_ARGS, &instance.process.enable_jvm_args),
+            (JVM_ARGS, &instance.process.jvm_args),
         ])
         .unwrap()
     }
@@ -311,13 +314,10 @@ impl From<GBlockyInstance> for Instance {
 
         // Game Properties
         let libraries_path = instance
-            .property::<String>("libraries-path")
+            .property::<String>(LIBRARIES_PATH)
             .trim()
             .to_string();
-        let assets_path = instance
-            .property::<String>("assets-path")
-            .trim()
-            .to_string();
+        let assets_path = instance.property::<String>(ASSETS_PATH).trim().to_string();
 
         if !libraries_path.is_empty() {
             game_builder.libraries_path(libraries_path);
@@ -327,23 +327,23 @@ impl From<GBlockyInstance> for Instance {
         }
 
         game_builder
-            .custom_width(instance.property("custom-width"))
-            .custom_height(instance.property("custom-height"))
-            .use_custom_resolution(instance.property("use-custom-resolution"))
-            .use_fullscreen(instance.property("use-fullscreen"));
+            .use_fullscreen(instance.property(USE_FULLSCREEN))
+            .enable_window_size(instance.property(ENABLE_WINDOW_SIZE))
+            .window_width(instance.property(WINDOW_WIDTH))
+            .window_height(instance.property(WINDOW_HEIGHT));
 
         // Process Properties
         process_builder
-            .use_custom_java_executable(instance.property("use-custom-java-executable"))
-            .java_executable(instance.property("java-executable"))
-            .use_custom_jvm_arguments(instance.property("use-custom-jvm-arguments"))
-            .jvm_arguments(instance.property("jvm-arguments"))
-            .use_custom_memory(instance.property("use-custom-memory"))
-            .jvm_min_memory(instance.property("jvm-min-memory"))
-            .jvm_max_memory(instance.property("jvm-max-memory"));
+            .enable_memory(instance.property(ENABLE_MEMORY))
+            .min_memory(instance.property(MIN_MEMORY))
+            .max_memory(instance.property(MAX_MEMORY))
+            .enable_java_exec(instance.property(ENABLE_JAVA_EXEC))
+            .java_exec(instance.property(JAVA_EXEC))
+            .enable_jvm_args(instance.property(ENABLE_JVM_ARGS))
+            .jvm_args(instance.property(JVM_ARGS));
 
         // Instance
-        let uuid = instance.property::<String>("uuid");
+        let uuid = instance.property::<String>(UUID);
         let uuid = match Uuid::from_str(&uuid) {
             Ok(uuid) => uuid,
             Err(_err) => {
@@ -354,16 +354,13 @@ impl From<GBlockyInstance> for Instance {
 
         instance_builder
             .uuid(uuid)
-            .name(instance.property("name"))
-            .version(instance.property("version"))
-            .instance_path(instance.property("instance-path"))
+            .name(instance.property(NAME))
+            .version(instance.property(VERSION))
+            .instance_path(instance.property(INSTANCE_PATH))
             .game(game_builder.build().unwrap())
             .process(process_builder.build().unwrap());
 
-        let description = instance
-            .property::<String>("description")
-            .trim()
-            .to_string();
+        let description = instance.property::<String>(DESCRIPTION).trim().to_string();
         if !description.is_empty() {
             instance_builder.description(description);
         }

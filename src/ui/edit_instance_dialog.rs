@@ -7,6 +7,7 @@ use glib::subclass::InitializingObject;
 use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value};
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType};
+use libblocky::gobject::instance;
 use libblocky::gobject::GBlockyInstance;
 use once_cell::sync::{Lazy, OnceCell};
 use std::cell::Cell;
@@ -35,35 +36,35 @@ mod imp {
         #[template_child]
         pub uuid_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub instance_location_label: TemplateChild<gtk::Label>,
+        pub instance_path_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub libraries_location_label: TemplateChild<gtk::Label>,
+        pub libraries_path_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub assets_location_label: TemplateChild<gtk::Label>,
+        pub assets_path_label: TemplateChild<gtk::Label>,
 
         // Java
         #[template_child]
-        pub use_custom_java_expander: TemplateChild<adw::ExpanderRow>,
+        pub override_memory_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub min_memory_spinbutton: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub max_memory_spinbutton: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub override_java_exec_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub java_exec_button: TemplateChild<gtk::Button>,
         #[template_child]
         pub java_exec_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub use_custom_jvm_args_expander: TemplateChild<adw::ExpanderRow>,
+        pub override_jvm_args_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub jvm_args_entry: TemplateChild<gtk::Entry>,
-        #[template_child]
-        pub use_custom_memory_expander: TemplateChild<adw::ExpanderRow>,
-        #[template_child]
-        pub min_memory_spinbutton: TemplateChild<gtk::SpinButton>,
-        #[template_child]
-        pub max_memory_spinbutton: TemplateChild<gtk::SpinButton>,
 
         // Game
         #[template_child]
         pub fullscreen_switch: TemplateChild<gtk::Switch>,
         #[template_child]
-        pub use_custom_resolution_expander: TemplateChild<adw::ExpanderRow>,
+        pub override_window_size_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub window_width_spinbutton: TemplateChild<gtk::SpinButton>,
         #[template_child]
@@ -193,49 +194,69 @@ impl BlockyEditInstanceDialog {
         }
 
         // General
-        self.bind_property("name", &imp.name_entry.get(), "text");
-        self.bind_property("description", &imp.description_entry.get(), "text");
-        self.bind_property("version", &imp.version_label.get(), "label");
-        self.bind_property("uuid", &imp.uuid_label.get(), "label");
-        self.bind_property("instance-path", &imp.instance_location_label.get(), "label");
+        self.bind_property(instance::NAME, &imp.name_entry.get(), "text");
+        self.bind_property(instance::DESCRIPTION, &imp.description_entry.get(), "text");
+        self.bind_property(instance::VERSION, &imp.version_label.get(), "label");
+        self.bind_property(instance::UUID, &imp.uuid_label.get(), "label");
         self.bind_property(
-            "libraries-path",
-            &imp.libraries_location_label.get(),
+            instance::INSTANCE_PATH,
+            &imp.instance_path_label.get(),
             "label",
         );
-        self.bind_property("assets-path", &imp.assets_location_label.get(), "label");
+        self.bind_property(
+            instance::LIBRARIES_PATH,
+            &imp.libraries_path_label.get(),
+            "label",
+        );
+        self.bind_property(instance::ASSETS_PATH, &imp.assets_path_label.get(), "label");
 
         // Java
         self.bind_property(
-            "use-custom-java-executable",
-            &imp.use_custom_java_expander.get(),
+            instance::ENABLE_MEMORY,
+            &imp.override_memory_expander.get(),
             "enable-expansion",
         );
-        self.bind_property("java-executable", &imp.java_exec_label.get(), "label");
         self.bind_property(
-            "use-custom-jvm-arguments",
-            &imp.use_custom_jvm_args_expander.get(),
-            "enable-expansion",
+            instance::MIN_MEMORY,
+            &imp.min_memory_spinbutton.get(),
+            "value",
         );
-        self.bind_property("jvm-arguments", &imp.jvm_args_entry.get(), "text");
         self.bind_property(
-            "use-custom-memory",
-            &imp.use_custom_memory_expander.get(),
+            instance::MAX_MEMORY,
+            &imp.max_memory_spinbutton.get(),
+            "value",
+        );
+        self.bind_property(
+            instance::ENABLE_JAVA_EXEC,
+            &imp.override_java_exec_expander.get(),
             "enable-expansion",
         );
-        self.bind_property("jvm-min-memory", &imp.min_memory_spinbutton.get(), "value");
-        self.bind_property("jvm-max-memory", &imp.max_memory_spinbutton.get(), "value");
+        self.bind_property(instance::JAVA_EXEC, &imp.java_exec_label.get(), "label");
+        self.bind_property(
+            instance::ENABLE_JVM_ARGS,
+            &imp.override_jvm_args_expander.get(),
+            "enable-expansion",
+        );
+        self.bind_property(instance::JVM_ARGS, &imp.jvm_args_entry.get(), "text");
 
         // Game
-        self.bind_property("use-fullscreen", &imp.fullscreen_switch.get(), "state");
         self.bind_property(
-            "use-custom-resolution",
-            &imp.use_custom_resolution_expander.get(),
+            instance::USE_FULLSCREEN,
+            &imp.fullscreen_switch.get(),
+            "state",
+        );
+        self.bind_property(
+            instance::ENABLE_WINDOW_SIZE,
+            &imp.override_window_size_expander.get(),
             "enable-expansion",
         );
-        self.bind_property("custom-width", &imp.window_width_spinbutton.get(), "value");
         self.bind_property(
-            "custom-height",
+            instance::WINDOW_WIDTH,
+            &imp.window_width_spinbutton.get(),
+            "value",
+        );
+        self.bind_property(
+            instance::WINDOW_HEIGHT,
             &imp.window_height_spinbutton.get(),
             "value",
         );

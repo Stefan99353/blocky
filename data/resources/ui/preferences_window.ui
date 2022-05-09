@@ -1,6 +1,239 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
     <template class="BlockyPreferencesWindow" parent="AdwPreferencesWindow">
+        <!-- Minecraft Page -->
+        <child>
+            <object class="AdwPreferencesPage">
+                <property name="icon_name">applications-games-symbolic</property>
+                <property name="title" translatable="yes">Minecraft</property>
+
+                <!-- Window Group -->
+                <child>
+                    <object class="AdwPreferencesGroup">
+                        <property name="title" translatable="yes">Window</property>
+
+                        <!-- Fullscreen -->
+                        <child>
+                            <object class="AdwActionRow">
+                                <property name="title" translatable="yes">Enable Fullscreen</property>
+                                <property name="subtitle" translatable="yes">Start Minecraft in Fullscreen (F11)</property>
+                                <property name="use_underline">True</property>
+                                <property name="activatable_widget">fullscreen_switch</property>
+                                <child>
+                                    <object class="GtkSwitch" id="fullscreen_switch">
+                                        <property name="valign">center</property>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
+
+                        <!-- Window Size -->
+                        <child>
+                            <object class="AdwExpanderRow" id="enable_window_size_expander">
+                                <property name="title" translatable="yes">Enable Window Size</property>
+                                <property name="subtitle" translatable="yes">Launches Minecraft with a custom resolution</property>
+                                <property name="show_enable_switch">True</property>
+                                <property name="use_underline">True</property>
+                                <!-- Width -->
+                                <child>
+                                    <object class="AdwActionRow">
+                                        <property name="title" translatable="yes">Window Width</property>
+                                        <property name="subtitle" translatable="yes">Game window width for instances</property>
+                                        <property name="use_underline">True</property>
+                                        <child>
+                                            <object class="GtkSpinButton" id="window_width_spinbutton">
+                                                <property name="valign">center</property>
+                                                <property name="numeric">True</property>
+                                                <property name="adjustment">
+                                                    <object class="GtkAdjustment">
+                                                        <property name="upper">10000</property>
+                                                        <property name="lower">1</property>
+                                                        <property name="step_increment">1</property>
+                                                        <property name="page_increment">10</property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                                <!-- Height -->
+                                <child>
+                                    <object class="AdwActionRow">
+                                        <property name="title" translatable="yes">Window Height</property>
+                                        <property name="subtitle" translatable="yes">Game window height for instances</property>
+                                        <property name="use_underline">True</property>
+                                        <child>
+                                            <object class="GtkSpinButton" id="window_height_spinbutton">
+                                                <property name="valign">center</property>
+                                                <property name="numeric">True</property>
+                                                <property name="adjustment">
+                                                    <object class="GtkAdjustment">
+                                                        <property name="upper">10000</property>
+                                                        <property name="lower">1</property>
+                                                        <property name="step_increment">1</property>
+                                                        <property name="page_increment">10</property>
+                                                    </object>
+                                                </property>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
+
+                    </object>
+                </child>
+
+                <!-- Memory Group -->
+                <child>
+                    <object class="AdwPreferencesGroup">
+                        <property name="title" translatable="yes">Memory</property>
+
+                        <!-- Memory -->
+                        <child>
+                            <object class="AdwExpanderRow" id="enable_memory_expander">
+                                <property name="title" translatable="yes">Enable Memory</property>
+                                <property name="subtitle" translatable="yes">Launches Minecraft with custom memory allocation</property>
+                                <property name="show_enable_switch">True</property>
+                                <property name="use_underline">True</property>
+                                <!-- Minimum -->
+                                <child>
+                                    <object class="AdwActionRow">
+                                        <property name="title" translatable="yes">Minimum Memory</property>
+                                        <property name="subtitle" translatable="yes">Minimum memory allocated to the game</property>
+                                        <property name="use_underline">True</property>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">6</property>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="min_memory_spinbutton">
+                                                        <property name="valign">center</property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="upper">131072</property>
+                                                                <property name="lower">512</property>
+                                                                <property name="step_increment">1</property>
+                                                                <property name="page_increment">10</property>
+                                                            </object>
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">MiB</property>
+                                                        <property name="valign">center</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                                <!-- Maximum -->
+                                <child>
+                                    <object class="AdwActionRow">
+                                        <property name="title" translatable="yes">Maximum Memory</property>
+                                        <property name="subtitle" translatable="yes">Maximum memory allocated to the game</property>
+                                        <property name="use_underline">True</property>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">6</property>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="max_memory_spinbutton">
+                                                        <property name="valign">center</property>
+                                                        <property name="numeric">True</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment">
+                                                                <property name="upper">262144</property>
+                                                                <property name="lower">512</property>
+                                                                <property name="step_increment">1</property>
+                                                                <property name="page_increment">10</property>
+                                                            </object>
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">MiB</property>
+                                                        <property name="valign">center</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+
+                            </object>
+                        </child>
+
+                    </object>
+                </child>
+
+                <!-- Java Group -->
+                <child>
+                    <object class="AdwPreferencesGroup">
+                        <property name="title" translatable="yes">Java</property>
+
+                        <!-- Java Executable -->
+                        <child>
+                            <object class="AdwActionRow">
+                                <property name="title" translatable="yes">Java Executable</property>
+                                <property name="subtitle" translatable="yes">Java executable used to run the game</property>
+                                <property name="use_underline">True</property>
+                                <child>
+                                    <object class="GtkButton" id="java_exec_button">
+                                        <property name="valign">center</property>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="spacing">6</property>
+                                                <child>
+                                                    <object class="GtkImage">
+                                                        <property name="icon_name">folder-symbolic</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLabel" id="java_exec_label">
+                                                        <property name="ellipsize">start</property>
+                                                        <property name="max_width_chars">25</property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
+
+                        <!-- JVM Arguments -->
+                        <child>
+                            <object class="AdwExpanderRow" id="enable_jvm_args_expander">
+                                <property name="title" translatable="yes">Enable JVM Arguments</property>
+                                <property name="subtitle" translatable="yes">Use these JVM Arguments to run the game</property>
+                                <property name="show_enable_switch">True</property>
+                                <property name="use_underline">True</property>
+                                <!-- Arguments -->
+                                <child>
+                                    <object class="AdwActionRow">
+                                        <property name="title" translatable="yes">JVM Arguments</property>
+                                        <property name="use_underline">True</property>
+                                        <child>
+                                            <object class="GtkEntry" id="jvm_args_entry">
+                                                <property name="valign">center</property>
+                                                <property name="hexpand">True</property>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
+
+                    </object>
+                </child>
+
+            </object>
+        </child>
         <!-- Launcher Page -->
         <child>
             <object class="AdwPreferencesPage">
@@ -10,14 +243,14 @@
                     <!-- Folders Group -->
                     <object class="AdwPreferencesGroup">
                         <property name="title" translatable="yes">Folders</property>
-                        <!-- Default instances dir -->
+                        <!-- Instances -->
                         <child>
                             <object class="AdwActionRow">
                                 <property name="title" translatable="yes">Instances Directory</property>
                                 <property name="subtitle" translatable="yes">Default folder for new instances</property>
                                 <property name="use_underline">True</property>
                                 <child>
-                                    <object class="GtkButton" id="default_instances_dir_button">
+                                    <object class="GtkButton" id="instances_dir_button">
                                         <property name="valign">center</property>
                                         <child>
                                             <object class="GtkBox">
@@ -28,7 +261,7 @@
                                                     </object>
                                                 </child>
                                                 <child>
-                                                    <object class="GtkLabel" id="default_instances_dir_label">
+                                                    <object class="GtkLabel" id="instances_dir_label">
                                                         <property name="ellipsize">start</property>
                                                         <property name="max_width_chars">25</property>
                                                     </object>
@@ -39,14 +272,14 @@
                                 </child>
                             </object>
                         </child>
-                        <!-- Default libraries dir -->
+                        <!-- Libraries -->
                         <child>
                             <object class="AdwActionRow">
                                 <property name="title" translatable="yes">Libraries Directory</property>
                                 <property name="subtitle" translatable="yes">Default folder for Minecraft libraries</property>
                                 <property name="use_underline">True</property>
                                 <child>
-                                    <object class="GtkButton" id="default_libraries_dir_button">
+                                    <object class="GtkButton" id="libraries_dir_button">
                                         <property name="valign">center</property>
                                         <child>
                                             <object class="GtkBox">
@@ -57,7 +290,7 @@
                                                     </object>
                                                 </child>
                                                 <child>
-                                                    <object class="GtkLabel" id="default_libraries_dir_label">
+                                                    <object class="GtkLabel" id="libraries_dir_label">
                                                         <property name="ellipsize">start</property>
                                                         <property name="max_width_chars">25</property>
                                                     </object>
@@ -68,14 +301,14 @@
                                 </child>
                             </object>
                         </child>
-                        <!-- Default assets dir -->
+                        <!-- Assets -->
                         <child>
                             <object class="AdwActionRow">
                                 <property name="title" translatable="yes">Assets Directory</property>
                                 <property name="subtitle" translatable="yes">Default folder for Minecraft assets</property>
                                 <property name="use_underline">True</property>
                                 <child>
-                                    <object class="GtkButton" id="default_assets_dir_button">
+                                    <object class="GtkButton" id="assets_dir_button">
                                         <property name="valign">center</property>
                                         <child>
                                             <object class="GtkBox">
@@ -86,221 +319,13 @@
                                                     </object>
                                                 </child>
                                                 <child>
-                                                    <object class="GtkLabel" id="default_assets_dir_label">
+                                                    <object class="GtkLabel" id="assets_dir_label">
                                                         <property name="ellipsize">start</property>
                                                         <property name="max_width_chars">25</property>
                                                     </object>
                                                 </child>
                                             </object>
                                         </child>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                    </object>
-                </child>
-            </object>
-        </child>
-        <!-- Minecraft Page -->
-        <child>
-            <object class="AdwPreferencesPage">
-                <property name="icon_name">applications-games-symbolic</property>
-                <property name="title" translatable="yes">Minecraft</property>
-                <!-- Window Group -->
-                <child>
-                    <object class="AdwPreferencesGroup">
-                        <property name="title" translatable="yes">Window</property>
-                        <!-- Default Fullscreen -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Start in Fullscreen</property>
-                                <property name="subtitle" translatable="yes">Start Minecraft in Fullscreen (F11)</property>
-                                <property name="use_underline">True</property>
-                                <property name="activatable_widget">default_fullscreen_switch</property>
-                                <child>
-                                    <object class="GtkSwitch" id="default_fullscreen_switch">
-                                        <property name="valign">center</property>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                        <!-- Default Width -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Window Width</property>
-                                <property name="subtitle" translatable="yes">Default window width for instances</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                    <object class="GtkSpinButton" id="default_width_spinbutton">
-                                        <property name="valign">center</property>
-                                        <property name="adjustment">
-                                            <object class="GtkAdjustment">
-                                                <property name="upper">7680</property>
-                                                <property name="lower">100</property>
-                                                <property name="step_increment">1</property>
-                                                <property name="page_increment">10</property>
-                                            </object>
-                                        </property>
-                                        <property name="numeric">True</property>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                        <!-- Default Height -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Window Height</property>
-                                <property name="subtitle" translatable="yes">Default window height for instances</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                    <object class="GtkSpinButton" id="default_height_spinbutton">
-                                        <property name="valign">center</property>
-                                        <property name="adjustment">
-                                            <object class="GtkAdjustment">
-                                                <property name="upper">4320</property>
-                                                <property name="lower">100</property>
-                                                <property name="step_increment">1</property>
-                                                <property name="page_increment">10</property>
-                                            </object>
-                                        </property>
-                                        <property name="numeric">True</property>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                    </object>
-                </child>
-                <!-- Memory Group -->
-                <child>
-                    <object class="AdwPreferencesGroup">
-                        <property name="title" translatable="yes">Memory</property>
-                        <!-- Default Min Memory -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Minimum Memory</property>
-                                <property name="subtitle" translatable="yes">Default minimum memory for instances</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                    <object class="GtkBox">
-                                        <property name="orientation">horizontal</property>
-                                        <property name="spacing">6</property>
-                                        <child>
-                                            <object class="GtkSpinButton" id="default_min_memory_spinbutton">
-                                                <property name="valign">center</property>
-                                                <property name="adjustment">
-                                                    <object class="GtkAdjustment">
-                                                        <property name="upper">131072</property>
-                                                        <property name="lower">512</property>
-                                                        <property name="step_increment">1</property>
-                                                        <property name="page_increment">10</property>
-                                                    </object>
-                                                </property>
-                                                <property name="numeric">True</property>
-                                            </object>
-                                        </child>
-                                        <child>
-                                            <object class="GtkLabel">
-                                                <property name="label">MiB</property>
-                                                <property name="valign">center</property>
-                                            </object>
-                                        </child>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                        <!-- Default Max Memory -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Maximum Memory</property>
-                                <property name="subtitle" translatable="yes">Default maximum memory for instances</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                    <object class="GtkBox">
-                                        <property name="orientation">horizontal</property>
-                                        <property name="spacing">6</property>
-                                        <child>
-                                            <object class="GtkSpinButton" id="default_max_memory_spinbutton">
-                                                <property name="valign">center</property>
-                                                <property name="adjustment">
-                                                    <object class="GtkAdjustment">
-                                                        <property name="upper">262144</property>
-                                                        <property name="lower">1024</property>
-                                                        <property name="step_increment">1</property>
-                                                        <property name="page_increment">10</property>
-                                                    </object>
-                                                </property>
-                                                <property name="numeric">True</property>
-                                            </object>
-                                        </child>
-                                        <child>
-                                            <object class="GtkLabel">
-                                                <property name="label">MiB</property>
-                                                <property name="valign">center</property>
-                                            </object>
-                                        </child>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                    </object>
-                </child>
-                <!-- Java Group -->
-                <child>
-                    <object class="AdwPreferencesGroup">
-                        <property name="title" translatable="yes">Java</property>
-                        <!-- Java Executable -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Java Executable</property>
-                                <property name="subtitle" translatable="yes">Default Java executable used by instances</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                    <object class="GtkButton" id="default_java_exec_button">
-                                        <property name="valign">center</property>
-                                        <child>
-                                            <object class="GtkBox">
-                                                <property name="spacing">6</property>
-                                                <child>
-                                                    <object class="GtkImage">
-                                                        <property name="icon_name">folder-symbolic</property>
-                                                    </object>
-                                                </child>
-                                                <child>
-                                                    <object class="GtkLabel" id="default_java_exec_label">
-                                                        <property name="ellipsize">start</property>
-                                                        <property name="max_width_chars">25</property>
-                                                    </object>
-                                                </child>
-                                            </object>
-                                        </child>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                        <!-- Enable JVM Arguments -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">Enable JVM Arguments</property>
-                                <property name="subtitle" translatable="yes">Enable default JVM Arguments for instances</property>
-                                <property name="use_underline">True</property>
-                                <property name="activatable_widget">default_use_jvm_args_switch</property>
-                                <child>
-                                    <object class="GtkSwitch" id="default_use_jvm_args_switch">
-                                        <property name="valign">center</property>
-                                    </object>
-                                </child>
-                            </object>
-                        </child>
-                        <!-- JVM Arguments -->
-                        <child>
-                            <object class="AdwActionRow">
-                                <property name="title" translatable="yes">JVM Arguments</property>
-                                <property name="subtitle" translatable="yes">Default JVM Arguments for instances</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                    <object class="GtkEntry" id="default_jvm_args_text">
-                                        <property name="valign">center</property>
-                                        <property name="hexpand">True</property>
                                     </object>
                                 </child>
                             </object>

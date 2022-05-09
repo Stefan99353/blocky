@@ -75,17 +75,17 @@ pub fn jvm_arguments(
     let mut arguments = vec![];
 
     // Add memory options
-    if instance.process.use_custom_memory {
-        arguments.push(format!("-Xms{}M", instance.process.jvm_min_memory));
-        arguments.push(format!("-Xmx{}M", instance.process.jvm_max_memory));
+    if instance.process.enable_memory {
+        arguments.push(format!("-Xms{}M", instance.process.min_memory));
+        arguments.push(format!("-Xmx{}M", instance.process.max_memory));
     } else if options.use_custom_memory {
         arguments.push(format!("-Xms{}M", options.jvm_min_memory));
         arguments.push(format!("-Xmx{}M", options.jvm_max_memory));
     }
 
     // Other arguments
-    if instance.process.use_custom_jvm_arguments {
-        for argument in instance.process.jvm_arguments.split_whitespace() {
+    if instance.process.enable_jvm_args {
+        for argument in instance.process.jvm_args.split_whitespace() {
             arguments.push(arg_replacers.replace(argument));
         }
     } else if let Some(args) = &version_data.arguments {
@@ -112,9 +112,9 @@ pub fn jvm_arguments(
 }
 
 pub fn java_executable(instance: &Instance, options: &GlobalLaunchOptions) -> String {
-    if instance.process.use_custom_java_executable && !instance.process.java_executable.is_empty() {
+    if instance.process.enable_java_exec && !instance.process.java_exec.is_empty() {
         // Use instance specified
-        return instance.process.java_executable.clone();
+        return instance.process.java_exec.clone();
     } else if !options.java_executable.is_empty() {
         // Global
         return options.java_executable.clone();

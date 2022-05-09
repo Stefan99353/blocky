@@ -2,51 +2,59 @@
 <schemalist>
   <schema path="/at/stefan99353/Blocky/" id="@app-id@" gettext-domain="@gettext-package@">
     <!-- Launcher Page -->
-    <key name="default-instances-dir" type="s">
+    <key name="instances-dir" type="s">
       <default>"NULL"</default>
       <summary>Default folder for new instances</summary>
     </key>
-    <key name="default-libraries-dir" type="s">
+    <key name="libraries-dir" type="s">
       <default>"NULL"</default>
       <summary>Default folder for Minecraft libraries</summary>
     </key>
-    <key name="default-assets-dir" type="s">
+    <key name="assets-dir" type="s">
       <default>"NULL"</default>
       <summary>Default folder for Minecraft assets</summary>
     </key>
 
     <!-- Minecraft Page -->
-    <key name="default-fullscreen" type="b">
+    <key name="use-fullscreen" type="b">
       <default>false</default>
       <summary>Start Minecraft in Fullscreen (F11)</summary>
     </key>
-    <key name="default-width" type="i">
-      <default>1280</default>
-      <summary>Default window width for instances</summary>
-    </key>
-    <key name="default-height" type="i">
-      <default>720</default>
-      <summary>Default window height for instances</summary>
-    </key>
-    <key name="default-min-memory" type="i">
-      <default>1024</default>
-      <summary>Default minimum memory for instances</summary>
-    </key>
-    <key name="default-max-memory" type="i">
-      <default>2048</default>
-      <summary>Default maximum memory for instances</summary>
-    </key>
-    <key name="default-java-exec" type="s">
-      <default>"java"</default>
-      <summary>Default Java executable used by instances</summary>
-    </key>
-    <key name="default-use-jvm-args" type="b">
+    <key name="enable-window-size" type="b">
       <default>false</default>
-      <summary>Enable default JVM Arguments for instances</summary>
+      <summary>Launches Minecraft with a custom resolution</summary>
     </key>
-    <key name="default-jvm-args" type="s">
+    <key name="game-window-width" type="i">
+      <default>1280</default>
+      <summary>Game window width for instances</summary>
+    </key>
+    <key name="game-window-height" type="i">
+      <default>720</default>
+      <summary>Game window height for instances</summary>
+    </key>
+    <key name="enable-memory" type="b">
+      <default>true</default>
+      <summary>Launches Minecraft with custom memory allocation</summary>
+    </key>
+    <key name="min-memory" type="i">
+      <default>1024</default>
+      <summary>Minimum memory allocated to the gam</summary>
+    </key>
+    <key name="max-memory" type="i">
+      <default>2048</default>
+      <summary>Maximum memory allocated to the gam</summary>
+    </key>
+    <key name="java-exec" type="s">
+      <default>"java"</default>
+      <summary>Java executable used to run the game</summary>
+    </key>
+    <key name="enable-jvm-args" type="b">
+      <default>false</default>
+      <summary>Use these JVM Arguments to run the game</summary>
+    </key>
+    <key name="jvm-args" type="s">
       <default>""</default>
-      <summary>Default JVM Arguments for instances</summary>
+      <summary>JVM Arguments</summary>
     </key>
 
     <!-- State -->

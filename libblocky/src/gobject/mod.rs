@@ -1,4 +1,4 @@
-mod instance;
+pub mod instance;
 mod profile;
 mod version_summary;
 

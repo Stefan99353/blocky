@@ -23,6 +23,7 @@ use uuid::Uuid;
 
 mod imp {
     use super::*;
+    use std::fmt::Formatter;
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/new_instance_dialog.ui")]
@@ -152,6 +153,7 @@ impl BlockyNewInstanceDialog {
     fn add_button_clicked(&self) {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
+        let uuid = imp.uuid;
         let name = imp.name_entry.text().to_string();
         let description = imp.description_entry.text().to_string();
         let version = match imp.version_selection_model.selected_item() {
@@ -161,37 +163,47 @@ impl BlockyNewInstanceDialog {
             }
             Some(version) => version.downcast::<GBlockyVersionSummary>().unwrap().id(),
         };
-        let instance_dir = imp.instance_dir_label.label().to_string();
-        let libraries_dir = imp.libraries_dir_label.label().to_string();
-        let assets_dir = imp.assets_dir_label.label().to_string();
+        let instance_path = imp.instance_dir_label.label().to_string();
+        let libraries_path = imp.libraries_dir_label.label().to_string();
+        let assets_path = imp.assets_dir_label.label().to_string();
+        let use_fullscreen = settings::get_bool(SettingKey::UseFullscreen);
+        let window_width = settings::get_integer(SettingKey::GameWindowWidth);
+        let window_height = settings::get_integer(SettingKey::GameWindowHeight);
+        let min_memory = settings::get_integer(SettingKey::MinMemory);
+        let max_memory = settings::get_integer(SettingKey::MaxMemory);
+        let java_exec = settings::get_string(SettingKey::JavaExec);
 
         let mut instance_builder = libblocky::instance::InstanceBuilder::default();
+        let mut game_properties_builder = libblocky::instance::GamePropertiesBuilder::default();
+        let mut process_properties_builder =
+            libblocky::instance::ProcessPropertiesBuilder::default();
+
+        game_properties_builder
+            .libraries_path(libraries_path)
+            .assets_path(assets_path)
+            .use_fullscreen(use_fullscreen)
+            .window_width(window_width as u32)
+            .window_height(window_height as u32);
+
+        process_properties_builder
+            .min_memory(min_memory as u32)
+            .max_memory(max_memory as u32)
+            .java_exec(java_exec);
+
         instance_builder
-            .uuid(imp.uuid)
+            .uuid(uuid)
             .name(name)
             .version(version)
-            .instance_path(instance_dir);
+            .instance_path(instance_path)
+            .game(game_properties_builder.build().unwrap())
+            .process(process_properties_builder.build().unwrap());
 
         if !description.is_empty() {
             instance_builder.description(description);
         }
 
-        let game_properties = libblocky::instance::GamePropertiesBuilder::default()
-            .libraries_path(libraries_dir)
-            .assets_path(assets_dir)
-            .build()
-            .unwrap();
-
-        let process_properties = libblocky::instance::ProcessProperties::default();
-
-        let instance = instance_builder
-            .game(game_properties)
-            .process(process_properties)
-            .build()
-            .unwrap();
-
         let instance_manager = BlockyInstanceManager::default();
-        instance_manager.add_instance(instance);
+        instance_manager.add_instance(instance_builder.build().unwrap());
 
         self.close();
     }
@@ -199,8 +211,7 @@ impl BlockyNewInstanceDialog {
     #[template_callback]
     fn validate_name(&self) {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
-        let mut instance_path =
-            PathBuf::from(settings::get_string(SettingKey::DefaultInstancesDir));
+        let mut instance_path = PathBuf::from(settings::get_string(SettingKey::InstancesDir));
 
         if imp.name_entry.text().is_empty() {
             imp.name_entry.add_css_class("error");
@@ -243,11 +254,10 @@ impl BlockyNewInstanceDialog {
         imp.version_list
             .set_model(Some(&imp.version_selection_model));
 
-        let mut instance_path =
-            PathBuf::from(settings::get_string(SettingKey::DefaultInstancesDir));
+        let mut instance_path = PathBuf::from(settings::get_string(SettingKey::InstancesDir));
         instance_path.push(imp.uuid.to_string());
-        let libraries_path = settings::get_string(SettingKey::DefaultLibrariesDir);
-        let assets_path = settings::get_string(SettingKey::DefaultAssetsDir);
+        let libraries_path = settings::get_string(SettingKey::LibrariesDir);
+        let assets_path = settings::get_string(SettingKey::AssetsDir);
 
         imp.instance_dir_label
             .set_text(&instance_path.to_string_lossy().to_string());

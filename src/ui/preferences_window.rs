@@ -16,37 +16,41 @@ mod imp {
     pub struct BlockyPreferencesWindow {
         // Launcher Page
         #[template_child]
-        pub default_instances_dir_button: TemplateChild<gtk::Button>,
+        pub instances_dir_button: TemplateChild<gtk::Button>,
         #[template_child]
-        pub default_instances_dir_label: TemplateChild<gtk::Label>,
+        pub instances_dir_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub default_libraries_dir_button: TemplateChild<gtk::Button>,
+        pub libraries_dir_button: TemplateChild<gtk::Button>,
         #[template_child]
-        pub default_libraries_dir_label: TemplateChild<gtk::Label>,
+        pub libraries_dir_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub default_assets_dir_button: TemplateChild<gtk::Button>,
+        pub assets_dir_button: TemplateChild<gtk::Button>,
         #[template_child]
-        pub default_assets_dir_label: TemplateChild<gtk::Label>,
+        pub assets_dir_label: TemplateChild<gtk::Label>,
 
         // Minecraft Page
         #[template_child]
-        pub default_fullscreen_switch: TemplateChild<gtk::Switch>,
+        pub fullscreen_switch: TemplateChild<gtk::Switch>,
         #[template_child]
-        pub default_width_spinbutton: TemplateChild<gtk::SpinButton>,
+        pub enable_window_size_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
-        pub default_height_spinbutton: TemplateChild<gtk::SpinButton>,
+        pub window_width_spinbutton: TemplateChild<gtk::SpinButton>,
         #[template_child]
-        pub default_min_memory_spinbutton: TemplateChild<gtk::SpinButton>,
+        pub window_height_spinbutton: TemplateChild<gtk::SpinButton>,
         #[template_child]
-        pub default_max_memory_spinbutton: TemplateChild<gtk::SpinButton>,
+        pub enable_memory_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
-        pub default_java_exec_button: TemplateChild<gtk::Button>,
+        pub min_memory_spinbutton: TemplateChild<gtk::SpinButton>,
         #[template_child]
-        pub default_java_exec_label: TemplateChild<gtk::Label>,
+        pub max_memory_spinbutton: TemplateChild<gtk::SpinButton>,
         #[template_child]
-        pub default_use_jvm_args_switch: TemplateChild<gtk::Switch>,
+        pub java_exec_button: TemplateChild<gtk::Button>,
         #[template_child]
-        pub default_jvm_args_text: TemplateChild<gtk::Entry>,
+        pub java_exec_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub enable_jvm_args_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub jvm_args_entry: TemplateChild<gtk::Entry>,
     }
 
     #[glib::object_subclass]
@@ -98,86 +102,68 @@ impl BlockyPreferencesWindow {
 
         // Launcher Page
         // Default instance dir
-        settings::bind_property(
-            SettingKey::DefaultInstancesDir,
-            &*imp.default_instances_dir_label,
-            "label",
-        );
-        imp.default_instances_dir_button.connect_clicked(glib::clone!(@weak self as this => move |_| {
-            this.folder_chooser(&gettext("Select Instance Location"), SettingKey::DefaultInstancesDir);
-        }));
+        settings::bind_property(SettingKey::InstancesDir, &*imp.instances_dir_label, "label");
+        imp.instances_dir_button
+            .connect_clicked(glib::clone!(@weak self as this => move |_| {
+                this.folder_chooser(&gettext("Select Instance Location"), SettingKey::InstancesDir);
+            }));
         // Default libraries dir
-        settings::bind_property(
-            SettingKey::DefaultLibrariesDir,
-            &*imp.default_libraries_dir_label,
-            "label",
-        );
-        imp.default_libraries_dir_button.connect_clicked(glib::clone!(@weak self as this => move |_| {
-            this.folder_chooser(&gettext("Select Libraries Location"), SettingKey::DefaultLibrariesDir);
+        settings::bind_property(SettingKey::LibrariesDir, &*imp.libraries_dir_label, "label");
+        imp.libraries_dir_button.connect_clicked(glib::clone!(@weak self as this => move |_| {
+            this.folder_chooser(&gettext("Select Libraries Location"), SettingKey::LibrariesDir);
         }));
         // Default assets dir
-        settings::bind_property(
-            SettingKey::DefaultAssetsDir,
-            &*imp.default_assets_dir_label,
-            "label",
-        );
-        imp.default_assets_dir_button.connect_clicked(glib::clone!(@weak self as this => move |_| {
-            this.folder_chooser(&gettext("Select Assets Location"), SettingKey::DefaultAssetsDir);
-        }));
+        settings::bind_property(SettingKey::AssetsDir, &*imp.assets_dir_label, "label");
+        imp.assets_dir_button
+            .connect_clicked(glib::clone!(@weak self as this => move |_| {
+                this.folder_chooser(&gettext("Select Assets Location"), SettingKey::AssetsDir);
+            }));
 
         // Minecraft Page
-        // Default fullscreen
+        // Fullscreen
+        settings::bind_property(SettingKey::UseFullscreen, &*imp.fullscreen_switch, "state");
+        // Enable window size
         settings::bind_property(
-            SettingKey::DefaultFullscreen,
-            &*imp.default_fullscreen_switch,
-            "state",
+            SettingKey::EnableWindowSize,
+            &*imp.enable_window_size_expander,
+            "enable-expansion",
         );
-        // Default width
+        // Width
         settings::bind_property(
-            SettingKey::DefaultWidth,
-            &*imp.default_width_spinbutton,
+            SettingKey::GameWindowWidth,
+            &*imp.window_width_spinbutton,
             "value",
         );
-        // Default height
+        // Height
         settings::bind_property(
-            SettingKey::DefaultHeight,
-            &*imp.default_height_spinbutton,
+            SettingKey::GameWindowHeight,
+            &*imp.window_height_spinbutton,
             "value",
         );
-        // Default minimum memory
+        // Enable memory
         settings::bind_property(
-            SettingKey::DefaultMinMemory,
-            &*imp.default_min_memory_spinbutton,
-            "value",
+            SettingKey::EnableMemory,
+            &*imp.enable_memory_expander,
+            "enable-expansion",
         );
-        // Default maximum memory
-        settings::bind_property(
-            SettingKey::DefaultMaxMemory,
-            &*imp.default_max_memory_spinbutton,
-            "value",
-        );
-        // Default java exec
-        settings::bind_property(
-            SettingKey::DefaultJavaExec,
-            &*imp.default_java_exec_label,
-            "label",
-        );
-        imp.default_java_exec_button
+        // Minimum memory
+        settings::bind_property(SettingKey::MinMemory, &*imp.min_memory_spinbutton, "value");
+        // Maximum memory
+        settings::bind_property(SettingKey::MaxMemory, &*imp.max_memory_spinbutton, "value");
+        // Java exec
+        settings::bind_property(SettingKey::JavaExec, &*imp.java_exec_label, "label");
+        imp.java_exec_button
             .connect_clicked(glib::clone!(@weak self as this => move |_| {
-                this.file_chooser(&gettext("Select Java Executable"), SettingKey::DefaultJavaExec);
+                this.file_chooser(&gettext("Select Java Executable"), SettingKey::JavaExec);
             }));
-        // Default use jvm args
+        // Enable JVM args
         settings::bind_property(
-            SettingKey::DefaultUseJvmArgs,
-            &*imp.default_use_jvm_args_switch,
-            "state",
+            SettingKey::EnableJvmArgs,
+            &*imp.enable_jvm_args_expander,
+            "enable-expansion",
         );
-        // Default jvm args
-        settings::bind_property(
-            SettingKey::DefaultJvmArgs,
-            &*imp.default_jvm_args_text,
-            "text",
-        )
+        // JVM args
+        settings::bind_property(SettingKey::JvmArgs, &*imp.jvm_args_entry, "text")
     }
 
     fn folder_chooser(&self, title: &str, key: SettingKey) {

@@ -37,34 +37,34 @@ pub struct GameProperties {
     pub libraries_path: String,
     #[builder(default = "String::from(\"./assets\")")]
     pub assets_path: String,
-    #[builder(default = "1280")]
-    pub custom_width: u32,
-    #[builder(default = "720")]
-    pub custom_height: u32,
-    #[builder(default)]
-    pub use_custom_resolution: bool,
     #[builder(default)]
     pub use_fullscreen: bool,
+    #[builder(default)]
+    pub enable_window_size: bool,
+    #[builder(default = "1280")]
+    pub window_width: u32,
+    #[builder(default = "720")]
+    pub window_height: u32,
 }
 
 #[derive(Builder, Clone, Debug, Default, Deserialize, Serialize)]
 pub struct ProcessProperties {
     #[builder(default)]
-    pub use_custom_java_executable: bool,
-    #[builder(default)]
-    pub java_executable: String,
-    #[builder(default)]
-    pub use_custom_jvm_arguments: bool,
-    #[builder(default)]
-    pub jvm_arguments: String,
-    #[builder(default)]
-    pub use_custom_memory: bool,
-    #[builder(default = "512")]
-    pub jvm_min_memory: u32,
+    pub enable_memory: bool,
     #[builder(default = "1024")]
-    pub jvm_max_memory: u32,
+    pub min_memory: u32,
+    #[builder(default = "2048")]
+    pub max_memory: u32,
     #[builder(default)]
-    pub use_environment_variables: bool,
+    pub enable_java_exec: bool,
+    #[builder(default)]
+    pub java_exec: String,
+    #[builder(default)]
+    pub enable_jvm_args: bool,
+    #[builder(default)]
+    pub jvm_args: String,
+    #[builder(default)]
+    pub enable_environment: bool,
     #[builder(default)]
     pub environment_variables: Vec<(String, Option<String>)>,
 }

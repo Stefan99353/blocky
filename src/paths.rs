@@ -66,28 +66,25 @@ pub fn init() -> std::io::Result<()> {
 }
 
 pub fn set_defaults() {
-    let default_instances_dir = settings::get_string(SettingKey::DefaultInstancesDir);
+    let default_instances_dir = settings::get_string(SettingKey::InstancesDir);
     if default_instances_dir == "NULL" {
         settings::set_string(
-            SettingKey::DefaultInstancesDir,
+            SettingKey::InstancesDir,
             &DEFAULT_INSTANCES_DIR.to_string_lossy(),
         );
     }
 
-    let default_libraries_dir = settings::get_string(SettingKey::DefaultLibrariesDir);
+    let default_libraries_dir = settings::get_string(SettingKey::LibrariesDir);
     if default_libraries_dir == "NULL" {
         settings::set_string(
-            SettingKey::DefaultLibrariesDir,
+            SettingKey::LibrariesDir,
             &DEFAULT_LIBRARIES_DIR.to_string_lossy(),
         );
     }
 
-    let default_assets_dir = settings::get_string(SettingKey::DefaultAssetsDir);
+    let default_assets_dir = settings::get_string(SettingKey::AssetsDir);
     if default_assets_dir == "NULL" {
-        settings::set_string(
-            SettingKey::DefaultAssetsDir,
-            &DEFAULT_ASSETS_DIR.to_string_lossy(),
-        );
+        settings::set_string(SettingKey::AssetsDir, &DEFAULT_ASSETS_DIR.to_string_lossy());
     }
 
     let profiles_file_path = settings::get_string(SettingKey::ProfilesFilePath);
