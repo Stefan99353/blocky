@@ -69,7 +69,7 @@ impl Instance {
             classpath,
         );
         let jvm_arguments = jvm_arguments(self, options, &version_data, &arg_replacers);
-        let game_arguments = game_arguments(&version_data, &arg_replacers);
+        let game_arguments = game_arguments(self, options, &version_data, &arg_replacers);
 
         // Build command
         let mut command = Command::new(java_executable(self, options));

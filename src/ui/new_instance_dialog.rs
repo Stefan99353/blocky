@@ -23,7 +23,6 @@ use uuid::Uuid;
 
 mod imp {
     use super::*;
-    use std::fmt::Formatter;
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/new_instance_dialog.ui")]

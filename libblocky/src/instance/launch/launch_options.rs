@@ -10,23 +10,23 @@ pub struct GlobalLaunchOptions {
     #[builder(default)]
     pub use_fullscreen: bool,
     #[builder(default)]
-    pub use_custom_resolution: bool,
+    pub enable_window_size: bool,
     #[builder(default = "1280")]
-    pub custom_width: u32,
+    pub window_width: u32,
     #[builder(default = "720")]
-    pub custom_height: u32,
-    #[builder(default = "String::from(\"java\")")]
-    pub java_executable: String,
+    pub window_height: u32,
     #[builder(default)]
-    pub use_custom_memory: bool,
+    pub enable_memory: bool,
     #[builder(default = "512")]
-    pub jvm_min_memory: u32,
+    pub min_memory: u32,
     #[builder(default = "1024")]
-    pub jvm_max_memory: u32,
+    pub max_memory: u32,
+    #[builder(default = "String::from(\"java\")")]
+    pub java_exec: String,
     #[builder(default)]
-    pub use_custom_jvm_arguments: bool,
+    pub enable_jvm_args: bool,
     #[builder(default)]
-    pub jvm_arguments: String,
+    pub jvm_args: String,
     #[builder(default)]
     pub environment_variables: HashMap<String, Option<String>>,
 }

@@ -44,6 +44,8 @@ pub fn classpath(instance: &Instance, version_data: &VersionData) -> crate::erro
 }
 
 pub fn game_arguments(
+    instance: &Instance,
+    options: &GlobalLaunchOptions,
     version_data: &VersionData,
     arg_replacers: &ArgumentReplacements,
 ) -> Vec<String> {
@@ -56,11 +58,32 @@ pub fn game_arguments(
         }
     }
 
-    // Old style
+    // Old style of arguments
     if let Some(args) = &version_data.minecraft_arguments {
         for argument in args.split_whitespace() {
             arguments.push(arg_replacers.replace(argument));
         }
+    }
+
+    // Fullscreen
+    if instance.game.use_fullscreen || options.use_fullscreen {
+        arguments.push("--fullscreen".to_string());
+    } else if instance.game.enable_window_size {
+        // Instance window size
+        arguments.extend_from_slice(&[
+            "--width".to_string(),
+            instance.game.window_width.to_string(),
+            "--height".to_string(),
+            instance.game.window_height.to_string(),
+        ]);
+    } else if options.enable_window_size {
+        // Global window size
+        arguments.extend_from_slice(&[
+            "--width".to_string(),
+            options.window_width.to_string(),
+            "--height".to_string(),
+            options.window_height.to_string(),
+        ]);
     }
 
     arguments
@@ -78,17 +101,24 @@ pub fn jvm_arguments(
     if instance.process.enable_memory {
         arguments.push(format!("-Xms{}M", instance.process.min_memory));
         arguments.push(format!("-Xmx{}M", instance.process.max_memory));
-    } else if options.use_custom_memory {
-        arguments.push(format!("-Xms{}M", options.jvm_min_memory));
-        arguments.push(format!("-Xmx{}M", options.jvm_max_memory));
+    } else if options.enable_memory {
+        arguments.push(format!("-Xms{}M", options.min_memory));
+        arguments.push(format!("-Xmx{}M", options.max_memory));
     }
 
     // Other arguments
     if instance.process.enable_jvm_args {
+        // Instance
         for argument in instance.process.jvm_args.split_whitespace() {
             arguments.push(arg_replacers.replace(argument));
         }
+    } else if options.enable_jvm_args {
+        // Global
+        for argument in options.jvm_args.split_whitespace() {
+            arguments.push(arg_replacers.replace(argument));
+        }
     } else if let Some(args) = &version_data.arguments {
+        // Version Data
         for argument in args.jvm_arguments() {
             arguments.push(arg_replacers.replace(&argument));
         }
@@ -115,9 +145,9 @@ pub fn java_executable(instance: &Instance, options: &GlobalLaunchOptions) -> St
     if instance.process.enable_java_exec && !instance.process.java_exec.is_empty() {
         // Use instance specified
         return instance.process.java_exec.clone();
-    } else if !options.java_executable.is_empty() {
+    } else if !options.java_exec.is_empty() {
         // Global
-        return options.java_executable.clone();
+        return options.java_exec.clone();
     }
 
     String::from("java")

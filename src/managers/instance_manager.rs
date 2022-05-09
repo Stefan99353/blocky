@@ -360,15 +360,15 @@ fn launch_options() -> GlobalLaunchOptions {
         .launcher_name("Blocky".to_string())
         .launcher_version(env!("CARGO_PKG_VERSION").to_string())
         .use_fullscreen(settings::get_bool(SettingKey::UseFullscreen))
-        // TODO: .use_custom_resolution()
-        .custom_width(settings::get_integer(SettingKey::GameWindowWidth) as u32)
-        .custom_height(settings::get_integer(SettingKey::GameWindowHeight) as u32)
-        .java_executable(settings::get_string(SettingKey::JavaExec))
-        // TODO: .use_custom_memory()
-        .jvm_min_memory(settings::get_integer(SettingKey::MinMemory) as u32)
-        .jvm_max_memory(settings::get_integer(SettingKey::MaxMemory) as u32)
-        .use_custom_jvm_arguments(settings::get_bool(SettingKey::EnableJvmArgs))
-        .jvm_arguments(settings::get_string(SettingKey::JvmArgs));
+        .enable_window_size(settings::get_bool(SettingKey::EnableWindowSize))
+        .window_width(settings::get_integer(SettingKey::GameWindowWidth) as u32)
+        .window_height(settings::get_integer(SettingKey::GameWindowHeight) as u32)
+        .enable_memory(settings::get_bool(SettingKey::EnableMemory))
+        .min_memory(settings::get_integer(SettingKey::MinMemory) as u32)
+        .max_memory(settings::get_integer(SettingKey::MaxMemory) as u32)
+        .java_exec(settings::get_string(SettingKey::JavaExec))
+        .enable_jvm_args(settings::get_bool(SettingKey::EnableJvmArgs))
+        .jvm_args(settings::get_string(SettingKey::JvmArgs));
 
     builder.build().unwrap()
 }

@@ -62,7 +62,8 @@ impl BlockyInstanceGroup {
         });
 
         imp.listbox.connect_row_activated(move |_, row| {
-            row.activate_action("instance.edit", None);
+            row.activate_action("instance.edit", None)
+                .expect("Failed to activate action on instance row");
         });
 
         *imp.model.borrow_mut() = Some(model);
