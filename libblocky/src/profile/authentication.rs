@@ -11,7 +11,7 @@ use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use oauth2::{
     AuthType, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge,
-    RedirectUrl, Scope, TokenUrl,
+    RedirectUrl, RefreshToken, Scope, TokenUrl,
 };
 use reqwest::Url;
 use std::io::{BufRead, BufReader, Write};
@@ -131,6 +131,34 @@ impl Profile {
                 Ok(())
             }
         }
+    }
+
+    pub fn refresh(&mut self, client_id: &str, client_secret: &str) -> crate::error::Result<()> {
+        debug!("Refreshing tokens");
+
+        if let Some(refresh_token) = &self.microsoft.refresh_token {
+            let client_id = ClientId::new(client_id.to_string());
+            let client_secret = ClientSecret::new(client_secret.to_string());
+            let auth_url = AuthUrl::new(consts::MS_AUTH_CODE_URL.to_string()).unwrap();
+            let token_url = TokenUrl::new(consts::MS_AUTH_TOKEN_URL.to_string()).unwrap();
+
+            let oauth_client =
+                BasicClient::new(client_id, Some(client_secret), auth_url, Some(token_url))
+                    .set_auth_type(AuthType::RequestBody);
+            let refresh_token = RefreshToken::new(refresh_token.clone());
+
+            let token_response = oauth_client
+                .exchange_refresh_token(&refresh_token)
+                .request(http_client)
+                .map_err(|_| AuthenticationError::CodeExchange)?;
+
+            self.microsoft = MicrosoftToken::from_token_response(token_response);
+            self.authenticate_xbox_live()?;
+            self.authenticate_xbox_live_security()?;
+            self.authenticate_minecraft()?;
+        }
+
+        Ok(())
     }
 
     pub fn set_entitlements(&mut self) -> Result<(), crate::error::Error> {

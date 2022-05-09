@@ -1,6 +1,6 @@
 use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
-use crate::{settings, BlockyApplication};
+use crate::{config, settings, BlockyApplication};
 use gio::prelude::*;
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -307,6 +307,8 @@ impl BlockyInstanceManager {
                 profile_uuid,
                 profiles_path,
                 launch_options(),
+                config::MS_GRAPH_ID,
+                config::MS_GRAPH_SECRET,
             );
 
             if let Err(err) = launch_result {
