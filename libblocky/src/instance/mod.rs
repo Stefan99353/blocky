@@ -9,6 +9,7 @@ pub(crate) mod install;
 pub(crate) mod launch;
 pub mod models;
 mod paths;
+mod remove;
 pub mod resource_update;
 pub(crate) mod utils;
 

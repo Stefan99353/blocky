@@ -38,7 +38,10 @@ pub fn remove_instance(uuid: Uuid, path: impl AsRef<Path>) -> crate::error::Resu
     debug!("Removing an instance from disk");
     let mut instances = read_file(&path)?;
 
-    let _old = instances.remove(&uuid);
+    let old = instances.remove(&uuid);
+    if let Some(old) = old {
+        old.remove()?;
+    }
 
     write_file(instances, path)
 }

@@ -221,6 +221,15 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
         dialog.show();
     }));
     actions.add_action(&edit_action);
+
+    // instance.remove
+    let remove_action = gio::SimpleAction::new("remove", None);
+    remove_action.connect_activate(glib::clone!(@weak instance => move |_, _| {
+        let instance_manager = BlockyInstanceManager::default();
+        let uuid = instance.uuid();
+        instance_manager.remove_instance_by_uuid(uuid);
+    }));
+    actions.add_action(&remove_action);
 }
 
 fn process_install_update(
