@@ -91,10 +91,8 @@ impl BlockyProfileManager {
 
     pub fn current_profile(&self) -> Option<GBlockyProfile> {
         let profile = self.property::<GBlockyProfile>("current-profile");
-        let uuid = profile.uuid().to_string();
-        let no_profile_uuid = libblocky::gobject::NO_PROFILE_UUID.to_string();
 
-        if uuid == no_profile_uuid {
+        if profile.uuid().is_nil() {
             return None;
         }
 

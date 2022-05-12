@@ -4,7 +4,8 @@ use once_cell::sync::{Lazy, OnceCell};
 use std::str::FromStr;
 use uuid::Uuid;
 
-pub const NO_PROFILE_UUID: &str = "00000000-0000-0000-0000-000000000000";
+pub const UUID: &str = "uuid";
+pub const USERNAME: &str = "username";
 
 mod imp {
     use super::*;
@@ -27,14 +28,14 @@ mod imp {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
                     ParamSpecString::new(
-                        "uuid",
+                        UUID,
                         "UUID",
                         "UUID",
                         None,
                         ParamFlags::READWRITE | ParamFlags::CONSTRUCT_ONLY,
                     ),
                     ParamSpecString::new(
-                        "username",
+                        USERNAME,
                         "Username",
                         "Username",
                         None,
@@ -48,8 +49,8 @@ mod imp {
 
         fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
             match pspec.name() {
-                "uuid" => self.uuid.set(value.get().unwrap()).unwrap(),
-                "username" => self.username.set(value.get().unwrap()).unwrap(),
+                UUID => self.uuid.set(value.get().unwrap()).unwrap(),
+                USERNAME => self.username.set(value.get().unwrap()).unwrap(),
                 x => {
                     error!("Property {} not a member of GBlockyProfile", x);
                     unimplemented!()
@@ -59,8 +60,8 @@ mod imp {
 
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
-                "uuid" => self.uuid.get().to_value(),
-                "username" => self.username.get().to_value(),
+                UUID => self.uuid.get().to_value(),
+                USERNAME => self.username.get().to_value(),
                 x => {
                     error!("Property {} not a member of GBlockyProfile", x);
                     unimplemented!()
@@ -77,22 +78,22 @@ glib::wrapper! {
 impl GBlockyProfile {
     pub fn new(uuid: &Uuid, username: &str) -> Self {
         let uuid = uuid.to_string();
-        glib::Object::new(&[("uuid", &uuid.as_str()), ("username", &username)]).unwrap()
+        glib::Object::new(&[(UUID, &uuid.as_str()), (USERNAME, &username)]).unwrap()
     }
 
     pub fn uuid(&self) -> Uuid {
-        let uuid: String = self.property("uuid");
+        let uuid: String = self.property(UUID);
         Uuid::from_str(&uuid).unwrap()
     }
 
     pub fn username(&self) -> String {
-        self.property("username")
+        self.property(USERNAME)
     }
 }
 
 impl Default for GBlockyProfile {
     fn default() -> Self {
-        let uuid = Uuid::from_str(NO_PROFILE_UUID).unwrap();
+        let uuid = Uuid::nil();
         let username = "";
 
         Self::new(&uuid, username)
