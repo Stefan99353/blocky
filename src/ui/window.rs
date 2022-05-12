@@ -166,6 +166,12 @@ impl BlockyApplicationWindow {
         self.update_current_profile();
     }
 
+    pub fn toast_notification(&self, msg: &str) {
+        let imp = imp::BlockyApplicationWindow::from_instance(self);
+        let toast = adw::Toast::new(msg);
+        imp.toast_overlay.add_toast(&toast);
+    }
+
     fn save_window_size(&self) {
         debug!("Saving window state");
         let (width, height) = self.default_size();

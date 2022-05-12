@@ -1,6 +1,7 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::edit_instance_dialog::BlockyEditInstanceDialog;
-use crate::ui::BlockyInstallProgressDialog;
+use crate::ui::{BlockyApplicationWindow, BlockyInstallProgressDialog};
+use gettextrs::gettext;
 use glib::subclass::InitializingObject;
 use glib::ToValue;
 use glib::{IsA, ObjectExt, ParamSpec, Value};
@@ -175,12 +176,14 @@ impl BlockyInstanceRow {
 fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
     let actions = gio::SimpleActionGroup::new();
     widget.insert_action_group("instance", Some(&actions));
+    let window = BlockyApplicationWindow::default();
     let instance_manager = BlockyInstanceManager::default();
 
     // instance.launch
     let launch_action = gio::SimpleAction::new("launch", None);
     launch_action.connect_activate(
-        glib::clone!(@weak instance, @weak instance_manager => move |_, _| {
+        glib::clone!(@weak instance, @weak instance_manager, @weak window => move |_, _| {
+            window.toast_notification(&gettext("Launching instance."));
             instance_manager.launch_instance(instance.uuid());
         }),
     );
@@ -197,8 +200,7 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
 
     // instance.install
     let install_action = gio::SimpleAction::new("install", None);
-    install_action.connect_activate(glib::clone!(@weak instance, @weak launch_action => move |_, _| {
-        let instance_manager = BlockyInstanceManager::default();
+    install_action.connect_activate(glib::clone!(@weak instance, @weak launch_action, @weak instance_manager => move |_, _| {
         let dialog = BlockyInstallProgressDialog::new();
         dialog.show();
 
@@ -224,11 +226,13 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
 
     // instance.remove
     let remove_action = gio::SimpleAction::new("remove", None);
-    remove_action.connect_activate(glib::clone!(@weak instance => move |_, _| {
-        let instance_manager = BlockyInstanceManager::default();
-        let uuid = instance.uuid();
-        instance_manager.remove_instance_by_uuid(uuid);
-    }));
+    remove_action.connect_activate(
+        glib::clone!(@weak instance, @weak instance_manager, @weak window => move |_, _| {
+            let uuid = instance.uuid();
+            window.toast_notification(&gettext("Instance removed."));
+            instance_manager.remove_instance_by_uuid(uuid);
+        }),
+    );
     actions.add_action(&remove_action);
 }
 
@@ -242,8 +246,10 @@ fn process_install_update(
             match update {
                 None => {
                     // Update finished
+                    let window = BlockyApplicationWindow::default();
                     launch_action.set_enabled(true);
                     dialog.close();
+                    window.toast_notification(&gettext("Installation finished."));
                 }
                 Some(update) => {
                     let dialog = dialog.downcast::<BlockyInstallProgressDialog>().unwrap();
