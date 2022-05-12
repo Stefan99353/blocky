@@ -5,6 +5,7 @@ use crate::ui::{
 };
 use crate::{config, settings};
 use adw::subclass::prelude::*;
+use gettextrs::gettext;
 use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value, WeakRef};
 use gtk::gdk;
 use gtk::prelude::*;
@@ -164,6 +165,19 @@ impl BlockyApplication {
             BlockyNewProfileDialog::new().show();
         });
         self.add_action(&action_add_profile);
+
+        // app.remove-profile
+        let action_remove_profile = gio::SimpleAction::new("remove-profile", None);
+        action_remove_profile.connect_activate(move |_, _| {
+            debug!("Removing current profile");
+            let window = BlockyApplicationWindow::default();
+            let profile_manager = BlockyProfileManager::default();
+            if let Some(current) = profile_manager.current_profile() {
+                window.toast_notification(&gettext("Removed current profile."));
+                profile_manager.remove_profile(&current);
+            }
+        });
+        self.add_action(&action_remove_profile);
 
         // app.preferences
         let action_preferences = gio::SimpleAction::new("preferences", None);
