@@ -336,7 +336,7 @@ impl BlockyEditInstanceDialog {
             View::General => {}
             View::Java => {}
             View::Game => {}
-            View::Worlds => {}
+            View::Saves => {}
             View::Servers => {}
             View::ScreenShots => {}
             View::ResourcePacks => {}
@@ -367,7 +367,7 @@ enum View {
     General,
     Java,
     Game,
-    Worlds,
+    Saves,
     Servers,
     ScreenShots,
     ResourcePacks,
@@ -379,7 +379,7 @@ impl From<&str> for View {
             "general" => Self::General,
             "java" => Self::Java,
             "game" => Self::Game,
-            "worlds" => Self::Worlds,
+            "saves" => Self::Saves,
             "servers" => Self::Servers,
             "screenshots" => Self::ScreenShots,
             "resourcepacks" => Self::ResourcePacks,
@@ -412,7 +412,7 @@ impl View {
             View::General => "general",
             View::Java => "java",
             View::Game => "game",
-            View::Worlds => "worlds",
+            View::Saves => "saves",
             View::Servers => "servers",
             View::ScreenShots => "screenshots",
             View::ResourcePacks => "resourcepacks",
@@ -424,7 +424,7 @@ impl View {
             View::General => "General",
             View::Java => "Java",
             View::Game => "Game",
-            View::Worlds => "Worlds",
+            View::Saves => "Saves",
             View::Servers => "Servers",
             View::ScreenShots => "Screenshots",
             View::ResourcePacks => "Resourcepacks",
