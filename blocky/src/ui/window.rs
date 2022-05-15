@@ -4,10 +4,10 @@ use crate::ui::BlockyContentBox;
 use crate::ui::BlockyInstancePage;
 use crate::{config, settings, BlockyApplication};
 use adw::subclass::prelude::*;
+use blocky_core::gobject::GBlockyProfile;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
-use libblocky::gobject::GBlockyProfile;
 use std::str::FromStr;
 use uuid::Uuid;
 

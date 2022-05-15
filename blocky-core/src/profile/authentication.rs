@@ -1,12 +1,10 @@
-use super::AuthenticationError;
-use super::Profile;
-use crate::consts;
 use crate::profile::entitlements::Entitlements;
-use crate::profile::error::TokenKind;
+use crate::profile::error::{AuthenticationError, TokenKind};
 use crate::profile::microsoft::MicrosoftToken;
 use crate::profile::minecraft::{MinecraftProfile, MinecraftToken};
 use crate::profile::xbox_live::XboxLiveToken;
 use crate::profile::xbox_live_security::XboxLiveSecurityToken;
+use crate::{consts, Profile};
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use oauth2::{

@@ -1,9 +1,9 @@
+use blocky_core::gobject::GBlockyVersionSummary;
 use glib::subclass::InitializingObject;
 use glib::{IsA, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue, Value};
 use gtk::prelude::InitializingWidgetExt;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use libblocky::gobject::GBlockyVersionSummary;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
 

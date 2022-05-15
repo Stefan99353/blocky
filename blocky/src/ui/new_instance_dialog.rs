@@ -4,6 +4,8 @@ use crate::settings::SettingKey;
 use crate::ui::BlockyApplicationWindow;
 use crate::utils::version_summary::{fetch_manifest, filter_versions, version_list_factory};
 use adw::prelude::*;
+use blocky_core::gobject::GBlockyVersionSummary;
+use blocky_core::instance::models::VersionSummary;
 use gettextrs::gettext;
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -13,8 +15,6 @@ use gtk::{
     CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType, SingleSelection,
     TemplateChild,
 };
-use libblocky::gobject::GBlockyVersionSummary;
-use libblocky::instance::models::VersionSummary;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -172,10 +172,10 @@ impl BlockyNewInstanceDialog {
         let max_memory = settings::get_integer(SettingKey::MaxMemory);
         let java_exec = settings::get_string(SettingKey::JavaExec);
 
-        let mut instance_builder = libblocky::instance::InstanceBuilder::default();
-        let mut game_properties_builder = libblocky::instance::GamePropertiesBuilder::default();
+        let mut instance_builder = blocky_core::instance::InstanceBuilder::default();
+        let mut game_properties_builder = blocky_core::instance::GamePropertiesBuilder::default();
         let mut process_properties_builder =
-            libblocky::instance::ProcessPropertiesBuilder::default();
+            blocky_core::instance::ProcessPropertiesBuilder::default();
 
         game_properties_builder
             .libraries_path(libraries_path)

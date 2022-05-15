@@ -1,10 +1,10 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
+use blocky_core::instance::resource_update::ResourceInstallationUpdate;
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use libblocky::instance::resource_update::ResourceInstallationUpdate;
 use std::str::FromStr;
 use uuid::Uuid;
 

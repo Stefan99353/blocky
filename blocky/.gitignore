@@ -1,3 +1,22 @@
+### Microsoft Auth ##
+MS_GRAPH_ID
+MS_GRAPH_SECRET
+
+### Meson & Flatpak ###
+# Build artifacts
+build/
+_build/
+builddir/
+build-aux/app/
+build-aux/.flatpak-builder/
+.flatpak/
+vendor
+
+src/config.rs
+*.ui.in~
+*.ui~
+
+
 ### IDEs ###
 .vscode/
 .idea/

@@ -1,11 +1,11 @@
 use crate::ui::BlockyInstanceRow;
 use adw::subclass::prelude::*;
+use blocky_core::gobject::GBlockyInstance;
 use gio::ListStore;
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
-use libblocky::gobject::GBlockyInstance;
 use std::cell::RefCell;
 
 mod imp {

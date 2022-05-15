@@ -1,14 +1,14 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
 use adw::prelude::*;
+use blocky_core::gobject::instance;
+use blocky_core::gobject::GBlockyInstance;
 use gettextrs::gettext;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
 use glib::{ParamFlags, ParamSpec, ParamSpecObject, Value};
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, FileChooserAction, FileChooserNative, ResponseType};
-use libblocky::gobject::instance;
-use libblocky::gobject::GBlockyInstance;
 use once_cell::sync::{Lazy, OnceCell};
 use std::cell::Cell;
 use strum::{EnumIter, IntoEnumIterator};
@@ -152,7 +152,7 @@ impl BlockyEditInstanceDialog {
         let instance_manager = BlockyInstanceManager::default();
         info!("Saving instance");
 
-        let instance = libblocky::Instance::from(self.instance());
+        let instance = blocky_core::Instance::from(self.instance());
         instance_manager.update_instance(instance);
         self.close();
     }

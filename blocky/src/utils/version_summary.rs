@@ -1,9 +1,9 @@
 use crate::ui::BlockyVersionSummaryRow;
+use blocky_core::gobject::GBlockyVersionSummary;
+use blocky_core::instance::models::{VersionSummary, VersionType};
 use glib::Cast;
 use gtk::SignalListItemFactory;
 use itertools::Itertools;
-use libblocky::gobject::GBlockyVersionSummary;
-use libblocky::instance::models::{VersionSummary, VersionType};
 use std::collections::HashMap;
 use std::thread;
 
@@ -27,7 +27,7 @@ pub fn version_list_factory() -> SignalListItemFactory {
 
 pub fn fetch_manifest() -> glib::Receiver<HashMap<String, VersionSummary>> {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-    thread::spawn(move || match libblocky::helpers::get_manifest() {
+    thread::spawn(move || match blocky_core::helpers::get_manifest() {
         Ok(manifest) => {
             sender
                 .send(manifest)

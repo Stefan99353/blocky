@@ -1,13 +1,12 @@
 mod authentication;
 mod entitlements;
-mod error;
+pub(crate) mod error;
 mod microsoft;
 pub(crate) mod minecraft;
 mod xbox_live;
 mod xbox_live_security;
 
 use entitlements::Entitlements;
-pub use error::AuthenticationError;
 use microsoft::MicrosoftToken;
 use minecraft::{MinecraftProfile, MinecraftToken};
 use serde::{Deserialize, Serialize};

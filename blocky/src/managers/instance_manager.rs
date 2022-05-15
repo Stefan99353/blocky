@@ -1,6 +1,10 @@
 use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
 use crate::{config, settings, BlockyApplication};
+use blocky_core::error::Error;
+use blocky_core::gobject::GBlockyInstance;
+use blocky_core::instance::launch_options::{GlobalLaunchOptions, GlobalLaunchOptionsBuilder};
+use blocky_core::instance::resource_update::ResourceInstallationUpdate;
 use gio::prelude::*;
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -8,10 +12,6 @@ use glib::{
     Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
     Value,
 };
-use libblocky::error::Error;
-use libblocky::gobject::GBlockyInstance;
-use libblocky::instance::launch_options::{GlobalLaunchOptions, GlobalLaunchOptionsBuilder};
-use libblocky::instance::resource_update::ResourceInstallationUpdate;
 use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -119,13 +119,13 @@ impl BlockyInstanceManager {
         );
     }
 
-    pub fn full_instances(&self) -> glib::Receiver<Vec<libblocky::Instance>> {
+    pub fn full_instances(&self) -> glib::Receiver<Vec<blocky_core::Instance>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
 
-            match libblocky::helpers::load_instances(path) {
+            match blocky_core::helpers::load_instances(path) {
                 Ok(instances) => {
                     sender
                         .send(instances)
@@ -146,7 +146,7 @@ impl BlockyInstanceManager {
     pub fn find_full_instance(
         &self,
         instance: &GBlockyInstance,
-    ) -> glib::Receiver<Option<libblocky::Instance>> {
+    ) -> glib::Receiver<Option<blocky_core::Instance>> {
         let uuid = instance.uuid();
         self.find_full_instance_by_uuid(uuid)
     }
@@ -154,13 +154,13 @@ impl BlockyInstanceManager {
     pub fn find_full_instance_by_uuid(
         &self,
         uuid: Uuid,
-    ) -> glib::Receiver<Option<libblocky::Instance>> {
+    ) -> glib::Receiver<Option<blocky_core::Instance>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
 
-            match libblocky::helpers::find_instance(uuid, path) {
+            match blocky_core::helpers::find_instance(uuid, path) {
                 Ok(instance) => {
                     sender
                         .send(instance)
@@ -178,7 +178,7 @@ impl BlockyInstanceManager {
         receiver
     }
 
-    pub fn add_instance(&self, instance: libblocky::Instance) {
+    pub fn add_instance(&self, instance: blocky_core::Instance) {
         // Add to ListStore
         let g_instance = GBlockyInstance::from(instance.clone());
         self.instances().append(&g_instance);
@@ -187,13 +187,13 @@ impl BlockyInstanceManager {
         // Add to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = libblocky::helpers::save_instance(instance, path) {
+            if let Err(err) = blocky_core::helpers::save_instance(instance, path) {
                 error!("Error while saving instance - {}", err);
             }
         });
     }
 
-    pub fn update_instance(&self, instance: libblocky::Instance) {
+    pub fn update_instance(&self, instance: blocky_core::Instance) {
         let uuid = instance.uuid;
         let g_instance = GBlockyInstance::from(instance.clone());
 
@@ -215,7 +215,7 @@ impl BlockyInstanceManager {
         // Save to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = libblocky::helpers::save_instance(instance, path) {
+            if let Err(err) = blocky_core::helpers::save_instance(instance, path) {
                 error!("Error while saving instance - {}", err);
             }
         });
@@ -247,7 +247,7 @@ impl BlockyInstanceManager {
         // Remove from disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = libblocky::helpers::remove_instance(uuid, path) {
+            if let Err(err) = blocky_core::helpers::remove_instance(uuid, path) {
                 error!("Error while removing instance - {}", err);
             }
         });
@@ -256,7 +256,7 @@ impl BlockyInstanceManager {
     pub fn install_instance(
         &self,
         uuid: Uuid,
-    ) -> glib::Receiver<libblocky::error::Result<Option<ResourceInstallationUpdate>>> {
+    ) -> glib::Receiver<blocky_core::error::Result<Option<ResourceInstallationUpdate>>> {
         info!("Installing instance '{}'", &uuid);
         let imp = imp::BlockyInstanceManager::from_instance(self);
         imp.cancel_current_installation
@@ -267,7 +267,7 @@ impl BlockyInstanceManager {
 
         let cancel_flag = imp.cancel_current_installation.clone();
         thread::spawn(move || {
-            let receiver = libblocky::helpers::install_threaded(uuid, path.clone(), cancel_flag);
+            let receiver = blocky_core::helpers::install_threaded(uuid, path.clone(), cancel_flag);
 
             while let Ok(update) = receiver.recv() {
                 g_sender
@@ -301,7 +301,7 @@ impl BlockyInstanceManager {
 
             let profile_uuid = current_profile.unwrap().uuid();
 
-            let launch_result = libblocky::helpers::launch_instance(
+            let launch_result = blocky_core::helpers::launch_instance(
                 uuid,
                 instances_path,
                 profile_uuid,
@@ -322,7 +322,7 @@ impl BlockyInstanceManager {
         let path = settings::get_string(SettingKey::InstancesFilePath);
 
         thread::spawn(
-            move || match libblocky::helpers::check_install_state(uuid, path) {
+            move || match blocky_core::helpers::check_install_state(uuid, path) {
                 Ok(installed) => {
                     g_sender
                         .send(installed)

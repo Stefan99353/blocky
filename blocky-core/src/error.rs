@@ -1,6 +1,6 @@
 use crate::instance::install::error::InstallationError;
 use crate::instance::launch::error::LaunchError;
-use crate::profile::AuthenticationError;
+use crate::profile::error::AuthenticationError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 

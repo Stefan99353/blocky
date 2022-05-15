@@ -1,5 +1,6 @@
 use crate::settings::SettingKey;
 use crate::{settings, BlockyApplication};
+use blocky_core::gobject::GBlockyProfile;
 use gio::traits::{ListModelExt, SettingsExt};
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -7,7 +8,6 @@ use glib::{
     Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
     Value,
 };
-use libblocky::gobject::GBlockyProfile;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::str::FromStr;
@@ -165,13 +165,13 @@ impl BlockyProfileManager {
         );
     }
 
-    pub fn full_profiles(&self) -> glib::Receiver<Vec<libblocky::Profile>> {
+    pub fn full_profiles(&self) -> glib::Receiver<Vec<blocky_core::Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
 
-            match libblocky::helpers::load_profiles(path) {
+            match blocky_core::helpers::load_profiles(path) {
                 Ok(profiles) => {
                     sender
                         .send(profiles)
@@ -192,7 +192,7 @@ impl BlockyProfileManager {
     pub fn find_full_profile(
         &self,
         profile: &GBlockyProfile,
-    ) -> glib::Receiver<Option<libblocky::Profile>> {
+    ) -> glib::Receiver<Option<blocky_core::Profile>> {
         let uuid = profile.uuid();
         self.find_full_profile_by_uuid(uuid)
     }
@@ -200,13 +200,13 @@ impl BlockyProfileManager {
     pub fn find_full_profile_by_uuid(
         &self,
         uuid: Uuid,
-    ) -> glib::Receiver<Option<libblocky::Profile>> {
+    ) -> glib::Receiver<Option<blocky_core::Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
 
-            match libblocky::helpers::find_profile(uuid, path) {
+            match blocky_core::helpers::find_profile(uuid, path) {
                 Ok(profile) => {
                     sender
                         .send(profile)
@@ -224,7 +224,7 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn full_current_profile(&self) -> glib::Receiver<Option<libblocky::Profile>> {
+    pub fn full_current_profile(&self) -> glib::Receiver<Option<blocky_core::Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         if let Some(current_profile) = self.current_profile() {
@@ -233,7 +233,7 @@ impl BlockyProfileManager {
             thread::spawn(move || {
                 let path = settings::get_string(SettingKey::ProfilesFilePath);
 
-                match libblocky::helpers::find_profile(uuid, path) {
+                match blocky_core::helpers::find_profile(uuid, path) {
                     Ok(profile) => {
                         sender
                             .send(profile)
@@ -256,7 +256,7 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn add_profile(&self, profile: libblocky::Profile) {
+    pub fn add_profile(&self, profile: blocky_core::Profile) {
         // Add to ListStore
         let uuid = profile.uuid;
         let username = profile.minecraft_profile.as_ref().unwrap().name.clone();
@@ -269,7 +269,7 @@ impl BlockyProfileManager {
         // Add to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
-            if let Err(err) = libblocky::helpers::save_profile(profile, path) {
+            if let Err(err) = blocky_core::helpers::save_profile(profile, path) {
                 error!("Error while saving profile - {}", err);
             }
         });
@@ -299,7 +299,7 @@ impl BlockyProfileManager {
         // Remove from disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
-            if let Err(err) = libblocky::helpers::remove_profile(uuid, path) {
+            if let Err(err) = blocky_core::helpers::remove_profile(uuid, path) {
                 error!("Error while removing profile - {}", err);
             }
         });

@@ -1,6 +1,8 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::edit_instance_dialog::BlockyEditInstanceDialog;
 use crate::ui::{BlockyApplicationWindow, BlockyInstallProgressDialog};
+use blocky_core::gobject::GBlockyInstance;
+use blocky_core::instance::resource_update::ResourceInstallationUpdate;
 use gettextrs::gettext;
 use glib::subclass::InitializingObject;
 use glib::ToValue;
@@ -10,8 +12,6 @@ use gtk::gdk;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use libblocky::gobject::GBlockyInstance;
-use libblocky::instance::resource_update::ResourceInstallationUpdate;
 use once_cell::sync::Lazy;
 use once_cell::sync::OnceCell;
 
@@ -218,7 +218,7 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
     // instance.edit
     let edit_action = gio::SimpleAction::new("edit", None);
     edit_action.connect_activate(glib::clone!(@weak instance => move |_, _| {
-        let instance = libblocky::Instance::from(instance);
+        let instance = blocky_core::Instance::from(instance);
         let dialog = BlockyEditInstanceDialog::new(&instance.into());
         dialog.show();
     }));
@@ -237,7 +237,7 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
 }
 
 fn process_install_update(
-    update: libblocky::error::Result<Option<ResourceInstallationUpdate>>,
+    update: blocky_core::error::Result<Option<ResourceInstallationUpdate>>,
     dialog: gtk::Dialog,
     launch_action: gio::SimpleAction,
 ) {
