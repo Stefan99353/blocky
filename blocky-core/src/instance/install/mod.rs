@@ -27,7 +27,6 @@ impl Instance {
 
         // Install resources
         self.install_libraries(update_sender.clone(), cancel.clone())?;
-        debug!("Installing assets");
         self.install_assets(update_sender.clone(), cancel.clone())?;
         self.install_log_config(update_sender.clone(), cancel.clone())?;
         self.install_client(update_sender.clone(), cancel)?;
