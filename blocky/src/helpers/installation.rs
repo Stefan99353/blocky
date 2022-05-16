@@ -25,16 +25,16 @@ fn install(
     cancel: Arc<AtomicBool>,
 ) -> anyhow::Result<()> {
     let instance = find_instance(instance_uuid, instances_path)?
-        .ok_or(anyhow!("Instance not found: {}", instance_uuid))?;
+        .ok_or_else(|| anyhow!("Instance not found: {}", instance_uuid))?;
 
-    instance.full_install(sender, cancel);
+    instance.full_install(sender, cancel)?;
 
     Ok(())
 }
 
 pub fn check_install_state(instance_uuid: Uuid, instances_path: String) -> anyhow::Result<bool> {
     let instance = find_instance(instance_uuid, instances_path)?
-        .ok_or(anyhow!("Instance not found: {}", instance_uuid))?;
+        .ok_or_else(|| anyhow!("Instance not found: {}", instance_uuid))?;
     let installed = instance.check_installed()?;
 
     Ok(installed)

@@ -1,12 +1,10 @@
-use crate::helpers::{build_launch_options, find_profile, find_refresh_save, launch_instance};
+use crate::helpers::{build_launch_options, launch_instance};
 use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
-use crate::{config, helpers, settings, BlockyApplication};
+use crate::{helpers, settings, BlockyApplication};
 use blocky_core::gobject::GInstance;
 use blocky_core::instance::Instance;
 use blocky_core::minecraft::installation_update::InstallationUpdate;
-use blocky_core::minecraft::launch_options::{LaunchOptions, LaunchOptionsBuilder};
-use blocky_core::profile::Profile;
 use gio::prelude::*;
 use gio::ListStore;
 use glib::subclass::prelude::*;

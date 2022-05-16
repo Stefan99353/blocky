@@ -9,7 +9,8 @@ use uuid::Uuid;
 type ProfileStorage = HashMap<Uuid, Profile>;
 
 pub fn find_refresh_save(uuid: Uuid, path: impl AsRef<Path>) -> anyhow::Result<Profile> {
-    let mut profile = find_profile(uuid, &path)?.ok_or(anyhow!("Profile not found: {}", uuid))?;
+    let mut profile =
+        find_profile(uuid, &path)?.ok_or_else(|| anyhow!("Profile not found: {}", uuid))?;
 
     debug!("Checking if token expired");
     if let Some(minecraft_token) = &profile.minecraft {

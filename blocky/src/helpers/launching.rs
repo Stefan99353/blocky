@@ -1,9 +1,8 @@
-use crate::helpers::{find_instance, find_profile, find_refresh_save, save_profile};
+use crate::helpers::{find_instance, find_profile, find_refresh_save};
 use crate::settings;
 use crate::settings::SettingKey;
 use anyhow::anyhow;
 use blocky_core::minecraft::launch_options::{LaunchOptions, LaunchOptionsBuilder};
-use chrono::Utc;
 use uuid::Uuid;
 
 pub fn launch_instance(
@@ -12,7 +11,7 @@ pub fn launch_instance(
     options: LaunchOptions,
 ) -> anyhow::Result<()> {
     let instance = find_instance(instance_uuid, instances_path)?
-        .ok_or(anyhow!("Instance not found: {}", instance_uuid))?;
+        .ok_or_else(|| anyhow!("Instance not found: {}", instance_uuid))?;
 
     instance.launch(&options)?;
 
@@ -26,14 +25,17 @@ pub fn build_launch_options(
     profiles_path: String,
 ) -> anyhow::Result<LaunchOptions> {
     let instance = find_instance(instance_uuid, instances_path)?
-        .ok_or(anyhow!("Instance not found: {}", instance_uuid))?;
+        .ok_or_else(|| anyhow!("Instance not found: {}", instance_uuid))?;
     find_refresh_save(profile_uuid, &profiles_path)?;
     let profile = find_profile(profile_uuid, profiles_path)?
-        .ok_or(anyhow!("Profile not found: {}", profile_uuid))?;
+        .ok_or_else(|| anyhow!("Profile not found: {}", profile_uuid))?;
     let minecraft_profile = profile
         .minecraft_profile
-        .ok_or(anyhow!("Profile is missing"))?;
-    let minecraft_token = profile.minecraft.ok_or(anyhow!("Unauthenticated"))?.token;
+        .ok_or_else(|| anyhow!("Profile is missing"))?;
+    let minecraft_token = profile
+        .minecraft
+        .ok_or_else(|| anyhow!("Unauthenticated"))?
+        .token;
 
     let mut builder = LaunchOptionsBuilder::default();
 
