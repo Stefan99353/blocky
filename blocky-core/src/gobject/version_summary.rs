@@ -1,4 +1,5 @@
-use crate::instance::models::{VersionSummary, VersionType};
+use crate::minecraft::models::version_summary::VersionSummary;
+use crate::minecraft::models::version_type::VersionType;
 use chrono::{DateTime, Utc};
 use glib::subclass::prelude::*;
 use glib::{ObjectExt, ParamFlags, ParamSpec, ParamSpecString, ToValue, Value};
@@ -6,31 +7,35 @@ use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::str::FromStr;
 
+pub const ID: &str = "id";
+pub const TYPE: &str = "type";
+pub const RELEASE_TIME: &str = "release-time";
+
 mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct GBlockyVersionSummary {
+    pub struct GVersionSummary {
         pub id: RefCell<String>,
         pub _type: RefCell<String>,
         pub release_time: RefCell<String>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for GBlockyVersionSummary {
-        const NAME: &'static str = "GBlockyVersionSummary";
-        type Type = super::GBlockyVersionSummary;
+    impl ObjectSubclass for GVersionSummary {
+        const NAME: &'static str = "GVersionSummary";
+        type Type = super::GVersionSummary;
         type ParentType = glib::Object;
     }
 
-    impl ObjectImpl for GBlockyVersionSummary {
+    impl ObjectImpl for GVersionSummary {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpecString::new("id", "ID", "ID", None, ParamFlags::READWRITE),
-                    ParamSpecString::new("type", "Type", "Type", None, ParamFlags::READWRITE),
+                    ParamSpecString::new(ID, "ID", "ID", None, ParamFlags::READWRITE),
+                    ParamSpecString::new(TYPE, "Type", "Type", None, ParamFlags::READWRITE),
                     ParamSpecString::new(
-                        "release-time",
+                        RELEASE_TIME,
                         "Release Time",
                         "Release Time",
                         None,
@@ -44,11 +49,11 @@ mod imp {
 
         fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
             match pspec.name() {
-                "id" => *self.id.borrow_mut() = value.get().unwrap(),
-                "type" => *self._type.borrow_mut() = value.get().unwrap(),
-                "release-time" => *self.release_time.borrow_mut() = value.get().unwrap(),
+                ID => *self.id.borrow_mut() = value.get().unwrap(),
+                TYPE => *self._type.borrow_mut() = value.get().unwrap(),
+                RELEASE_TIME => *self.release_time.borrow_mut() = value.get().unwrap(),
                 x => {
-                    error!("Property {} not a member of GBlockyVersionSummary", x);
+                    error!("Property {} not a member of GVersionSummary", x);
                     unimplemented!()
                 }
             }
@@ -56,11 +61,11 @@ mod imp {
 
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
-                "id" => self.id.borrow().to_value(),
-                "type" => self._type.borrow().to_value(),
-                "release-time" => self.release_time.borrow().to_value(),
+                ID => self.id.borrow().to_value(),
+                TYPE => self._type.borrow().to_value(),
+                RELEASE_TIME => self.release_time.borrow().to_value(),
                 x => {
-                    error!("Property {} not a member of GBlockyVersionSummary", x);
+                    error!("Property {} not a member of GVersionSummary", x);
                     unimplemented!()
                 }
             }
@@ -69,16 +74,16 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct GBlockyVersionSummary(ObjectSubclass<imp::GBlockyVersionSummary>);
+    pub struct GVersionSummary(ObjectSubclass<imp::GVersionSummary>);
 }
 
-impl GBlockyVersionSummary {
+impl GVersionSummary {
     pub fn id(&self) -> String {
-        self.property("id")
+        self.property(ID)
     }
 
     pub fn _type(&self) -> VersionType {
-        let typ = self.property::<String>("type");
+        let typ = self.property::<String>(TYPE);
         match typ.as_str() {
             "release" => VersionType::Release,
             "snapshot" => VersionType::Snapshot,
@@ -92,23 +97,23 @@ impl GBlockyVersionSummary {
     }
 
     pub fn release_time(&self) -> DateTime<Utc> {
-        let release_time = self.property::<String>("release-time");
+        let release_time = self.property::<String>(RELEASE_TIME);
         DateTime::from_str(&release_time).expect("Invalid release time")
     }
 }
 
-impl Default for GBlockyVersionSummary {
+impl Default for GVersionSummary {
     fn default() -> Self {
         glib::Object::new(&[]).unwrap()
     }
 }
 
-impl From<VersionSummary> for GBlockyVersionSummary {
+impl From<VersionSummary> for GVersionSummary {
     fn from(summary: VersionSummary) -> Self {
         glib::Object::new(&[
-            ("id", &summary.id),
-            ("type", &summary._type.to_string()),
-            ("release-time", &summary.release_time.to_string()),
+            (ID, &summary.id),
+            (TYPE, &summary._type.to_string()),
+            (RELEASE_TIME, &summary.release_time.to_string()),
         ])
         .unwrap()
     }

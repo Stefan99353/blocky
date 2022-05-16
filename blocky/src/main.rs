@@ -4,11 +4,12 @@ extern crate log;
 mod application;
 #[rustfmt::skip]
 mod config;
+pub mod helpers;
 mod managers;
 mod paths;
 mod settings;
 mod ui;
-pub(crate) mod utils;
+pub mod utils;
 
 use application::BlockyApplication;
 

@@ -1,5 +1,4 @@
-use crate::instance::{GamePropertiesBuilder, InstanceBuilder, ProcessPropertiesBuilder};
-use crate::Instance;
+use crate::instance::{Instance, InstanceBuilder};
 use glib::subclass::prelude::*;
 use glib::{
     ObjectExt, ParamFlags, ParamSpec, ParamSpecBoolean, ParamSpecString, ParamSpecUInt, ToValue,
@@ -34,7 +33,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct GBlockyInstance {
+    pub struct GInstance {
         pub uuid: OnceCell<String>,
         pub name: RefCell<String>,
         pub description: RefCell<String>,
@@ -56,13 +55,13 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for GBlockyInstance {
-        const NAME: &'static str = "GBlockyInstance";
-        type Type = super::GBlockyInstance;
+    impl ObjectSubclass for GInstance {
+        const NAME: &'static str = "GInstance";
+        type Type = super::GInstance;
         type ParentType = glib::Object;
     }
 
-    impl ObjectImpl for GBlockyInstance {
+    impl ObjectImpl for GInstance {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
@@ -215,7 +214,7 @@ mod imp {
                 ENABLE_JVM_ARGS => self.enable_jvm_args.set(value.get().unwrap()),
                 JVM_ARGS => *self.jvm_args.borrow_mut() = value.get().unwrap(),
                 x => {
-                    error!("Property {} not a member of GBlockyInstance", x);
+                    error!("Property {} not a member of GInstance", x);
                     unimplemented!()
                 }
             }
@@ -242,7 +241,7 @@ mod imp {
                 ENABLE_JVM_ARGS => self.enable_jvm_args.get().to_value(),
                 JVM_ARGS => self.jvm_args.borrow().to_value(),
                 x => {
-                    error!("Property {} not a member of GBlockyInstance", x);
+                    error!("Property {} not a member of GInstance", x);
                     unimplemented!()
                 }
             }
@@ -251,10 +250,10 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct GBlockyInstance(ObjectSubclass<imp::GBlockyInstance>);
+    pub struct GInstance(ObjectSubclass<imp::GInstance>);
 }
 
-impl GBlockyInstance {
+impl GInstance {
     pub fn new(instances_path: &str, libraries_path: &str, assets_path: &str) -> Self {
         let uuid = Uuid::new_v4().to_string();
 
@@ -280,7 +279,7 @@ impl GBlockyInstance {
     }
 }
 
-impl From<Instance> for GBlockyInstance {
+impl From<Instance> for GInstance {
     fn from(instance: Instance) -> Self {
         glib::Object::new(&[
             (UUID, &instance.uuid.to_string()),
@@ -288,52 +287,51 @@ impl From<Instance> for GBlockyInstance {
             (DESCRIPTION, &instance.description.unwrap_or_default()),
             (VERSION, &instance.version),
             (INSTANCE_PATH, &instance.instance_path),
-            (LIBRARIES_PATH, &instance.game.libraries_path),
-            (ASSETS_PATH, &instance.game.assets_path),
-            (USE_FULLSCREEN, &instance.game.use_fullscreen),
-            (ENABLE_WINDOW_SIZE, &instance.game.enable_window_size),
-            (WINDOW_WIDTH, &instance.game.window_width),
-            (WINDOW_HEIGHT, &instance.game.window_height),
-            (ENABLE_MEMORY, &instance.process.enable_memory),
-            (MIN_MEMORY, &instance.process.min_memory),
-            (MAX_MEMORY, &instance.process.max_memory),
-            (ENABLE_JAVA_EXEC, &instance.process.enable_java_exec),
-            (JAVA_EXEC, &instance.process.java_exec),
-            (ENABLE_JVM_ARGS, &instance.process.enable_jvm_args),
-            (JVM_ARGS, &instance.process.jvm_args),
+            (LIBRARIES_PATH, &instance.libraries_path),
+            (ASSETS_PATH, &instance.assets_path),
+            (USE_FULLSCREEN, &instance.use_fullscreen),
+            (ENABLE_WINDOW_SIZE, &instance.enable_window_size),
+            (WINDOW_WIDTH, &instance.window_width),
+            (WINDOW_HEIGHT, &instance.window_height),
+            (ENABLE_MEMORY, &instance.enable_memory),
+            (MIN_MEMORY, &instance.min_memory),
+            (MAX_MEMORY, &instance.max_memory),
+            (ENABLE_JAVA_EXEC, &instance.enable_java_exec),
+            (JAVA_EXEC, &instance.java_exec),
+            (ENABLE_JVM_ARGS, &instance.enable_jvm_args),
+            (JVM_ARGS, &instance.jvm_args),
         ])
         .unwrap()
     }
 }
 
-impl From<GBlockyInstance> for Instance {
-    fn from(instance: GBlockyInstance) -> Self {
+impl From<GInstance> for Instance {
+    fn from(instance: GInstance) -> Self {
         let mut instance_builder = InstanceBuilder::default();
-        let mut game_builder = GamePropertiesBuilder::default();
-        let mut process_builder = ProcessPropertiesBuilder::default();
 
-        // Game Properties
+        let uuid = match Uuid::from_str(&instance.property::<String>(UUID)) {
+            Ok(uuid) => uuid,
+            Err(_err) => {
+                warn!("Instance UUID is not valid => Generating new one");
+                Uuid::new_v4()
+            }
+        };
+        let description = instance.property::<String>(DESCRIPTION).trim().to_string();
         let libraries_path = instance
             .property::<String>(LIBRARIES_PATH)
             .trim()
             .to_string();
         let assets_path = instance.property::<String>(ASSETS_PATH).trim().to_string();
 
-        if !libraries_path.is_empty() {
-            game_builder.libraries_path(libraries_path);
-        }
-        if !assets_path.is_empty() {
-            game_builder.assets_path(assets_path);
-        }
-
-        game_builder
+        instance_builder
+            .uuid(uuid)
+            .name(instance.property(NAME))
+            .version(instance.property(VERSION))
+            .instance_path(instance.property(INSTANCE_PATH))
             .use_fullscreen(instance.property(USE_FULLSCREEN))
             .enable_window_size(instance.property(ENABLE_WINDOW_SIZE))
             .window_width(instance.property(WINDOW_WIDTH))
-            .window_height(instance.property(WINDOW_HEIGHT));
-
-        // Process Properties
-        process_builder
+            .window_height(instance.property(WINDOW_HEIGHT))
             .enable_memory(instance.property(ENABLE_MEMORY))
             .min_memory(instance.property(MIN_MEMORY))
             .max_memory(instance.property(MAX_MEMORY))
@@ -342,27 +340,15 @@ impl From<GBlockyInstance> for Instance {
             .enable_jvm_args(instance.property(ENABLE_JVM_ARGS))
             .jvm_args(instance.property(JVM_ARGS));
 
-        // Instance
-        let uuid = instance.property::<String>(UUID);
-        let uuid = match Uuid::from_str(&uuid) {
-            Ok(uuid) => uuid,
-            Err(_err) => {
-                warn!("Instance UUID is not valid => Generating new one");
-                Uuid::new_v4()
-            }
-        };
-
-        instance_builder
-            .uuid(uuid)
-            .name(instance.property(NAME))
-            .version(instance.property(VERSION))
-            .instance_path(instance.property(INSTANCE_PATH))
-            .game(game_builder.build().unwrap())
-            .process(process_builder.build().unwrap());
-
-        let description = instance.property::<String>(DESCRIPTION).trim().to_string();
         if !description.is_empty() {
             instance_builder.description(description);
+        }
+
+        if !libraries_path.is_empty() {
+            instance_builder.libraries_path(libraries_path);
+        }
+        if !assets_path.is_empty() {
+            instance_builder.assets_path(assets_path);
         }
 
         instance_builder.build().unwrap()

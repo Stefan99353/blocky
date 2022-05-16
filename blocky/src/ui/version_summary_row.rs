@@ -1,4 +1,4 @@
-use blocky_core::gobject::GBlockyVersionSummary;
+use blocky_core::gobject::GVersionSummary;
 use glib::subclass::InitializingObject;
 use glib::{IsA, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue, Value};
 use gtk::prelude::InitializingWidgetExt;
@@ -20,7 +20,7 @@ mod imp {
         #[template_child]
         pub release_label: TemplateChild<gtk::Label>,
 
-        pub version_summary: RefCell<GBlockyVersionSummary>,
+        pub version_summary: RefCell<GVersionSummary>,
     }
 
     #[glib::object_subclass]
@@ -45,7 +45,7 @@ mod imp {
                     "version-summary",
                     "Version Summary",
                     "Version Summary",
-                    GBlockyVersionSummary::static_type(),
+                    GVersionSummary::static_type(),
                     ParamFlags::READWRITE | ParamFlags::CONSTRUCT_ONLY,
                 )]
             });
@@ -54,7 +54,7 @@ mod imp {
 
         fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
             match pspec.name() {
-                "version-summary" => match value.get::<GBlockyVersionSummary>() {
+                "version-summary" => match value.get::<GVersionSummary>() {
                     Ok(value) => *self.version_summary.borrow_mut() = value,
                     Err(err) => {
                         error!("Set version-summary: {}", err);
@@ -94,7 +94,7 @@ glib::wrapper! {
 }
 
 impl BlockyVersionSummaryRow {
-    pub fn new(version: &GBlockyVersionSummary) -> Self {
+    pub fn new(version: &GVersionSummary) -> Self {
         glib::Object::new(&[("version-summary", version)]).unwrap()
     }
 
@@ -106,14 +106,14 @@ impl BlockyVersionSummaryRow {
         self.bind_property("release-time", &imp.release_label.get(), "label");
     }
 
-    pub fn set_version_summary(&self, summary: &GBlockyVersionSummary) {
+    pub fn set_version_summary(&self, summary: &GVersionSummary) {
         let imp = imp::BlockyVersionSummaryRow::from_instance(self);
 
         *imp.version_summary.borrow_mut() = summary.clone();
         self.notify("version-summary");
     }
 
-    pub fn version_summary(&self) -> GBlockyVersionSummary {
+    pub fn version_summary(&self) -> GVersionSummary {
         self.property("version-summary")
     }
 

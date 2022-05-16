@@ -1,6 +1,5 @@
 use super::error::{AuthenticationError, TokenKind};
 use crate::consts;
-use crate::consts::MC_PROFILE_URL;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -17,7 +16,7 @@ impl MinecraftProfile {
     pub fn get_profile(minecraft_token: &str) -> Result<Self, AuthenticationError> {
         let http_client = reqwest::blocking::Client::new();
         let response = http_client
-            .get(MC_PROFILE_URL)
+            .get(consts::MC_PROFILE_URL)
             .bearer_auth(minecraft_token)
             .send()?
             .error_for_status()?

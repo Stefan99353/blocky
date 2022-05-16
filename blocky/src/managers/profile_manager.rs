@@ -1,6 +1,7 @@
 use crate::settings::SettingKey;
-use crate::{settings, BlockyApplication};
-use blocky_core::gobject::GBlockyProfile;
+use crate::{helpers, settings, BlockyApplication};
+use blocky_core::gobject::profile::GProfile;
+use blocky_core::profile::Profile;
 use gio::traits::{ListModelExt, SettingsExt};
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -20,7 +21,7 @@ mod imp {
     #[derive(Debug)]
     pub struct BlockyProfileManager {
         pub profiles: ListStore,
-        pub current_profile: RefCell<GBlockyProfile>,
+        pub current_profile: RefCell<GProfile>,
     }
 
     #[glib::object_subclass]
@@ -30,7 +31,7 @@ mod imp {
         type ParentType = glib::Object;
 
         fn new() -> Self {
-            let profiles = ListStore::new(GBlockyProfile::static_type());
+            let profiles = ListStore::new(GProfile::static_type());
 
             Self {
                 profiles,
@@ -54,7 +55,7 @@ mod imp {
                         "current-profile",
                         "Current Profile",
                         "Current Profile",
-                        GBlockyProfile::static_type(),
+                        GProfile::static_type(),
                         ParamFlags::READABLE,
                     ),
                 ]
@@ -89,8 +90,8 @@ impl BlockyProfileManager {
         self.property("profiles")
     }
 
-    pub fn current_profile(&self) -> Option<GBlockyProfile> {
-        let profile = self.property::<GBlockyProfile>("current-profile");
+    pub fn current_profile(&self) -> Option<GProfile> {
+        let profile = self.property::<GProfile>("current-profile");
 
         if profile.uuid().is_nil() {
             return None;
@@ -99,7 +100,7 @@ impl BlockyProfileManager {
         Some(profile)
     }
 
-    pub fn set_current_profile(&self, profile: &GBlockyProfile) {
+    pub fn set_current_profile(&self, profile: &GProfile) {
         let imp = imp::BlockyProfileManager::from_instance(self);
 
         let uuid = profile.uuid().to_string();
@@ -115,15 +116,11 @@ impl BlockyProfileManager {
         }
     }
 
-    pub fn find_profile(&self, uuid: &Uuid) -> Option<GBlockyProfile> {
+    pub fn find_profile(&self, uuid: &Uuid) -> Option<GProfile> {
         let profiles = self.profiles();
 
         for pos in 0..profiles.n_items() {
-            let profile = profiles
-                .item(pos)
-                .unwrap()
-                .downcast::<GBlockyProfile>()
-                .unwrap();
+            let profile = profiles.item(pos).unwrap().downcast::<GProfile>().unwrap();
 
             if &profile.uuid() == uuid {
                 return Some(profile);
@@ -143,9 +140,9 @@ impl BlockyProfileManager {
                         let uuid = p.uuid;
                         let username = p.minecraft_profile.as_ref().unwrap().name.clone();
 
-                        GBlockyProfile::new(&uuid, &username)
+                        GProfile::new(&uuid, &username)
                     })
-                    .collect::<Vec<GBlockyProfile>>();
+                    .collect::<Vec<GProfile>>();
 
                 this.profiles().splice(0, this.profiles().n_items(), &profiles);
 
@@ -165,13 +162,13 @@ impl BlockyProfileManager {
         );
     }
 
-    pub fn full_profiles(&self) -> glib::Receiver<Vec<blocky_core::Profile>> {
+    pub fn full_profiles(&self) -> glib::Receiver<Vec<Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
 
-            match blocky_core::helpers::load_profiles(path) {
+            match helpers::load_profiles(path) {
                 Ok(profiles) => {
                     sender
                         .send(profiles)
@@ -189,24 +186,18 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn find_full_profile(
-        &self,
-        profile: &GBlockyProfile,
-    ) -> glib::Receiver<Option<blocky_core::Profile>> {
+    pub fn find_full_profile(&self, profile: &GProfile) -> glib::Receiver<Option<Profile>> {
         let uuid = profile.uuid();
         self.find_full_profile_by_uuid(uuid)
     }
 
-    pub fn find_full_profile_by_uuid(
-        &self,
-        uuid: Uuid,
-    ) -> glib::Receiver<Option<blocky_core::Profile>> {
+    pub fn find_full_profile_by_uuid(&self, uuid: Uuid) -> glib::Receiver<Option<Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
 
-            match blocky_core::helpers::find_profile(uuid, path) {
+            match helpers::find_profile(uuid, path) {
                 Ok(profile) => {
                     sender
                         .send(profile)
@@ -224,7 +215,7 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn full_current_profile(&self) -> glib::Receiver<Option<blocky_core::Profile>> {
+    pub fn full_current_profile(&self) -> glib::Receiver<Option<Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         if let Some(current_profile) = self.current_profile() {
@@ -233,7 +224,7 @@ impl BlockyProfileManager {
             thread::spawn(move || {
                 let path = settings::get_string(SettingKey::ProfilesFilePath);
 
-                match blocky_core::helpers::find_profile(uuid, path) {
+                match helpers::find_profile(uuid, path) {
                     Ok(profile) => {
                         sender
                             .send(profile)
@@ -256,11 +247,11 @@ impl BlockyProfileManager {
         receiver
     }
 
-    pub fn add_profile(&self, profile: blocky_core::Profile) {
+    pub fn add_profile(&self, profile: Profile) {
         // Add to ListStore
         let uuid = profile.uuid;
         let username = profile.minecraft_profile.as_ref().unwrap().name.clone();
-        let g_profile = GBlockyProfile::new(&uuid, &username);
+        let g_profile = GProfile::new(&uuid, &username);
         self.profiles().append(&g_profile);
 
         // Set as current
@@ -269,13 +260,13 @@ impl BlockyProfileManager {
         // Add to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
-            if let Err(err) = blocky_core::helpers::save_profile(profile, path) {
+            if let Err(err) = helpers::save_profile(profile, path) {
                 error!("Error while saving profile - {}", err);
             }
         });
     }
 
-    pub fn remove_profile(&self, profile: &GBlockyProfile) {
+    pub fn remove_profile(&self, profile: &GProfile) {
         let uuid = profile.uuid();
         self.remove_profile_by_uuid(uuid);
     }
@@ -284,11 +275,7 @@ impl BlockyProfileManager {
         // Remove from ListStore
         let profiles = self.profiles();
         for pos in 0..profiles.n_items() {
-            let profile = profiles
-                .item(pos)
-                .unwrap()
-                .downcast::<GBlockyProfile>()
-                .unwrap();
+            let profile = profiles.item(pos).unwrap().downcast::<GProfile>().unwrap();
 
             if profile.uuid() == uuid {
                 profiles.remove(pos);
@@ -299,7 +286,7 @@ impl BlockyProfileManager {
         // Remove from disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::ProfilesFilePath);
-            if let Err(err) = blocky_core::helpers::remove_profile(uuid, path) {
+            if let Err(err) = helpers::remove_profile(uuid, path) {
                 error!("Error while removing profile - {}", err);
             }
         });

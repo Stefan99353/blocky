@@ -1,10 +1,12 @@
-use crate::profile::entitlements::Entitlements;
-use crate::profile::error::{AuthenticationError, TokenKind};
-use crate::profile::microsoft::MicrosoftToken;
-use crate::profile::minecraft::{MinecraftProfile, MinecraftToken};
-use crate::profile::xbox_live::XboxLiveToken;
-use crate::profile::xbox_live_security::XboxLiveSecurityToken;
-use crate::{consts, Profile};
+use super::entitlements::Entitlements;
+use super::error::{AuthenticationError, TokenKind};
+use super::microsoft::MicrosoftToken;
+use super::minecraft::{MinecraftProfile, MinecraftToken};
+use super::xbox_live::XboxLiveToken;
+use super::xbox_live_security::XboxLiveSecurityToken;
+use super::Profile;
+use crate::consts;
+use crate::error;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use oauth2::{
@@ -17,10 +19,7 @@ use std::net::TcpListener;
 use uuid::Uuid;
 
 impl Profile {
-    pub fn authenticate_microsoft(
-        client_id: &str,
-        client_secret: &str,
-    ) -> Result<Self, crate::error::Error> {
+    pub fn authenticate_microsoft(client_id: &str, client_secret: &str) -> error::Result<Self> {
         debug!("Authenticate with Microsoft");
 
         trace!("Setting up TCP listener");
@@ -83,7 +82,7 @@ impl Profile {
         Ok(profile)
     }
 
-    pub fn authenticate_xbox_live(&mut self) -> Result<(), crate::error::Error> {
+    pub fn authenticate_xbox_live(&mut self) -> error::Result<()> {
         debug!("Authenticate with XBox Live");
 
         self.microsoft.check_expired()?;
@@ -94,7 +93,7 @@ impl Profile {
         Ok(())
     }
 
-    pub fn authenticate_xbox_live_security(&mut self) -> Result<(), crate::error::Error> {
+    pub fn authenticate_xbox_live_security(&mut self) -> error::Result<()> {
         debug!("Authenticate with XBox Live Security");
 
         match &self.xbox_live {
@@ -110,7 +109,7 @@ impl Profile {
         }
     }
 
-    pub fn authenticate_minecraft(&mut self) -> Result<(), crate::error::Error> {
+    pub fn authenticate_minecraft(&mut self) -> error::Result<()> {
         debug!("Authenticate with Minecraft");
 
         match &self.xbox_live_security {
@@ -131,7 +130,7 @@ impl Profile {
         }
     }
 
-    pub fn refresh(&mut self, client_id: &str, client_secret: &str) -> crate::error::Result<()> {
+    pub fn refresh(&mut self, client_id: &str, client_secret: &str) -> error::Result<()> {
         debug!("Refreshing tokens");
 
         if let Some(refresh_token) = &self.microsoft.refresh_token {
@@ -159,7 +158,7 @@ impl Profile {
         Ok(())
     }
 
-    pub fn set_entitlements(&mut self) -> Result<(), crate::error::Error> {
+    pub fn set_entitlements(&mut self) -> error::Result<()> {
         debug!("Get Minecraft entitlements");
 
         match &self.minecraft {
@@ -175,7 +174,7 @@ impl Profile {
         }
     }
 
-    pub fn set_profile(&mut self) -> Result<(), crate::error::Error> {
+    pub fn set_profile(&mut self) -> error::Result<()> {
         debug!("Get Minecraft profile");
 
         match &self.minecraft {
@@ -204,9 +203,7 @@ impl Profile {
     }
 }
 
-fn receive_authorization_code(
-    listener: TcpListener,
-) -> Result<AuthorizationCode, AuthenticationError> {
+fn receive_authorization_code(listener: TcpListener) -> error::Result<AuthorizationCode> {
     let (mut stream, _) = listener
         .accept()
         .map_err(AuthenticationError::TcpListener)?;

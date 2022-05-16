@@ -4,8 +4,8 @@ use crate::settings::SettingKey;
 use crate::ui::BlockyApplicationWindow;
 use crate::utils::version_summary::{fetch_manifest, filter_versions, version_list_factory};
 use adw::prelude::*;
-use blocky_core::gobject::GBlockyVersionSummary;
-use blocky_core::instance::models::VersionSummary;
+use blocky_core::gobject::GVersionSummary;
+use blocky_core::minecraft::models::version_summary::VersionSummary;
 use gettextrs::gettext;
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -23,6 +23,7 @@ use uuid::Uuid;
 
 mod imp {
     use super::*;
+    use blocky_core::minecraft::models::version_summary::VersionSummary;
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/at/stefan99353/Blocky/ui/new_instance_dialog.ui")]
@@ -82,7 +83,7 @@ mod imp {
         type ParentType = gtk::Dialog;
 
         fn new() -> Self {
-            let list_store = gio::ListStore::new(GBlockyVersionSummary::static_type());
+            let list_store = gio::ListStore::new(GVersionSummary::static_type());
 
             let selection = SingleSelection::builder()
                 .autoselect(false)
@@ -160,42 +161,23 @@ impl BlockyNewInstanceDialog {
                 error!("No version is selected");
                 return;
             }
-            Some(version) => version.downcast::<GBlockyVersionSummary>().unwrap().id(),
+            Some(version) => version.downcast::<GVersionSummary>().unwrap().id(),
         };
         let instance_path = imp.instance_dir_label.label().to_string();
         let libraries_path = imp.libraries_dir_label.label().to_string();
         let assets_path = imp.assets_dir_label.label().to_string();
-        let use_fullscreen = settings::get_bool(SettingKey::UseFullscreen);
-        let window_width = settings::get_integer(SettingKey::GameWindowWidth);
-        let window_height = settings::get_integer(SettingKey::GameWindowHeight);
-        let min_memory = settings::get_integer(SettingKey::MinMemory);
-        let max_memory = settings::get_integer(SettingKey::MaxMemory);
         let java_exec = settings::get_string(SettingKey::JavaExec);
 
         let mut instance_builder = blocky_core::instance::InstanceBuilder::default();
-        let mut game_properties_builder = blocky_core::instance::GamePropertiesBuilder::default();
-        let mut process_properties_builder =
-            blocky_core::instance::ProcessPropertiesBuilder::default();
-
-        game_properties_builder
-            .libraries_path(libraries_path)
-            .assets_path(assets_path)
-            .use_fullscreen(use_fullscreen)
-            .window_width(window_width as u32)
-            .window_height(window_height as u32);
-
-        process_properties_builder
-            .min_memory(min_memory as u32)
-            .max_memory(max_memory as u32)
-            .java_exec(java_exec);
 
         instance_builder
             .uuid(uuid)
             .name(name)
             .version(version)
             .instance_path(instance_path)
-            .game(game_properties_builder.build().unwrap())
-            .process(process_properties_builder.build().unwrap());
+            .libraries_path(libraries_path)
+            .assets_path(assets_path)
+            .java_exec(java_exec);
 
         if !description.is_empty() {
             instance_builder.description(description);
@@ -365,7 +347,7 @@ impl BlockyNewInstanceDialog {
         let imp = imp::BlockyNewInstanceDialog::from_instance(self);
 
         if let Some(item) = imp.version_selection_model.selected_item() {
-            let summary = item.downcast::<GBlockyVersionSummary>().unwrap();
+            let summary = item.downcast::<GVersionSummary>().unwrap();
 
             imp.version_expander.set_subtitle(&summary.id());
             imp.version_error_label.set_visible(false);
@@ -397,8 +379,8 @@ impl BlockyNewInstanceDialog {
         let versions = self
             .get_filtered_versions()
             .into_iter()
-            .map(GBlockyVersionSummary::from)
-            .collect::<Vec<GBlockyVersionSummary>>();
+            .map(GVersionSummary::from)
+            .collect::<Vec<GVersionSummary>>();
 
         imp.version_list_store
             .splice(0, imp.version_list_store.n_items(), &versions);

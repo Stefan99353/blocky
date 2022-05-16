@@ -1,40 +1,65 @@
-use crate::instance::install::error::InstallationError;
-use crate::instance::launch::error::LaunchError;
+use crate::minecraft::error::MinecraftError;
 use crate::profile::error::AuthenticationError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("Error while interacting with filesystem: {0}")]
-    Filesystem(std::io::Error),
-
-    #[error("Error while getting resource from web: {0}")]
-    Request(reqwest::Error),
-
-    #[error("Error while serializing/deserializing struct: {0}")]
-    Serde(serde_json::Error),
-
-    #[error("AuthenticationError: {0}")]
+    #[error("{0}")]
     Authentication(AuthenticationError),
 
-    #[error("InstallationError: {0}")]
-    Installation(InstallationError),
+    #[error("{0}")]
+    Minecraft(MinecraftError),
 
-    #[error("LaunchError: {0}")]
-    Launch(LaunchError),
+    #[error("Version '{0}' is invalid")]
+    Version(String),
 
-    #[error("The checksum does not match hash of file: {0}")]
-    Sha1Mismatch(String),
+    #[error("{0}")]
+    IO(std::io::Error),
 
-    #[error("Provided SHA could not be decoded: {0}")]
+    #[error("{0}")]
+    Serde(serde_json::Error),
+
+    #[error("{0}")]
     Sha1Decode(hex::FromHexError),
 
-    #[error("Instance UUID '{0}' was not found on disk")]
-    InstanceNotFound(uuid::Uuid),
+    #[error("{0}")]
+    Download(DownloadError),
+    // #[error("Error while getting resource from web: {0}")]
+    // Request(reqwest::Error),
+    //
+    // #[error("Error while serializing/deserializing struct: {0}")]
+    // Serde(serde_json::Error),
+    //
+    //
+    // #[error("InstallationError: {0}")]
+    // Installation(InstallationError),
+    //
+    // #[error("LaunchError: {0}")]
+    // Launch(LaunchError),
+    //
+    // #[error("The checksum does not match hash of file: {0}")]
+    // Sha1Mismatch(String),
+    //
 
-    #[error("Profile UUID '{0}' was not found on disk")]
-    ProfileNotFound(uuid::Uuid),
+    //
+    // #[error("Instance UUID '{0}' was not found on disk")]
+    // InstanceNotFound(uuid::Uuid),
+    //
+    // #[error("Profile UUID '{0}' was not found on disk")]
+    // ProfileNotFound(uuid::Uuid),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum DownloadError {
+    #[error("The checksum does not match hash of file '{0}'")]
+    Sha1Mismatch(String),
+
+    #[error("{0}")]
+    Reqwest(reqwest::Error),
+
+    #[error("{0}")]
+    IO(std::io::Error),
 }
 
 impl From<AuthenticationError> for Error {
@@ -43,20 +68,32 @@ impl From<AuthenticationError> for Error {
     }
 }
 
-impl From<InstallationError> for Error {
-    fn from(err: InstallationError) -> Self {
-        Self::Installation(err)
+impl From<MinecraftError> for Error {
+    fn from(err: MinecraftError) -> Self {
+        Self::Minecraft(err)
     }
 }
 
-impl From<LaunchError> for Error {
-    fn from(err: LaunchError) -> Self {
-        Self::Launch(err)
+impl From<DownloadError> for Error {
+    fn from(err: DownloadError) -> Self {
+        Self::Download(err)
     }
 }
 
-impl From<hex::FromHexError> for Error {
-    fn from(err: hex::FromHexError) -> Self {
-        Self::Sha1Decode(err)
-    }
-}
+// impl From<InstallationError> for Error {
+//     fn from(err: InstallationError) -> Self {
+//         Self::Installation(err)
+//     }
+// }
+//
+// impl From<LaunchError> for Error {
+//     fn from(err: LaunchError) -> Self {
+//         Self::Launch(err)
+//     }
+// }
+//
+// impl From<hex::FromHexError> for Error {
+//     fn from(err: hex::FromHexError) -> Self {
+//         Self::Sha1Decode(err)
+//     }
+// }

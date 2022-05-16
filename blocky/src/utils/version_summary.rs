@@ -1,6 +1,8 @@
+use crate::helpers;
 use crate::ui::BlockyVersionSummaryRow;
-use blocky_core::gobject::GBlockyVersionSummary;
-use blocky_core::instance::models::{VersionSummary, VersionType};
+use blocky_core::gobject::GVersionSummary;
+use blocky_core::minecraft::models::version_summary::VersionSummary;
+use blocky_core::minecraft::models::version_type::VersionType;
 use glib::Cast;
 use gtk::SignalListItemFactory;
 use itertools::Itertools;
@@ -15,7 +17,7 @@ pub fn version_list_factory() -> SignalListItemFactory {
         let version_summary = list_item
             .item()
             .unwrap()
-            .downcast::<GBlockyVersionSummary>()
+            .downcast::<GVersionSummary>()
             .unwrap();
 
         let row = BlockyVersionSummaryRow::new(&version_summary);
@@ -27,7 +29,7 @@ pub fn version_list_factory() -> SignalListItemFactory {
 
 pub fn fetch_manifest() -> glib::Receiver<HashMap<String, VersionSummary>> {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-    thread::spawn(move || match blocky_core::helpers::get_manifest() {
+    thread::spawn(move || match helpers::get_manifest() {
         Ok(manifest) => {
             sender
                 .send(manifest)

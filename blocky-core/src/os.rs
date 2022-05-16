@@ -34,14 +34,14 @@ impl Platform {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub enum Arch {
+pub enum Architecture {
     #[serde(alias = "x86")]
     I386,
     #[serde(alias = "x86_64")]
     AMD64,
 }
 
-impl Arch {
+impl Architecture {
     pub fn current() -> Self {
         if cfg!(target_pointer_width = "32") {
             Self::I386
@@ -52,8 +52,8 @@ impl Arch {
 
     pub fn get_bits(&self) -> u8 {
         match self {
-            Arch::I386 => 32,
-            Arch::AMD64 => 64,
+            Architecture::I386 => 32,
+            Architecture::AMD64 => 64,
         }
     }
 }

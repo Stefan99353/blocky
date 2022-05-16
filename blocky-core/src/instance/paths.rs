@@ -1,4 +1,4 @@
-use crate::Instance;
+use super::Instance;
 use std::path::PathBuf;
 
 impl Instance {
@@ -13,7 +13,7 @@ impl Instance {
     }
 
     pub fn libraries_path(&self) -> PathBuf {
-        PathBuf::from(&self.game.libraries_path)
+        PathBuf::from(&self.libraries_path)
     }
 
     pub fn natives_path(&self) -> PathBuf {
@@ -23,18 +23,12 @@ impl Instance {
     }
 
     pub fn assets_path(&self) -> PathBuf {
-        PathBuf::from(&self.game.assets_path)
+        PathBuf::from(&self.assets_path)
     }
 
     pub fn resources_path(&self) -> PathBuf {
         let mut path = self.assets_path();
         path.push("resources");
-        path
-    }
-
-    pub fn virtual_assets_path(&self) -> PathBuf {
-        let mut path = self.dot_minecraft_path();
-        path.push("assets");
         path
     }
 
@@ -53,12 +47,6 @@ impl Instance {
     pub fn dot_minecraft_path(&self) -> PathBuf {
         let mut path = self.instance_path();
         path.push(".minecraft");
-        path
-    }
-
-    pub fn dot_minecraft_resources_path(&self) -> PathBuf {
-        let mut path = self.dot_minecraft_path();
-        path.push("resources");
         path
     }
 }

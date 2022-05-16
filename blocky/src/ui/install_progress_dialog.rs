@@ -1,6 +1,6 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
-use blocky_core::instance::resource_update::ResourceInstallationUpdate;
+use blocky_core::minecraft::installation_update::InstallationUpdate;
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -84,16 +84,26 @@ impl BlockyInstallProgressDialog {
         actions.add_action(&cancel_action);
     }
 
-    pub fn update_widgets(&self, update: ResourceInstallationUpdate) {
+    pub fn update_widgets(&self, update: InstallationUpdate) {
         let imp = imp::BlockyInstallProgressDialog::from_instance(self);
 
-        let fraction = update.n as f64 / update.total as f64;
+        let progress = match &update {
+            InstallationUpdate::Library(progress) => progress,
+            InstallationUpdate::Asset(progress) => progress,
+            InstallationUpdate::LogConfig(progress) => progress,
+            InstallationUpdate::Client(progress) => progress,
+            _ => unreachable!(),
+        };
+
+        let fraction = progress.current_file as f64 / progress.total_files as f64;
         imp.progress_bar.set_fraction(fraction);
         imp.spinner.start();
 
         imp.status_label.set_label(&format!(
             "Installing {:?}: {} of {}",
-            &update.resource_type, update.n, update.total
+            &update.resource_type(),
+            progress.current_file,
+            progress.total_files
         ));
     }
 

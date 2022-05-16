@@ -4,14 +4,13 @@ extern crate log;
 #[allow(dead_code)]
 mod consts;
 mod either;
-pub mod error;
+mod error;
+mod os;
+mod utils;
+
+pub mod instance;
+pub mod minecraft;
+pub mod profile;
+
 #[cfg(feature = "gobject")]
 pub mod gobject;
-#[cfg(feature = "helpers")]
-pub mod helpers;
-pub mod instance;
-mod os;
-mod profile;
-
-pub use instance::Instance;
-pub use profile::Profile;

@@ -6,9 +6,8 @@ edition = "2021"
 license = "MIT"
 
 [features]
-default = ["gobject", "helpers"]
+default = ["gobject"]
 gobject = ["gio", "glib", "once_cell"]
-helpers = []
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }

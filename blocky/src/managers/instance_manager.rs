@@ -1,10 +1,12 @@
+use crate::helpers::{build_launch_options, find_profile, find_refresh_save, launch_instance};
 use crate::managers::BlockyProfileManager;
 use crate::settings::SettingKey;
-use crate::{config, settings, BlockyApplication};
-use blocky_core::error::Error;
-use blocky_core::gobject::GBlockyInstance;
-use blocky_core::instance::launch_options::{GlobalLaunchOptions, GlobalLaunchOptionsBuilder};
-use blocky_core::instance::resource_update::ResourceInstallationUpdate;
+use crate::{config, helpers, settings, BlockyApplication};
+use blocky_core::gobject::GInstance;
+use blocky_core::instance::Instance;
+use blocky_core::minecraft::installation_update::InstallationUpdate;
+use blocky_core::minecraft::launch_options::{LaunchOptions, LaunchOptionsBuilder};
+use blocky_core::profile::Profile;
 use gio::prelude::*;
 use gio::ListStore;
 use glib::subclass::prelude::*;
@@ -35,7 +37,7 @@ mod imp {
         type ParentType = glib::Object;
 
         fn new() -> Self {
-            let instances = ListStore::new(GBlockyInstance::static_type());
+            let instances = ListStore::new(GInstance::static_type());
 
             Self {
                 instances,
@@ -84,14 +86,14 @@ impl BlockyInstanceManager {
         self.property("instances")
     }
 
-    pub fn find_instance(&self, uuid: &Uuid) -> Option<GBlockyInstance> {
+    pub fn find_instance(&self, uuid: &Uuid) -> Option<GInstance> {
         let instances = self.instances();
 
         for pos in 0..instances.n_items() {
             let instance = instances
                 .item(pos)
                 .unwrap()
-                .downcast::<GBlockyInstance>()
+                .downcast::<GInstance>()
                 .unwrap();
 
             if &instance.uuid() == uuid {
@@ -108,8 +110,8 @@ impl BlockyInstanceManager {
             glib::clone!(@weak self as this => @default-return glib::Continue(false), move |instances| {
                 // Add instances
                 let instances = instances.into_iter()
-                    .map(GBlockyInstance::from)
-                    .collect::<Vec<GBlockyInstance>>();
+                    .map(GInstance::from)
+                    .collect::<Vec<GInstance>>();
 
                 this.instances().splice(0, this.instances().n_items(), &instances);
                 this.notify("instances");
@@ -119,13 +121,13 @@ impl BlockyInstanceManager {
         );
     }
 
-    pub fn full_instances(&self) -> glib::Receiver<Vec<blocky_core::Instance>> {
+    pub fn full_instances(&self) -> glib::Receiver<Vec<Instance>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
 
-            match blocky_core::helpers::load_instances(path) {
+            match helpers::load_instances(path) {
                 Ok(instances) => {
                     sender
                         .send(instances)
@@ -143,24 +145,18 @@ impl BlockyInstanceManager {
         receiver
     }
 
-    pub fn find_full_instance(
-        &self,
-        instance: &GBlockyInstance,
-    ) -> glib::Receiver<Option<blocky_core::Instance>> {
+    pub fn find_full_instance(&self, instance: &GInstance) -> glib::Receiver<Option<Instance>> {
         let uuid = instance.uuid();
         self.find_full_instance_by_uuid(uuid)
     }
 
-    pub fn find_full_instance_by_uuid(
-        &self,
-        uuid: Uuid,
-    ) -> glib::Receiver<Option<blocky_core::Instance>> {
+    pub fn find_full_instance_by_uuid(&self, uuid: Uuid) -> glib::Receiver<Option<Instance>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
 
-            match blocky_core::helpers::find_instance(uuid, path) {
+            match helpers::find_instance(uuid, path) {
                 Ok(instance) => {
                     sender
                         .send(instance)
@@ -178,31 +174,31 @@ impl BlockyInstanceManager {
         receiver
     }
 
-    pub fn add_instance(&self, instance: blocky_core::Instance) {
+    pub fn add_instance(&self, instance: Instance) {
         // Add to ListStore
-        let g_instance = GBlockyInstance::from(instance.clone());
+        let g_instance = GInstance::from(instance.clone());
         self.instances().append(&g_instance);
         self.notify("instances");
 
         // Add to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = blocky_core::helpers::save_instance(instance, path) {
+            if let Err(err) = helpers::save_instance(instance, path) {
                 error!("Error while saving instance - {}", err);
             }
         });
     }
 
-    pub fn update_instance(&self, instance: blocky_core::Instance) {
+    pub fn update_instance(&self, instance: Instance) {
         let uuid = instance.uuid;
-        let g_instance = GBlockyInstance::from(instance.clone());
+        let g_instance = GInstance::from(instance.clone());
 
         let instances = self.instances();
         for pos in 0..instances.n_items() {
             let instance = instances
                 .item(pos)
                 .unwrap()
-                .downcast::<GBlockyInstance>()
+                .downcast::<GInstance>()
                 .unwrap();
 
             if instance.uuid() == uuid {
@@ -215,13 +211,13 @@ impl BlockyInstanceManager {
         // Save to disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = blocky_core::helpers::save_instance(instance, path) {
+            if let Err(err) = helpers::save_instance(instance, path) {
                 error!("Error while saving instance - {}", err);
             }
         });
     }
 
-    pub fn remove_instance(&self, instance: &GBlockyInstance) {
+    pub fn remove_instance(&self, instance: &GInstance) {
         let uuid = instance.uuid();
         self.remove_instance_by_uuid(uuid);
     }
@@ -233,7 +229,7 @@ impl BlockyInstanceManager {
             let instance = instances
                 .item(pos)
                 .unwrap()
-                .downcast::<GBlockyInstance>()
+                .downcast::<GInstance>()
                 .unwrap();
 
             if instance.uuid() == uuid {
@@ -247,16 +243,13 @@ impl BlockyInstanceManager {
         // Remove from disk
         thread::spawn(move || {
             let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = blocky_core::helpers::remove_instance(uuid, path) {
+            if let Err(err) = helpers::remove_instance(uuid, path) {
                 error!("Error while removing instance - {}", err);
             }
         });
     }
 
-    pub fn install_instance(
-        &self,
-        uuid: Uuid,
-    ) -> glib::Receiver<blocky_core::error::Result<Option<ResourceInstallationUpdate>>> {
+    pub fn install_instance(&self, uuid: Uuid) -> glib::Receiver<InstallationUpdate> {
         info!("Installing instance '{}'", &uuid);
         let imp = imp::BlockyInstanceManager::from_instance(self);
         imp.cancel_current_installation
@@ -267,7 +260,7 @@ impl BlockyInstanceManager {
 
         let cancel_flag = imp.cancel_current_installation.clone();
         thread::spawn(move || {
-            let receiver = blocky_core::helpers::install_threaded(uuid, path.clone(), cancel_flag);
+            let receiver = helpers::install_threaded(uuid, path.clone(), cancel_flag);
 
             while let Ok(update) = receiver.recv() {
                 g_sender
@@ -290,26 +283,23 @@ impl BlockyInstanceManager {
         let instances_path = settings::get_string(SettingKey::InstancesFilePath);
         let profiles_path = settings::get_string(SettingKey::ProfilesFilePath);
 
+        // TODO: Offline launch
         thread::spawn(move || {
             let current_profile = BlockyProfileManager::default().current_profile();
-
             if current_profile.is_none() {
                 error!("No profile selected");
-                // TODO: Offline launch
+                return;
+            }
+            let profile_uuid = current_profile.unwrap().uuid();
+
+            let launch_options =
+                build_launch_options(uuid, instances_path.clone(), profile_uuid, profiles_path);
+            if let Err(err) = launch_options {
+                error!("Error while building launch options: {}", err);
                 return;
             }
 
-            let profile_uuid = current_profile.unwrap().uuid();
-
-            let launch_result = blocky_core::helpers::launch_instance(
-                uuid,
-                instances_path,
-                profile_uuid,
-                profiles_path,
-                launch_options(),
-                config::MS_GRAPH_ID,
-                config::MS_GRAPH_SECRET,
-            );
+            let launch_result = launch_instance(uuid, instances_path, launch_options.unwrap());
 
             if let Err(err) = launch_result {
                 error!("Error while launching instance: {}", err);
@@ -321,29 +311,19 @@ impl BlockyInstanceManager {
         let (g_sender, g_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
         let path = settings::get_string(SettingKey::InstancesFilePath);
 
-        thread::spawn(
-            move || match blocky_core::helpers::check_install_state(uuid, path) {
-                Ok(installed) => {
-                    g_sender
-                        .send(installed)
-                        .expect("Could not send status through channel");
-                }
-                Err(err) => match err {
-                    Error::InstanceNotFound(uuid) => {
-                        debug!("Instance not yet installed: {}", uuid);
-                        g_sender
-                            .send(false)
-                            .expect("Could not send status through channel");
-                    }
-                    err => {
-                        error!("Error while checking installed state: {}", err);
-                        g_sender
-                            .send(false)
-                            .expect("Could not send status through channel");
-                    }
-                },
-            },
-        );
+        thread::spawn(move || match helpers::check_install_state(uuid, path) {
+            Ok(installed) => {
+                g_sender
+                    .send(installed)
+                    .expect("Could not send status through channel");
+            }
+            Err(err) => {
+                error!("Error while checking installed state: {}", err);
+                g_sender
+                    .send(false)
+                    .expect("Could not send status through channel");
+            }
+        });
 
         g_receiver
     }
@@ -353,24 +333,4 @@ impl Default for BlockyInstanceManager {
     fn default() -> Self {
         BlockyApplication::default().instance_manager()
     }
-}
-
-fn launch_options() -> GlobalLaunchOptions {
-    let mut builder = GlobalLaunchOptionsBuilder::default();
-
-    builder
-        .launcher_name("Blocky".to_string())
-        .launcher_version(env!("CARGO_PKG_VERSION").to_string())
-        .use_fullscreen(settings::get_bool(SettingKey::UseFullscreen))
-        .enable_window_size(settings::get_bool(SettingKey::EnableWindowSize))
-        .window_width(settings::get_integer(SettingKey::GameWindowWidth) as u32)
-        .window_height(settings::get_integer(SettingKey::GameWindowHeight) as u32)
-        .enable_memory(settings::get_bool(SettingKey::EnableMemory))
-        .min_memory(settings::get_integer(SettingKey::MinMemory) as u32)
-        .max_memory(settings::get_integer(SettingKey::MaxMemory) as u32)
-        .java_exec(settings::get_string(SettingKey::JavaExec))
-        .enable_jvm_args(settings::get_bool(SettingKey::EnableJvmArgs))
-        .jvm_args(settings::get_string(SettingKey::JvmArgs));
-
-    builder.build().unwrap()
 }

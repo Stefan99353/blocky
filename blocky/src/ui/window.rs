@@ -4,7 +4,7 @@ use crate::ui::BlockyContentBox;
 use crate::ui::BlockyInstancePage;
 use crate::{config, settings, BlockyApplication};
 use adw::subclass::prelude::*;
-use blocky_core::gobject::GBlockyProfile;
+use blocky_core::gobject::GProfile;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{CompositeTemplate, TemplateChild};
@@ -151,11 +151,7 @@ impl BlockyApplicationWindow {
         imp.profile_combo_box.remove_all();
 
         for pos in 0..profiles.n_items() {
-            let profile = profiles
-                .item(pos)
-                .unwrap()
-                .downcast::<GBlockyProfile>()
-                .unwrap();
+            let profile = profiles.item(pos).unwrap().downcast::<GProfile>().unwrap();
 
             let uuid = profile.uuid().to_string();
             let username = profile.username();

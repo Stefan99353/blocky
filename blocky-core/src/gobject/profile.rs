@@ -11,19 +11,19 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct GBlockyProfile {
+    pub struct GProfile {
         pub uuid: OnceCell<String>,
         pub username: OnceCell<String>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for GBlockyProfile {
-        const NAME: &'static str = "GBlockyProfile";
-        type Type = super::GBlockyProfile;
+    impl ObjectSubclass for GProfile {
+        const NAME: &'static str = "GProfile";
+        type Type = super::GProfile;
         type ParentType = glib::Object;
     }
 
-    impl ObjectImpl for GBlockyProfile {
+    impl ObjectImpl for GProfile {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
@@ -52,7 +52,7 @@ mod imp {
                 UUID => self.uuid.set(value.get().unwrap()).unwrap(),
                 USERNAME => self.username.set(value.get().unwrap()).unwrap(),
                 x => {
-                    error!("Property {} not a member of GBlockyProfile", x);
+                    error!("Property {} not a member of GProfile", x);
                     unimplemented!()
                 }
             }
@@ -63,7 +63,7 @@ mod imp {
                 UUID => self.uuid.get().to_value(),
                 USERNAME => self.username.get().to_value(),
                 x => {
-                    error!("Property {} not a member of GBlockyProfile", x);
+                    error!("Property {} not a member of GProfile", x);
                     unimplemented!()
                 }
             }
@@ -72,10 +72,10 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct GBlockyProfile(ObjectSubclass<imp::GBlockyProfile>);
+    pub struct GProfile(ObjectSubclass<imp::GProfile>);
 }
 
-impl GBlockyProfile {
+impl GProfile {
     pub fn new(uuid: &Uuid, username: &str) -> Self {
         let uuid = uuid.to_string();
         glib::Object::new(&[(UUID, &uuid.as_str()), (USERNAME, &username)]).unwrap()
@@ -91,7 +91,7 @@ impl GBlockyProfile {
     }
 }
 
-impl Default for GBlockyProfile {
+impl Default for GProfile {
     fn default() -> Self {
         let uuid = Uuid::nil();
         let username = "";

@@ -1,6 +1,6 @@
 use crate::ui::BlockyInstanceRow;
 use adw::subclass::prelude::*;
-use blocky_core::gobject::GBlockyInstance;
+use blocky_core::gobject::GInstance;
 use gio::ListStore;
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
@@ -57,7 +57,7 @@ impl BlockyInstanceGroup {
         let imp = imp::BlockyInstanceGroup::from_instance(self);
 
         imp.listbox.bind_model(Some(&model), |object| {
-            let instance = object.downcast_ref::<GBlockyInstance>().unwrap();
+            let instance = object.downcast_ref::<GInstance>().unwrap();
             BlockyInstanceRow::new(instance).upcast::<gtk::Widget>()
         });
 

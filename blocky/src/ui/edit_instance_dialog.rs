@@ -2,7 +2,8 @@ use crate::managers::BlockyInstanceManager;
 use crate::ui::BlockyApplicationWindow;
 use adw::prelude::*;
 use blocky_core::gobject::instance;
-use blocky_core::gobject::GBlockyInstance;
+use blocky_core::gobject::GInstance;
+use blocky_core::instance::Instance;
 use gettextrs::gettext;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
@@ -70,7 +71,7 @@ mod imp {
         #[template_child]
         pub window_height_spinbutton: TemplateChild<gtk::SpinButton>,
 
-        pub instance: OnceCell<GBlockyInstance>,
+        pub instance: OnceCell<GInstance>,
         pub name_valid: Cell<bool>,
     }
 
@@ -97,7 +98,7 @@ mod imp {
                     "instance",
                     "Instance",
                     "Instance",
-                    GBlockyInstance::static_type(),
+                    GInstance::static_type(),
                     ParamFlags::READWRITE | ParamFlags::CONSTRUCT_ONLY,
                 )]
             });
@@ -152,7 +153,7 @@ impl BlockyEditInstanceDialog {
         let instance_manager = BlockyInstanceManager::default();
         info!("Saving instance");
 
-        let instance = blocky_core::Instance::from(self.instance());
+        let instance = Instance::from(self.instance());
         instance_manager.update_instance(instance);
         self.close();
     }
@@ -175,7 +176,7 @@ impl BlockyEditInstanceDialog {
 
 impl BlockyEditInstanceDialog {
     #[allow(clippy::new_without_default)]
-    pub fn new(instance: &GBlockyInstance) -> Self {
+    pub fn new(instance: &GInstance) -> Self {
         let dialog: Self =
             glib::Object::new(&[("use-header-bar", &1), ("instance", instance)]).unwrap();
 
@@ -345,7 +346,7 @@ impl BlockyEditInstanceDialog {
         imp.stack.set_visible_child_name(view.get_id())
     }
 
-    pub fn instance(&self) -> GBlockyInstance {
+    pub fn instance(&self) -> GInstance {
         self.property("instance")
     }
 

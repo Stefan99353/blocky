@@ -2,6 +2,7 @@ use crate::config;
 use crate::managers::BlockyProfileManager;
 use crate::ui::BlockyApplicationWindow;
 use crate::utils::update;
+use blocky_core::profile::Profile;
 use gettextrs::gettext;
 use glib::subclass::prelude::*;
 use glib::subclass::InitializingObject;
@@ -79,9 +80,9 @@ impl BlockyNewProfileDialog {
         debug!("Start authentication sequence");
         self.set_view(View::Loading);
 
-        let (sender, receiver) = glib::MainContext::channel::<
-            update::StatusUpdate<String, blocky_core::Profile>,
-        >(glib::PRIORITY_DEFAULT);
+        let (sender, receiver) = glib::MainContext::channel::<update::StatusUpdate<String, Profile>>(
+            glib::PRIORITY_DEFAULT,
+        );
 
         thread::spawn(move || {
             sender
@@ -89,11 +90,9 @@ impl BlockyNewProfileDialog {
                     "Authenticating at Microsoft",
                 )))
                 .expect("Could not send through channel");
-            let mut profile = blocky_core::Profile::authenticate_microsoft(
-                config::MS_GRAPH_ID,
-                config::MS_GRAPH_SECRET,
-            )
-            .unwrap();
+            let mut profile =
+                Profile::authenticate_microsoft(config::MS_GRAPH_ID, config::MS_GRAPH_SECRET)
+                    .unwrap();
 
             sender
                 .send(update::StatusUpdate::Update(gettext(
@@ -155,7 +154,7 @@ impl BlockyNewProfileDialog {
         );
     }
 
-    fn add_profile(&self, profile: blocky_core::Profile) {
+    fn add_profile(&self, profile: Profile) {
         let profile_manager = BlockyProfileManager::default();
         profile_manager.add_profile(profile);
         self.close();

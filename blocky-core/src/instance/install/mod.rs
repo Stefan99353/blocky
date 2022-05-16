@@ -1,64 +1,40 @@
-use crate::error::Error;
-use crate::instance::resource_update::ResourceInstallationUpdate;
-use crate::Instance;
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
-
 mod asset_index;
 mod assets;
 mod check;
 mod client;
-pub mod error;
 mod libraries;
 mod log_config;
-mod paths;
 mod version_data;
+
+use crate::error;
+use crate::instance::Instance;
+use crate::minecraft::installation_update::InstallationUpdate;
+use crossbeam_channel::Sender;
+use std::fs;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 
 impl Instance {
     pub fn full_install(
         &self,
-        sender: crossbeam_channel::Sender<crate::error::Result<Option<ResourceInstallationUpdate>>>,
+        update_sender: Sender<InstallationUpdate>,
         cancel: Arc<AtomicBool>,
-    ) {
-        debug!("Installing instance {}", &self.uuid);
+    ) -> error::Result<()> {
+        // Prepare needed files
+        fs::create_dir_all(self.instance_path()).map_err(error::Error::IO)?;
+        self.save_version_data()?;
+        self.save_asset_index()?;
 
-        // Create folders
-        if let Err(err) = self.install_paths() {
-            let _ = sender.send(Err(Error::Filesystem(err)));
-            return;
-        }
+        // Install resources
+        self.install_libraries(update_sender.clone(), cancel.clone())?;
+        debug!("Installing assets");
+        self.install_assets(update_sender.clone(), cancel.clone())?;
+        self.install_log_config(update_sender.clone(), cancel.clone())?;
+        self.install_client(update_sender.clone(), cancel)?;
 
-        if let Err(err) = self.install_version_data(sender.clone(), cancel.clone()) {
-            let _ = sender.send(Err(err));
-            return;
-        }
+        // Done
+        let _ = update_sender.send(InstallationUpdate::Success);
 
-        if let Err(err) = self.install_libraries(sender.clone(), cancel.clone()) {
-            let _ = sender.send(Err(err));
-            return;
-        }
-
-        if let Err(err) = self.install_asset_index(sender.clone(), cancel.clone()) {
-            let _ = sender.send(Err(err));
-            return;
-        }
-
-        if let Err(err) = self.install_assets(sender.clone(), cancel.clone()) {
-            let _ = sender.send(Err(err));
-            return;
-        }
-
-        if let Err(err) = self.install_log_config(sender.clone(), cancel.clone()) {
-            let _ = sender.send(Err(err));
-            return;
-        }
-
-        if let Err(err) = self.install_client(sender.clone(), cancel) {
-            let _ = sender.send(Err(err));
-            return;
-        }
-
-        debug!("Finished installing instance");
-        let _ = sender.send(Ok(None));
+        Ok(())
     }
 }

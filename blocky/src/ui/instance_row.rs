@@ -1,8 +1,9 @@
 use crate::managers::BlockyInstanceManager;
 use crate::ui::edit_instance_dialog::BlockyEditInstanceDialog;
 use crate::ui::{BlockyApplicationWindow, BlockyInstallProgressDialog};
-use blocky_core::gobject::GBlockyInstance;
-use blocky_core::instance::resource_update::ResourceInstallationUpdate;
+use blocky_core::gobject::GInstance;
+use blocky_core::instance::Instance;
+use blocky_core::minecraft::installation_update::InstallationUpdate;
 use gettextrs::gettext;
 use glib::subclass::InitializingObject;
 use glib::ToValue;
@@ -32,7 +33,7 @@ mod imp {
         pub launch_button: TemplateChild<gtk::Button>,
 
         pub popover_menu: OnceCell<gtk::PopoverMenu>,
-        pub instance: OnceCell<GBlockyInstance>,
+        pub instance: OnceCell<GInstance>,
     }
 
     #[glib::object_subclass]
@@ -57,7 +58,7 @@ mod imp {
                     "instance",
                     "Instance",
                     "Instance",
-                    GBlockyInstance::static_type(),
+                    GInstance::static_type(),
                     ParamFlags::READWRITE | ParamFlags::CONSTRUCT_ONLY,
                 )]
             });
@@ -110,7 +111,7 @@ glib::wrapper! {
 }
 
 impl BlockyInstanceRow {
-    pub fn new(instance: &GBlockyInstance) -> Self {
+    pub fn new(instance: &GInstance) -> Self {
         glib::Object::new(&[("instance", instance)]).unwrap()
     }
 
@@ -156,7 +157,7 @@ impl BlockyInstanceRow {
         imp.popover_menu.get().unwrap().popup();
     }
 
-    pub fn instance(&self) -> GBlockyInstance {
+    pub fn instance(&self) -> GInstance {
         self.property("instance")
     }
 
@@ -173,7 +174,7 @@ impl BlockyInstanceRow {
     }
 }
 
-fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
+fn install_actions(instance: &GInstance, widget: gtk::Widget) {
     let actions = gio::SimpleActionGroup::new();
     widget.insert_action_group("instance", Some(&actions));
     let window = BlockyApplicationWindow::default();
@@ -218,7 +219,7 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
     // instance.edit
     let edit_action = gio::SimpleAction::new("edit", None);
     edit_action.connect_activate(glib::clone!(@weak instance => move |_, _| {
-        let instance = blocky_core::Instance::from(instance);
+        let instance = Instance::from(instance);
         let dialog = BlockyEditInstanceDialog::new(&instance.into());
         dialog.show();
     }));
@@ -237,29 +238,25 @@ fn install_actions(instance: &GBlockyInstance, widget: gtk::Widget) {
 }
 
 fn process_install_update(
-    update: blocky_core::error::Result<Option<ResourceInstallationUpdate>>,
+    update: InstallationUpdate,
     dialog: gtk::Dialog,
     launch_action: gio::SimpleAction,
 ) {
     match update {
-        Ok(update) => {
-            match update {
-                None => {
-                    // Update finished
-                    let window = BlockyApplicationWindow::default();
-                    launch_action.set_enabled(true);
-                    dialog.close();
-                    window.toast_notification(&gettext("Installation finished."));
-                }
-                Some(update) => {
-                    let dialog = dialog.downcast::<BlockyInstallProgressDialog>().unwrap();
-                    dialog.update_widgets(update);
-                }
-            }
-        }
-        Err(err) => {
-            error!("Error while installing instance: {}", err);
+        InstallationUpdate::Success => {
+            // Update finished
+            let window = BlockyApplicationWindow::default();
+            launch_action.set_enabled(true);
             dialog.close();
+            window.toast_notification(&gettext("Installation finished."));
+        }
+        InstallationUpdate::Cancel => {
+            // Update finished
+            dialog.close();
+        }
+        update => {
+            let dialog = dialog.downcast::<BlockyInstallProgressDialog>().unwrap();
+            dialog.update_widgets(update);
         }
     }
 }
