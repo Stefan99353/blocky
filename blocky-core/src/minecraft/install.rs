@@ -96,7 +96,7 @@ pub fn install_libraries(
             ));
 
             // TODO: Check SHA1
-            download_file_check(&artifact.url, &native_jar_path, None)
+            download_file_check(&native_download_url, &native_jar_path, None)
                 .map_err(MinecraftError::Download)?;
 
             // Extract

@@ -16,8 +16,8 @@ impl Instance {
             client_path.push("bin");
             client_path.push(format!("minecraft-{}-client.jar", &version_data.id));
 
-            if !client_path.is_file() {
-                return Ok(false);
+            if client_path.is_file() {
+                return Ok(true);
             }
         }
 

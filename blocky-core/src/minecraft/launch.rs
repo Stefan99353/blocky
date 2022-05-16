@@ -213,7 +213,6 @@ fn build_classpath(
 
         if let Some(native) = &library.get_native() {
             let native_jar_name = format!("{}-{}-{}.jar", name, version, native);
-            trace!("Add native: {}", &native_jar_name);
             library_path.push(native_jar_name);
         } else {
             let jar_name = format!("{}-{}.jar", name, version);
