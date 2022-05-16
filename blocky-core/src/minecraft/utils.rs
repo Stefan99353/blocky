@@ -30,7 +30,7 @@ pub fn extract_native(
             }
         }
 
-        let mut out_path = PathBuf::from(destination.as_ref().to_string_lossy().to_string());
+        let mut out_path = PathBuf::from(destination.as_ref());
         out_path.push(zip_path);
 
         if out_path.is_file() && file.is_file() {
@@ -48,6 +48,8 @@ pub fn extract_native(
             fs::create_dir_all(&out_path).map_err(MinecraftError::IO)?;
         }
     }
+
+    trace!("Finished extracting");
 
     Ok(())
 }

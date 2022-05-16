@@ -18,6 +18,14 @@ pub fn install_libraries(
     update_sender: Sender<InstallationUpdate>,
     cancel: Arc<AtomicBool>,
 ) -> Result<(), MinecraftError> {
+    debug!("Install libraries");
+    trace!("Version: {}", &version_data.id);
+    trace!(
+        "Libraries Path: {}",
+        libraries_path.as_ref().to_string_lossy()
+    );
+    trace!("Natives Path: {}", natives_path.as_ref().to_string_lossy());
+
     let needed_libraries = version_data.needed_libraries();
     let mut update_progress_template = Progress {
         total_files: needed_libraries.len(),
@@ -25,10 +33,12 @@ pub fn install_libraries(
     };
 
     for (n, library) in needed_libraries.into_iter().enumerate() {
+        trace!("Library: {}", &library.name);
         let artifact = &library.downloads.artifact;
 
         // Check if canceled
         if cancel.load(Ordering::Relaxed) {
+            trace!("Cancel installation");
             let _ = update_sender.send(InstallationUpdate::Cancel);
             return Ok(());
         }
@@ -64,6 +74,7 @@ pub fn install_libraries(
 
         // Native
         if let Some(native) = library.get_native() {
+            trace!("Native: {}", &library.name);
             let native_jar_name = format!("{}-{}-{}.jar", name, version, native);
             let mut native_jar_path = library_path.clone();
             native_jar_path.push(&native_jar_name);
@@ -85,7 +96,7 @@ pub fn install_libraries(
             ));
 
             // TODO: Check SHA1
-            download_file_check(&artifact.url, &jar_path, None)
+            download_file_check(&artifact.url, &native_jar_path, None)
                 .map_err(MinecraftError::Download)?;
 
             // Extract
@@ -104,6 +115,9 @@ pub fn install_assets(
     update_sender: Sender<InstallationUpdate>,
     cancel: Arc<AtomicBool>,
 ) -> Result<(), MinecraftError> {
+    debug!("Install assets");
+    trace!("Assets Path: {}", assets_path.as_ref().to_string_lossy());
+
     let mut objects_path = PathBuf::from(assets_path.as_ref());
     objects_path.push("objects");
 
@@ -113,6 +127,7 @@ pub fn install_assets(
     };
 
     for (n, asset_info) in asset_index.objects.values().enumerate() {
+        trace!("Asset: {}", &asset_info.hash);
         let hash_part: String = asset_info.hash.chars().take(2).collect();
         let asset_url = format!(
             "{}/{}/{}",
@@ -123,6 +138,7 @@ pub fn install_assets(
 
         // Check if canceled
         if cancel.load(Ordering::Relaxed) {
+            trace!("Cancel installation");
             let _ = update_sender.send(InstallationUpdate::Cancel);
             return Ok(());
         }
@@ -156,12 +172,23 @@ pub fn install_resources(
     update_sender: Sender<InstallationUpdate>,
     cancel: Arc<AtomicBool>,
 ) -> Result<(), MinecraftError> {
+    debug!("Install resources");
+    trace!(
+        "Resources Path: {}",
+        resources_path.as_ref().to_string_lossy()
+    );
+    trace!(
+        "Minecraft Path: {}",
+        minecraft_path.as_ref().to_string_lossy()
+    );
+
     let mut update_progress_template = Progress {
         total_files: asset_index.objects.len(),
         ..Default::default()
     };
 
     for (n, (key, asset_info)) in asset_index.objects.iter().enumerate() {
+        trace!("Resource: {}", key);
         let hash_part: String = asset_info.hash.chars().take(2).collect();
         let asset_url = format!(
             "{}/{}/{}",
@@ -172,6 +199,7 @@ pub fn install_resources(
 
         // Check if canceled
         if cancel.load(Ordering::Relaxed) {
+            trace!("Cancel installation");
             let _ = update_sender.send(InstallationUpdate::Cancel);
             return Ok(());
         }
@@ -200,6 +228,7 @@ pub fn install_resources(
     let mut minecraft_resources_path = PathBuf::from(minecraft_path.as_ref());
     minecraft_resources_path.push("resources");
     if !minecraft_resources_path.exists() {
+        trace!("Creating symlink for resources");
         symlink::symlink_dir(&resources_path, minecraft_resources_path)
             .map_err(MinecraftError::IO)?;
     }
@@ -213,9 +242,17 @@ pub fn install_log_config(
     update_sender: Sender<InstallationUpdate>,
     cancel: Arc<AtomicBool>,
 ) -> Result<(), MinecraftError> {
+    debug!("Install log config");
+    trace!("Version: {}", &version_data.id);
+    trace!(
+        "Log Configs Path: {}",
+        log_configs_path.as_ref().to_string_lossy()
+    );
+
     if let Some(logging_info) = &version_data.logging {
         // Check if canceled
         if cancel.load(Ordering::Relaxed) {
+            trace!("Cancel installation");
             let _ = update_sender.send(InstallationUpdate::Cancel);
             return Ok(());
         }
@@ -261,9 +298,17 @@ pub fn install_client(
     update_sender: Sender<InstallationUpdate>,
     cancel: Arc<AtomicBool>,
 ) -> Result<(), MinecraftError> {
+    debug!("Install client");
+    trace!("Version: {}", &version_data.id);
+    trace!(
+        "Minecraft Path: {}",
+        minecraft_path.as_ref().to_string_lossy()
+    );
+
     if let Some(downloads) = &version_data.downloads {
         // Check if canceled
         if cancel.load(Ordering::Relaxed) {
+            trace!("Cancel installation");
             let _ = update_sender.send(InstallationUpdate::Cancel);
             return Ok(());
         }

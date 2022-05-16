@@ -51,18 +51,18 @@ impl Profile {
             .set_pkce_challenge(pkce_challenge)
             .url();
 
-        debug!("Open login URL in default browser");
+        trace!("Open login URL in default browser");
         if let Err(err) = webbrowser::open(login_url.as_str()) {
             error!("Could not open login URL in default browser");
             error!("{}", err);
-            info!("Login URL: {}", login_url);
+            debug!("Login URL: {}", login_url);
         }
 
-        debug!("Waiting for redirect on {}", listen_address);
+        trace!("Waiting for redirect on {}", listen_address);
         // TODO: Mechanism to cancel after N seconds
         let authorization_code = receive_authorization_code(tcp_listener)?;
 
-        debug!("Exchanging authorization code for token");
+        trace!("Exchanging authorization code for token");
         let token_response = oauth_client
             .exchange_code(authorization_code)
             .set_pkce_verifier(pkce_verifier)

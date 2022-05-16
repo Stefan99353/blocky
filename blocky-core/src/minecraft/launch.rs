@@ -7,6 +7,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub fn launch(mut command: Command) -> Result<i32, MinecraftError> {
+    debug!("Launching minecraft");
+    trace!("{:?}", command);
+
     match fork::fork() {
         Ok(fork::Fork::Parent(id)) => {
             return Ok(id);
@@ -38,6 +41,23 @@ pub fn launch_command(
     log_configs_path: impl AsRef<Path>,
     launch_options: &LaunchOptions,
 ) -> Result<Command, MinecraftError> {
+    debug!("Building launch command");
+    trace!("Version: {}", &version_data.id);
+    trace!(
+        "Minecraft Path: {}",
+        minecraft_path.as_ref().to_string_lossy()
+    );
+    trace!(
+        "Libraries Path: {}",
+        libraries_path.as_ref().to_string_lossy()
+    );
+    trace!("Assets Path: {}", assets_path.as_ref().to_string_lossy());
+    trace!("Natives Path: {}", natives_path.as_ref().to_string_lossy());
+    trace!(
+        "Log Configs Path: {}",
+        log_configs_path.as_ref().to_string_lossy()
+    );
+
     let classpath = build_classpath(version_data, &minecraft_path, &libraries_path)?;
     let argument_replacements = ArgumentReplacements::build(
         launch_options,
@@ -98,6 +118,8 @@ fn build_game_args(
     argument_replacements: &ArgumentReplacements,
     launch_options: &LaunchOptions,
 ) -> Vec<String> {
+    debug!("Building Minecraft Args");
+
     let mut arguments = vec![];
 
     // New style
@@ -133,6 +155,8 @@ fn build_jvm_args(
     argument_replacements: &ArgumentReplacements,
     launch_options: &LaunchOptions,
 ) -> Vec<String> {
+    debug!("Building JVM Args");
+
     let mut arguments = vec![];
 
     if launch_options.enable_memory {
@@ -174,6 +198,8 @@ fn build_classpath(
     minecraft_path: impl AsRef<Path>,
     libraries_path: impl AsRef<Path>,
 ) -> Result<String, MinecraftError> {
+    debug!("Building classpath");
+
     let mut classes: Vec<String> = vec![];
 
     for library in version_data.needed_libraries() {
@@ -187,6 +213,7 @@ fn build_classpath(
 
         if let Some(native) = &library.get_native() {
             let native_jar_name = format!("{}-{}-{}.jar", name, version, native);
+            trace!("Add native: {}", &native_jar_name);
             library_path.push(native_jar_name);
         } else {
             let jar_name = format!("{}-{}.jar", name, version);
