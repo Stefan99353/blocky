@@ -4,7 +4,7 @@ extern crate log;
 mod application;
 #[rustfmt::skip]
 mod config;
-pub mod helpers;
+mod helpers;
 mod managers;
 mod paths;
 mod settings;

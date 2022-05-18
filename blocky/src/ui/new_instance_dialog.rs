@@ -1,8 +1,8 @@
 use crate::managers::BlockyInstanceManager;
-use crate::settings;
 use crate::settings::SettingKey;
 use crate::ui::BlockyApplicationWindow;
-use crate::utils::version_summary::{fetch_manifest, filter_versions, version_list_factory};
+use crate::utils::version_summary::{filter_versions, version_list_factory};
+use crate::{helpers, settings};
 use adw::prelude::*;
 use blocky_core::gobject::GVersionSummary;
 use blocky_core::minecraft::models::version_summary::VersionSummary;
@@ -245,7 +245,7 @@ impl BlockyNewInstanceDialog {
         imp.libraries_dir_label.set_text(&libraries_path);
         imp.assets_dir_label.set_text(&assets_path);
 
-        fetch_manifest().attach(
+        helpers::version_manifest::get_manifest().0.attach(
             None,
             glib::clone!(@weak self as this => @default-return glib::Continue(false),
                 move |manifest| {

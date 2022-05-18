@@ -185,19 +185,20 @@ fn install_actions(instance: &GInstance, widget: gtk::Widget) {
     launch_action.connect_activate(
         glib::clone!(@weak instance, @weak instance_manager, @weak window => move |_, _| {
             window.toast_notification(&gettext("Launching instance."));
-            instance_manager.launch_instance(instance.uuid());
+            instance_manager.launch(instance.uuid());
         }),
     );
     launch_action.set_enabled(false);
     actions.add_action(&launch_action);
 
-    instance_manager.check_instance_installed(instance.uuid()).attach(
+    instance_manager.check_installed(instance.uuid()).attach(
         None,
         glib::clone!(@weak launch_action => @default-return glib::Continue(false), move |status| {
-            launch_action.set_enabled(status);
-            glib::Continue(true)
-        }
-    ));
+                launch_action.set_enabled(status);
+                glib::Continue(true)
+            }
+        ),
+    );
 
     // instance.install
     let install_action = gio::SimpleAction::new("install", None);
@@ -205,7 +206,7 @@ fn install_actions(instance: &GInstance, widget: gtk::Widget) {
         let dialog = BlockyInstallProgressDialog::new();
         dialog.show();
 
-        let receiver = instance_manager.install_instance(instance.uuid());
+        let receiver = instance_manager.install(instance.uuid());
         receiver.attach(
             None,
             glib::clone!(@weak dialog, @weak launch_action => @default-return glib::Continue(false), move |update| {

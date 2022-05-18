@@ -1,67 +1,205 @@
+use crate::helpers::error::error_dialog;
+use crate::helpers::{read_file, write_file};
+use crate::settings::SettingKey;
+use crate::{helpers, settings};
+use anyhow::anyhow;
 use blocky_core::instance::Instance;
+use blocky_core::minecraft::installation_update::InstallationUpdate;
+use blocky_core::minecraft::launch_options::{LaunchOptions, LaunchOptionsBuilder};
+use gtk_macros::send;
 use std::collections::HashMap;
-use std::fs;
-use std::io::Write;
-use std::path::Path;
+use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+use std::thread;
+use std::thread::JoinHandle;
 use uuid::Uuid;
 
 type InstanceStorage = HashMap<Uuid, Instance>;
 
-pub fn load_instances(path: impl AsRef<Path>) -> anyhow::Result<Vec<Instance>> {
-    debug!("Reading instances from disk");
-    let instances = read_file(&path)?;
+pub fn save_instance(instance: Instance) {
+    let path = PathBuf::from(settings::get_string(SettingKey::InstancesFilePath));
+    let mut saved_instances: InstanceStorage = match read_file(&path) {
+        Ok(instances) => instances,
+        Err(err) => {
+            error_dialog(err);
+            return;
+        }
+    };
 
-    let instances = instances
-        .into_iter()
-        .map(|(_, instance)| instance)
-        .collect::<Vec<Instance>>();
+    let _old_instance = saved_instances.insert(instance.uuid, instance);
 
-    Ok(instances)
+    if let Err(err) = write_file(&saved_instances, &path) {
+        error_dialog(err);
+    }
 }
 
-pub fn find_instance(uuid: Uuid, path: impl AsRef<Path>) -> anyhow::Result<Option<Instance>> {
-    let instances = read_file(&path)?;
-    let instance = instances.get(&uuid).cloned();
-    Ok(instance)
+pub fn remove_instance(uuid: Uuid) {
+    let path = PathBuf::from(settings::get_string(SettingKey::InstancesFilePath));
+    let mut saved_instances: InstanceStorage = match read_file(&path) {
+        Ok(instances) => instances,
+        Err(err) => {
+            error_dialog(err);
+            return;
+        }
+    };
+
+    let _old_instance = saved_instances.remove(&uuid);
+
+    if let Err(err) = write_file(&saved_instances, &path) {
+        error_dialog(err);
+    }
 }
 
-pub fn save_instance(instance: Instance, path: impl AsRef<Path>) -> anyhow::Result<()> {
-    debug!("Saving a new instance to disk or updating existing one");
-    let mut instances = read_file(&path)?;
+pub fn load_instances() -> Vec<Instance> {
+    let path = PathBuf::from(settings::get_string(SettingKey::InstancesFilePath));
+    let saved_instances: InstanceStorage = match read_file(&path) {
+        Ok(instances) => instances,
+        Err(err) => {
+            error_dialog(err);
+            return vec![];
+        }
+    };
 
-    let _old = instances.insert(instance.uuid, instance);
-
-    write_file(instances, path)
+    saved_instances.into_iter().map(|(_, i)| i).collect()
 }
 
-pub fn remove_instance(uuid: Uuid, path: impl AsRef<Path>) -> anyhow::Result<()> {
-    debug!("Removing an instance from disk");
-    let mut instances = read_file(&path)?;
+pub fn find_instance(uuid: Uuid) -> Option<Instance> {
+    let path = PathBuf::from(settings::get_string(SettingKey::InstancesFilePath));
+    let saved_instances: InstanceStorage = match read_file(&path) {
+        Ok(instances) => instances,
+        Err(err) => {
+            error_dialog(err);
+            return None;
+        }
+    };
 
-    let old = instances.remove(&uuid);
-    if let Some(old) = old {
-        old.remove()?;
+    saved_instances.get(&uuid).cloned()
+}
+
+pub fn install(uuid: Uuid, g_sender: glib::Sender<InstallationUpdate>, cancel: Arc<AtomicBool>) {
+    let instance = match find_instance(uuid) {
+        None => {
+            error_dialog(anyhow!("Instance not found '{}'", uuid));
+            return;
+        }
+        Some(instance) => instance,
+    };
+
+    let (sender, receiver) = crossbeam_channel::unbounded();
+    let _install_handle = thread::spawn(move || {
+        if let Err(err) = instance.full_install(sender, cancel) {
+            error_dialog(err);
+        }
+    });
+
+    let _translate_handle = thread::spawn(move || {
+        while let Ok(update) = receiver.recv() {
+            send!(g_sender, update);
+        }
+    });
+}
+
+pub fn check_installed(uuid: Uuid) -> (glib::Receiver<bool>, JoinHandle<()>) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    let handle = thread::spawn(move || match find_instance(uuid) {
+        None => {
+            error_dialog(anyhow!("Instance not found '{}'", uuid));
+            send!(sender, false);
+        }
+        Some(instance) => match instance.check_installed() {
+            Ok(installed) => {
+                send!(sender, installed);
+            }
+            Err(err) => {
+                error_dialog(err);
+                send!(sender, false);
+            }
+        },
+    });
+
+    (receiver, handle)
+}
+
+pub fn launch(uuid: Uuid, options: &LaunchOptions) {
+    let instance = match find_instance(uuid) {
+        None => {
+            error_dialog(anyhow!("Instance not found '{}'", uuid));
+            return;
+        }
+        Some(instance) => instance,
+    };
+
+    if let Err(err) = instance.launch(options) {
+        error_dialog(err);
+    }
+}
+
+pub fn build_launch_options(
+    instance_uuid: Uuid,
+    profile_uuid: Uuid,
+) -> anyhow::Result<LaunchOptions> {
+    let instance = find_instance(instance_uuid)
+        .ok_or_else(|| anyhow!("Instance not found '{}'", instance_uuid))?;
+    let mut profile = super::profiles::find_profile(profile_uuid)
+        .ok_or_else(|| anyhow!("Profile not found '{}'", profile_uuid))?;
+
+    helpers::profiles::refresh_and_save_profile(&mut profile)?;
+
+    let minecraft_profile = profile
+        .minecraft_profile
+        .ok_or_else(|| anyhow!("Minecraft profile is missing"))?;
+    let access_token = profile
+        .minecraft
+        .ok_or_else(|| anyhow!("Unauthenticated"))?;
+
+    let mut builder = LaunchOptionsBuilder::default();
+    builder
+        .launcher_name("Blocky".to_string())
+        .launcher_version(env!("CARGO_PKG_VERSION").to_string())
+        .player_name(minecraft_profile.name)
+        .profile_id(minecraft_profile.id)
+        .token(access_token.token)
+        .use_fullscreen(instance.use_fullscreen || settings::get_bool(SettingKey::UseFullscreen));
+
+    if instance.enable_window_size {
+        builder
+            .enable_window_size(true)
+            .window_width(instance.window_width)
+            .window_height(instance.window_height);
+    } else if settings::get_bool(SettingKey::EnableWindowSize) {
+        builder
+            .enable_window_size(true)
+            .window_width(settings::get_integer(SettingKey::GameWindowWidth) as u32)
+            .window_height(settings::get_integer(SettingKey::GameWindowHeight) as u32);
     }
 
-    write_file(instances, path)
-}
-
-fn read_file(path: impl AsRef<Path>) -> anyhow::Result<InstanceStorage> {
-    let mut instances = HashMap::new();
-
-    if path.as_ref().is_file() {
-        let instances_string = fs::read_to_string(&path)?;
-        instances = serde_json::from_str::<InstanceStorage>(&instances_string)?;
+    if instance.enable_memory {
+        builder
+            .enable_memory(true)
+            .min_memory(instance.min_memory)
+            .max_memory(instance.max_memory);
+    } else if settings::get_bool(SettingKey::EnableMemory) {
+        builder
+            .enable_memory(true)
+            .min_memory(settings::get_integer(SettingKey::MinMemory) as u32)
+            .max_memory(settings::get_integer(SettingKey::MaxMemory) as u32);
     }
 
-    Ok(instances)
-}
+    if !instance.java_exec.trim().is_empty() {
+        builder.java_exec(instance.java_exec);
+    } else {
+        builder.java_exec(settings::get_string(SettingKey::JavaExec));
+    }
 
-fn write_file(instances: InstanceStorage, path: impl AsRef<Path>) -> anyhow::Result<()> {
-    let mut file = fs::File::create(&path)?;
-    let content = serde_json::to_vec(&instances)?;
-    file.write_all(&content)?;
-    file.flush()?;
+    if instance.enable_jvm_args {
+        builder.enable_jvm_args(true).jvm_args(instance.jvm_args);
+    } else if settings::get_bool(SettingKey::EnableJvmArgs) {
+        builder
+            .enable_jvm_args(true)
+            .jvm_args(settings::get_string(SettingKey::JvmArgs));
+    }
 
-    Ok(())
+    Ok(builder.build()?)
 }

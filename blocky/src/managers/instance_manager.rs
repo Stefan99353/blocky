@@ -1,7 +1,6 @@
-use crate::helpers::{build_launch_options, launch_instance};
 use crate::managers::BlockyProfileManager;
-use crate::settings::SettingKey;
-use crate::{helpers, settings, BlockyApplication};
+use crate::{helpers, BlockyApplication};
+use anyhow::anyhow;
 use blocky_core::gobject::GInstance;
 use blocky_core::instance::Instance;
 use blocky_core::minecraft::installation_update::InstallationUpdate;
@@ -12,11 +11,14 @@ use glib::{
     Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
     Value,
 };
+use gtk_macros::send;
 use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use uuid::Uuid;
+
+pub const INSTANCES: &str = "instances";
 
 mod imp {
     use super::*;
@@ -48,7 +50,7 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![ParamSpecObject::new(
-                    "instances",
+                    INSTANCES,
                     "Instances",
                     "Instances",
                     ListStore::static_type(),
@@ -61,7 +63,7 @@ mod imp {
 
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
-                "instances" => self.instances.to_value(),
+                INSTANCES => self.instances.to_value(),
                 x => {
                     error!("Property {} not a member of BlockyInstanceManager", x);
                     unimplemented!()
@@ -81,7 +83,7 @@ impl BlockyInstanceManager {
     }
 
     pub fn instances(&self) -> ListStore {
-        self.property("instances")
+        self.property(INSTANCES)
     }
 
     pub fn find_instance(&self, uuid: &Uuid) -> Option<GInstance> {
@@ -107,37 +109,25 @@ impl BlockyInstanceManager {
             None,
             glib::clone!(@weak self as this => @default-return glib::Continue(false), move |instances| {
                 // Add instances
-                let instances = instances.into_iter()
+                let instances = instances
+                    .into_iter()
                     .map(GInstance::from)
                     .collect::<Vec<GInstance>>();
 
                 this.instances().splice(0, this.instances().n_items(), &instances);
-                this.notify("instances");
+                this.notify(INSTANCES);
 
-                glib::Continue(true)
+                glib::Continue(false)
             })
         );
     }
 
     pub fn full_instances(&self) -> glib::Receiver<Vec<Instance>> {
-        let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
+        let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::InstancesFilePath);
-
-            match helpers::load_instances(path) {
-                Ok(instances) => {
-                    sender
-                        .send(instances)
-                        .expect("Could not send instances through channel");
-                }
-                Err(err) => {
-                    error!("Error while loading instances - {}", err);
-                    sender
-                        .send(vec![])
-                        .expect("Could not send instances through channel");
-                }
-            }
+            let instances = helpers::instances::load_instances();
+            send!(sender, instances);
         });
 
         receiver
@@ -152,21 +142,8 @@ impl BlockyInstanceManager {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::InstancesFilePath);
-
-            match helpers::find_instance(uuid, path) {
-                Ok(instance) => {
-                    sender
-                        .send(instance)
-                        .expect("Could not send instance through channel");
-                }
-                Err(err) => {
-                    error!("Error while loading instance - {}", err);
-                    sender
-                        .send(None)
-                        .expect("Could not send instance through channel");
-                }
-            }
+            let instance = helpers::instances::find_instance(uuid);
+            send!(sender, instance);
         });
 
         receiver
@@ -176,14 +153,11 @@ impl BlockyInstanceManager {
         // Add to ListStore
         let g_instance = GInstance::from(instance.clone());
         self.instances().append(&g_instance);
-        self.notify("instances");
+        self.notify(INSTANCES);
 
         // Add to disk
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = helpers::save_instance(instance, path) {
-                error!("Error while saving instance - {}", err);
-            }
+            helpers::instances::save_instance(instance);
         });
     }
 
@@ -191,6 +165,7 @@ impl BlockyInstanceManager {
         let uuid = instance.uuid;
         let g_instance = GInstance::from(instance.clone());
 
+        // Update in ListStore
         let instances = self.instances();
         for pos in 0..instances.n_items() {
             let instance = instances
@@ -201,17 +176,14 @@ impl BlockyInstanceManager {
 
             if instance.uuid() == uuid {
                 instances.splice(pos, 1, &[g_instance]);
-                self.notify("instances");
+                self.notify(INSTANCES);
                 break;
             }
         }
 
         // Save to disk
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = helpers::save_instance(instance, path) {
-                error!("Error while saving instance - {}", err);
-            }
+            helpers::instances::save_instance(instance);
         });
     }
 
@@ -236,38 +208,23 @@ impl BlockyInstanceManager {
             }
         }
 
-        self.notify("instances");
+        self.notify(INSTANCES);
 
         // Remove from disk
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::InstancesFilePath);
-            if let Err(err) = helpers::remove_instance(uuid, path) {
-                error!("Error while removing instance - {}", err);
-            }
+            helpers::instances::remove_instance(uuid);
         });
     }
 
-    pub fn install_instance(&self, uuid: Uuid) -> glib::Receiver<InstallationUpdate> {
-        info!("Installing instance '{}'", &uuid);
+    pub fn install(&self, uuid: Uuid) -> glib::Receiver<InstallationUpdate> {
         let imp = imp::BlockyInstanceManager::from_instance(self);
         imp.cancel_current_installation
             .store(false, Ordering::Relaxed);
 
-        let (g_sender, g_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-        let path = settings::get_string(SettingKey::InstancesFilePath);
+        let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+        helpers::instances::install(uuid, sender, imp.cancel_current_installation.clone());
 
-        let cancel_flag = imp.cancel_current_installation.clone();
-        thread::spawn(move || {
-            let receiver = helpers::install_threaded(uuid, path.clone(), cancel_flag);
-
-            while let Ok(update) = receiver.recv() {
-                g_sender
-                    .send(update)
-                    .expect("Could not send update through channel");
-            }
-        });
-
-        g_receiver
+        receiver
     }
 
     pub fn cancel_current_installation(&self) {
@@ -276,54 +233,30 @@ impl BlockyInstanceManager {
             .store(true, Ordering::Relaxed);
     }
 
-    pub fn launch_instance(&self, uuid: Uuid) {
-        info!("Launching instance '{}'", &uuid);
-        let instances_path = settings::get_string(SettingKey::InstancesFilePath);
-        let profiles_path = settings::get_string(SettingKey::ProfilesFilePath);
+    pub fn launch(&self, uuid: Uuid) {
+        let _handle = thread::spawn(move || {
+            let profile = match BlockyProfileManager::default().current_profile() {
+                None => {
+                    helpers::error::error_dialog(anyhow!("No profile selected"));
+                    return;
+                }
+                Some(profile) => profile.uuid(),
+            };
 
-        // TODO: Offline launch
-        thread::spawn(move || {
-            let current_profile = BlockyProfileManager::default().current_profile();
-            if current_profile.is_none() {
-                error!("No profile selected");
-                return;
-            }
-            let profile_uuid = current_profile.unwrap().uuid();
+            let options = match helpers::instances::build_launch_options(uuid, profile) {
+                Ok(options) => options,
+                Err(err) => {
+                    helpers::error::error_dialog(err);
+                    return;
+                }
+            };
 
-            let launch_options =
-                build_launch_options(uuid, instances_path.clone(), profile_uuid, profiles_path);
-            if let Err(err) = launch_options {
-                error!("Error while building launch options: {}", err);
-                return;
-            }
-
-            let launch_result = launch_instance(uuid, instances_path, launch_options.unwrap());
-
-            if let Err(err) = launch_result {
-                error!("Error while launching instance: {}", err);
-            }
+            helpers::instances::launch(uuid, &options);
         });
     }
 
-    pub fn check_instance_installed(&self, uuid: Uuid) -> glib::Receiver<bool> {
-        let (g_sender, g_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-        let path = settings::get_string(SettingKey::InstancesFilePath);
-
-        thread::spawn(move || match helpers::check_install_state(uuid, path) {
-            Ok(installed) => {
-                g_sender
-                    .send(installed)
-                    .expect("Could not send status through channel");
-            }
-            Err(err) => {
-                error!("Error while checking installed state: {}", err);
-                g_sender
-                    .send(false)
-                    .expect("Could not send status through channel");
-            }
-        });
-
-        g_receiver
+    pub fn check_installed(&self, uuid: Uuid) -> glib::Receiver<bool> {
+        helpers::instances::check_installed(uuid).0
     }
 }
 

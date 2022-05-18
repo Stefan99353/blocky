@@ -9,11 +9,15 @@ use glib::{
     Cast, MainContext, ObjectExt, ParamFlags, ParamSpec, ParamSpecObject, StaticType, ToValue,
     Value,
 };
+use gtk_macros::send;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::str::FromStr;
 use std::thread;
 use uuid::Uuid;
+
+pub const PROFILES: &str = "profiles";
+pub const CURRENT_PROFILE: &str = "current-profile";
 
 mod imp {
     use super::*;
@@ -45,14 +49,14 @@ mod imp {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
                     ParamSpecObject::new(
-                        "profiles",
+                        PROFILES,
                         "Profiles",
                         "Profiles",
                         ListStore::static_type(),
                         ParamFlags::READABLE,
                     ),
                     ParamSpecObject::new(
-                        "current-profile",
+                        CURRENT_PROFILE,
                         "Current Profile",
                         "Current Profile",
                         GProfile::static_type(),
@@ -66,8 +70,8 @@ mod imp {
 
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
-                "profiles" => self.profiles.to_value(),
-                "current-profile" => self.current_profile.borrow().to_value(),
+                PROFILES => self.profiles.to_value(),
+                CURRENT_PROFILE => self.current_profile.borrow().to_value(),
                 x => {
                     error!("Property {} not a member of BlockyProfileManager", x);
                     unimplemented!()
@@ -87,11 +91,11 @@ impl BlockyProfileManager {
     }
 
     pub fn profiles(&self) -> ListStore {
-        self.property("profiles")
+        self.property(PROFILES)
     }
 
     pub fn current_profile(&self) -> Option<GProfile> {
-        let profile = self.property::<GProfile>("current-profile");
+        let profile = self.property::<GProfile>(CURRENT_PROFILE);
 
         if profile.uuid().is_nil() {
             return None;
@@ -107,7 +111,7 @@ impl BlockyProfileManager {
         settings::set_string(SettingKey::DefaultProfile, &uuid);
 
         *imp.current_profile.borrow_mut() = profile.clone();
-        self.notify("current-profile");
+        self.notify(CURRENT_PROFILE);
     }
 
     pub fn set_current_profile_by_uuid(&self, uuid: Uuid) {
@@ -135,52 +139,43 @@ impl BlockyProfileManager {
             None,
             glib::clone!(@weak self as this => @default-return glib::Continue(false), move |profiles| {
                 // Add profiles
-                let profiles = profiles.into_iter()
+                let profiles = profiles
+                    .into_iter()
                     .map(|p| {
                         let uuid = p.uuid;
-                        let username = p.minecraft_profile.as_ref().unwrap().name.clone();
+                        let username = p.minecraft_profile.map(|mp| mp.name).unwrap_or_else(|| uuid.to_string());
 
                         GProfile::new(&uuid, &username)
                     })
                     .collect::<Vec<GProfile>>();
 
                 this.profiles().splice(0, this.profiles().n_items(), &profiles);
+                this.notify(PROFILES);
 
                 // Set default
                 let default = settings::get_string(SettingKey::DefaultProfile);
                 if let Ok(uuid) = Uuid::from_str(&default) {
-                    let profile = this.find_profile(&uuid);
-                    if let Some(profile) = profile {
-                        this.set_current_profile(&profile);
-                    } else {
-                        settings::get_settings().reset(SettingKey::DefaultProfile.to_key())
+                    match this.find_profile(&uuid) {
+                        None => {
+                            settings::get_settings().reset(SettingKey::DefaultProfile.to_key())
+                        }
+                        Some(profile) => {
+                            this.set_current_profile(&profile);
+                        }
                     }
                 }
 
-                glib::Continue(true)
+                glib::Continue(false)
             })
         );
     }
 
     pub fn full_profiles(&self) -> glib::Receiver<Vec<Profile>> {
-        let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
+        let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::ProfilesFilePath);
-
-            match helpers::load_profiles(path) {
-                Ok(profiles) => {
-                    sender
-                        .send(profiles)
-                        .expect("Could not send profiles through channel");
-                }
-                Err(err) => {
-                    error!("Error while loading profiles - {}", err);
-                    sender
-                        .send(vec![])
-                        .expect("Could not send profiles through channel");
-                }
-            }
+            let profiles = helpers::profiles::load_profiles();
+            send!(sender, profiles);
         });
 
         receiver
@@ -195,21 +190,8 @@ impl BlockyProfileManager {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::ProfilesFilePath);
-
-            match helpers::find_profile(uuid, path) {
-                Ok(profile) => {
-                    sender
-                        .send(profile)
-                        .expect("Could not send profile through channel");
-                }
-                Err(err) => {
-                    error!("Error while loading profiles - {}", err);
-                    sender
-                        .send(None)
-                        .expect("Could not send profile through channel");
-                }
-            };
+            let profile = helpers::profiles::find_profile(uuid);
+            send!(sender, profile);
         });
 
         receiver
@@ -218,30 +200,16 @@ impl BlockyProfileManager {
     pub fn full_current_profile(&self) -> glib::Receiver<Option<Profile>> {
         let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
 
-        if let Some(current_profile) = self.current_profile() {
-            let uuid = current_profile.uuid();
+        match self.current_profile() {
+            None => send!(sender, None),
+            Some(profile) => {
+                let uuid = profile.uuid();
 
-            thread::spawn(move || {
-                let path = settings::get_string(SettingKey::ProfilesFilePath);
-
-                match helpers::find_profile(uuid, path) {
-                    Ok(profile) => {
-                        sender
-                            .send(profile)
-                            .expect("Could not send profile through channel");
-                    }
-                    Err(err) => {
-                        error!("Error while looking for profile - {}", err);
-                        sender
-                            .send(None)
-                            .expect("Could not send profile through channel");
-                    }
-                }
-            });
-        } else {
-            sender
-                .send(None)
-                .expect("Could not send profile through channel");
+                thread::spawn(move || {
+                    let profile = helpers::profiles::find_profile(uuid);
+                    send!(sender, profile);
+                });
+            }
         }
 
         receiver
@@ -253,16 +221,14 @@ impl BlockyProfileManager {
         let username = profile.minecraft_profile.as_ref().unwrap().name.clone();
         let g_profile = GProfile::new(&uuid, &username);
         self.profiles().append(&g_profile);
+        self.notify(PROFILES);
 
         // Set as current
         self.set_current_profile(&g_profile);
 
         // Add to disk
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::ProfilesFilePath);
-            if let Err(err) = helpers::save_profile(profile, path) {
-                error!("Error while saving profile - {}", err);
-            }
+            helpers::profiles::save_profile(profile);
         });
     }
 
@@ -283,12 +249,11 @@ impl BlockyProfileManager {
             }
         }
 
+        self.notify(PROFILES);
+
         // Remove from disk
         thread::spawn(move || {
-            let path = settings::get_string(SettingKey::ProfilesFilePath);
-            if let Err(err) = helpers::remove_profile(uuid, path) {
-                error!("Error while removing profile - {}", err);
-            }
+            helpers::profiles::remove_profile(uuid);
         });
     }
 }

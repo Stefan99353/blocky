@@ -1,80 +1,82 @@
-use anyhow::anyhow;
+use crate::config::{MS_GRAPH_ID, MS_GRAPH_SECRET};
+use crate::helpers::error::error_dialog;
+use crate::helpers::{read_file, write_file};
+use crate::settings;
+use crate::settings::SettingKey;
 use blocky_core::profile::Profile;
 use std::collections::HashMap;
-use std::fs;
-use std::io::Write;
-use std::path::Path;
+use std::path::PathBuf;
 use uuid::Uuid;
 
 type ProfileStorage = HashMap<Uuid, Profile>;
 
-pub fn find_refresh_save(uuid: Uuid, path: impl AsRef<Path>) -> anyhow::Result<Profile> {
-    let mut profile =
-        find_profile(uuid, &path)?.ok_or_else(|| anyhow!("Profile not found: {}", uuid))?;
+pub fn save_profile(profile: Profile) {
+    let path = PathBuf::from(settings::get_string(SettingKey::ProfilesFilePath));
+    let mut saved_profiles: ProfileStorage = match read_file(&path) {
+        Ok(profiles) => profiles,
+        Err(err) => {
+            error_dialog(err);
+            return;
+        }
+    };
 
-    debug!("Checking if token expired");
+    let _old_profile = saved_profiles.insert(profile.uuid, profile);
+
+    if let Err(err) = write_file(&saved_profiles, &path) {
+        error_dialog(err);
+    }
+}
+
+pub fn remove_profile(uuid: Uuid) {
+    let path = PathBuf::from(settings::get_string(SettingKey::ProfilesFilePath));
+    let mut saved_profiles: ProfileStorage = match read_file(&path) {
+        Ok(profiles) => profiles,
+        Err(err) => {
+            error_dialog(err);
+            return;
+        }
+    };
+
+    let _old_profile = saved_profiles.remove(&uuid);
+
+    if let Err(err) = write_file(&saved_profiles, &path) {
+        error_dialog(err);
+    }
+}
+
+pub fn load_profiles() -> Vec<Profile> {
+    let path = PathBuf::from(settings::get_string(SettingKey::ProfilesFilePath));
+    let saved_profiles: ProfileStorage = match read_file(&path) {
+        Ok(profiles) => profiles,
+        Err(err) => {
+            error_dialog(err);
+            return vec![];
+        }
+    };
+
+    saved_profiles.into_iter().map(|(_, p)| p).collect()
+}
+
+pub fn find_profile(uuid: Uuid) -> Option<Profile> {
+    let path = PathBuf::from(settings::get_string(SettingKey::ProfilesFilePath));
+    let saved_profiles: ProfileStorage = match read_file(&path) {
+        Ok(profiles) => profiles,
+        Err(err) => {
+            error_dialog(err);
+            return None;
+        }
+    };
+
+    saved_profiles.get(&uuid).cloned()
+}
+
+pub fn refresh_and_save_profile(profile: &mut Profile) -> anyhow::Result<()> {
     if let Some(minecraft_token) = &profile.minecraft {
         if minecraft_token.check_expired().is_err() {
-            profile.refresh(crate::config::MS_GRAPH_ID, crate::config::MS_GRAPH_SECRET)?;
-            save_profile(profile.clone(), &path)?;
+            profile.refresh(MS_GRAPH_ID, MS_GRAPH_SECRET)?;
+            save_profile(profile.clone());
         }
     }
-
-    Ok(profile)
-}
-
-pub fn load_profiles(path: impl AsRef<Path>) -> anyhow::Result<Vec<Profile>> {
-    debug!("Reading profiles from disk");
-    let profiles = read_file(&path)?;
-
-    let profiles = profiles
-        .into_iter()
-        .map(|(_, profile)| profile)
-        .collect::<Vec<Profile>>();
-
-    Ok(profiles)
-}
-
-pub fn find_profile(uuid: Uuid, path: impl AsRef<Path>) -> anyhow::Result<Option<Profile>> {
-    let profiles = read_file(&path)?;
-    let profile = profiles.get(&uuid).cloned();
-    Ok(profile)
-}
-
-pub fn save_profile(profile: Profile, path: impl AsRef<Path>) -> anyhow::Result<()> {
-    debug!("Saving a new profile to disk or updating existing one");
-    let mut profiles = read_file(&path)?;
-
-    let _old = profiles.insert(profile.uuid, profile);
-
-    write_file(profiles, path)
-}
-
-pub fn remove_profile(uuid: Uuid, path: impl AsRef<Path>) -> anyhow::Result<()> {
-    debug!("Removing a profile from disk");
-    let mut profiles = read_file(&path)?;
-
-    let _old = profiles.remove(&uuid);
-
-    write_file(profiles, path)
-}
-
-fn read_file(path: impl AsRef<Path>) -> anyhow::Result<ProfileStorage> {
-    let mut profiles = HashMap::new();
-
-    if path.as_ref().is_file() {
-        let profiles_string = fs::read_to_string(&path)?;
-        profiles = serde_json::from_str::<ProfileStorage>(&profiles_string)?;
-    }
-
-    Ok(profiles)
-}
-
-fn write_file(profiles: ProfileStorage, path: impl AsRef<Path>) -> anyhow::Result<()> {
-    let mut file = fs::File::create(&path)?;
-    let content = serde_json::to_vec(&profiles)?;
-    file.write_all(&content)?;
-    file.flush()?;
 
     Ok(())
 }

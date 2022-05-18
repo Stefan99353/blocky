@@ -1,4 +1,3 @@
-use crate::helpers;
 use crate::ui::BlockyVersionSummaryRow;
 use blocky_core::gobject::GVersionSummary;
 use blocky_core::minecraft::models::version_summary::VersionSummary;
@@ -7,7 +6,6 @@ use glib::Cast;
 use gtk::SignalListItemFactory;
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::thread;
 
 pub fn version_list_factory() -> SignalListItemFactory {
     let factory = SignalListItemFactory::new();
@@ -25,25 +23,6 @@ pub fn version_list_factory() -> SignalListItemFactory {
     });
 
     factory
-}
-
-pub fn fetch_manifest() -> glib::Receiver<HashMap<String, VersionSummary>> {
-    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-    thread::spawn(move || match helpers::get_manifest() {
-        Ok(manifest) => {
-            sender
-                .send(manifest)
-                .expect("Could not send version manifest through channel");
-        }
-        Err(err) => {
-            error!("Error while getting version manifest: {}", err);
-            sender
-                .send(HashMap::new())
-                .expect("Could not send version manifest through channel");
-        }
-    });
-
-    receiver
 }
 
 pub fn filter_versions(
