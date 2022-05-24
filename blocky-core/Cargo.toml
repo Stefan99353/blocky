@@ -6,8 +6,9 @@ edition = "2021"
 license = "MIT"
 
 [features]
-default = ["gobject"]
+default = ["gobject", "fabric"]
 gobject = ["gio", "glib", "once_cell"]
+fabric = []
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }

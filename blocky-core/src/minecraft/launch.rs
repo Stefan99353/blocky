@@ -33,6 +33,28 @@ pub fn launch(mut command: Command) -> Result<i32, MinecraftError> {
 }
 
 pub fn launch_command(
+    java_exec: String,
+    minecraft_path: impl AsRef<Path>,
+    jvm_args: Vec<String>,
+    log_argument: Option<String>,
+    main_class: String,
+    game_args: Vec<String>,
+) -> Command {
+    let mut command = Command::new(java_exec);
+    command.current_dir(minecraft_path);
+    command.args(jvm_args);
+
+    if let Some(log_argument) = log_argument {
+        command.arg(log_argument);
+    }
+
+    command.arg(main_class);
+    command.args(game_args);
+
+    command
+}
+
+pub fn build_launch_command(
     version_data: &VersionData,
     minecraft_path: impl AsRef<Path>,
     libraries_path: impl AsRef<Path>,
@@ -67,20 +89,14 @@ pub fn launch_command(
         assets_path.as_ref().to_string_lossy().to_string(),
         natives_path.as_ref().to_string_lossy().to_string(),
     );
+
     let jvm_args = build_jvm_args(version_data, &argument_replacements, launch_options);
     let game_args = build_game_args(version_data, &argument_replacements, launch_options);
 
-    // Build command
-    let mut command = Command::new(get_java_exec(launch_options));
-    command.current_dir(&minecraft_path);
-
-    // JVM arguments
-    command.args(jvm_args);
-
     // Logging config
-    if let Some(logging_info) = &version_data.logging {
-        let mut log_config = PathBuf::from(log_configs_path.as_ref());
-        log_config.push(
+    let log_argument = version_data.logging.clone().map(|logging_info| {
+        let mut log_config_path = PathBuf::from(log_configs_path.as_ref());
+        log_config_path.push(
             logging_info
                 .client
                 .file
@@ -89,23 +105,26 @@ pub fn launch_command(
                 .expect("Logging info has no ID"),
         );
 
-        let argument = &logging_info
+        logging_info
             .client
             .argument
-            .replace("${path}", &log_config.to_string_lossy());
-        command.arg(argument);
-    }
+            .clone()
+            .replace("${path}", &log_config_path.to_string_lossy())
+    });
 
-    // Main class
-    command.arg(&version_data.main_class);
-
-    // Minecraft args
-    command.args(game_args);
+    let command = launch_command(
+        get_java_exec(launch_options),
+        minecraft_path,
+        jvm_args,
+        log_argument,
+        version_data.main_class.clone(),
+        game_args,
+    );
 
     Ok(command)
 }
 
-fn get_java_exec(launch_options: &LaunchOptions) -> String {
+pub fn get_java_exec(launch_options: &LaunchOptions) -> String {
     if !launch_options.java_exec.is_empty() {
         return launch_options.java_exec.clone();
     }
@@ -113,7 +132,7 @@ fn get_java_exec(launch_options: &LaunchOptions) -> String {
     String::from("java")
 }
 
-fn build_game_args(
+pub fn build_game_args(
     version_data: &VersionData,
     argument_replacements: &ArgumentReplacements,
     launch_options: &LaunchOptions,
@@ -150,7 +169,7 @@ fn build_game_args(
     arguments
 }
 
-fn build_jvm_args(
+pub fn build_jvm_args(
     version_data: &VersionData,
     argument_replacements: &ArgumentReplacements,
     launch_options: &LaunchOptions,
@@ -193,7 +212,7 @@ fn build_jvm_args(
     arguments
 }
 
-fn build_classpath(
+pub fn build_classpath(
     version_data: &VersionData,
     minecraft_path: impl AsRef<Path>,
     libraries_path: impl AsRef<Path>,

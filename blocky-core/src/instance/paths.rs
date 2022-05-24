@@ -49,4 +49,11 @@ impl Instance {
         path.push(".minecraft");
         path
     }
+
+    #[cfg(feature = "fabric")]
+    pub fn fabric_version_data_path(&self) -> PathBuf {
+        let mut path = self.instance_path();
+        path.push("fabric-version.json");
+        path
+    }
 }

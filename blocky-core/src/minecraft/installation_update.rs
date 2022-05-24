@@ -6,6 +6,8 @@ pub enum InstallationUpdate {
     Client(Progress),
     Cancel,
     Success,
+    #[cfg(feature = "fabric")]
+    FabricLibrary(Progress),
 }
 
 impl InstallationUpdate {
@@ -15,6 +17,8 @@ impl InstallationUpdate {
             InstallationUpdate::Asset(_) => "Asset".to_string(),
             InstallationUpdate::LogConfig(_) => "LogConfig".to_string(),
             InstallationUpdate::Client(_) => "Client".to_string(),
+            #[cfg(feature = "fabric")]
+            InstallationUpdate::FabricLibrary(_) => "FabricLibrary".to_string(),
             _ => "Other".to_string(),
         }
     }

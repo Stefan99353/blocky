@@ -2,6 +2,8 @@ use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[cfg(feature = "fabric")]
+pub mod fabric;
 mod install;
 mod launch;
 mod paths;
@@ -50,4 +52,12 @@ pub struct Instance {
     pub enable_environment: bool,
     #[builder(default)]
     pub environment_variables: Vec<(String, Option<String>)>,
+
+    #[cfg(feature = "fabric")]
+    #[builder(default)]
+    pub use_fabric: bool,
+    #[cfg(feature = "fabric")]
+    #[builder(default)]
+    #[builder(setter(strip_option))]
+    pub fabric_version: Option<String>,
 }

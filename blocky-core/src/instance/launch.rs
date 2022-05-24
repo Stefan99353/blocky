@@ -1,6 +1,6 @@
 use crate::error;
 use crate::instance::Instance;
-use crate::minecraft::launch::{launch, launch_command};
+use crate::minecraft::launch::{build_launch_command, launch};
 use crate::minecraft::launch_options::LaunchOptions;
 use std::process::{Command, Stdio};
 
@@ -8,7 +8,7 @@ impl Instance {
     pub fn launch_command(&self, options: &LaunchOptions) -> error::Result<Command> {
         let version_data = self.read_version_data()?;
 
-        let command = launch_command(
+        let command = build_launch_command(
             &version_data,
             self.dot_minecraft_path(),
             self.libraries_path(),
@@ -24,7 +24,7 @@ impl Instance {
     pub fn launch(&self, options: &LaunchOptions) -> error::Result<()> {
         let version_data = self.read_version_data()?;
 
-        let mut command = launch_command(
+        let mut command = build_launch_command(
             &version_data,
             self.dot_minecraft_path(),
             self.libraries_path(),

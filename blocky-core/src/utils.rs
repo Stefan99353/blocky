@@ -14,6 +14,7 @@ pub fn download_file(url: &str, dest: impl AsRef<Path>) -> Result<(), DownloadEr
     let mut file = File::create(&dest).map_err(DownloadError::IO)?;
 
     let _total_size = std::io::copy(&mut response, &mut file).map_err(DownloadError::IO)?;
+    file.sync_all().map_err(DownloadError::IO)?;
 
     Ok(())
 }

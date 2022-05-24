@@ -25,29 +25,6 @@ pub enum Error {
 
     #[error("{0}")]
     Download(DownloadError),
-    // #[error("Error while getting resource from web: {0}")]
-    // Request(reqwest::Error),
-    //
-    // #[error("Error while serializing/deserializing struct: {0}")]
-    // Serde(serde_json::Error),
-    //
-    //
-    // #[error("InstallationError: {0}")]
-    // Installation(InstallationError),
-    //
-    // #[error("LaunchError: {0}")]
-    // Launch(LaunchError),
-    //
-    // #[error("The checksum does not match hash of file: {0}")]
-    // Sha1Mismatch(String),
-    //
-
-    //
-    // #[error("Instance UUID '{0}' was not found on disk")]
-    // InstanceNotFound(uuid::Uuid),
-    //
-    // #[error("Profile UUID '{0}' was not found on disk")]
-    // ProfileNotFound(uuid::Uuid),
 }
 
 #[derive(Debug, thiserror::Error)]
