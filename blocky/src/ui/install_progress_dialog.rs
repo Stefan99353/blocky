@@ -92,7 +92,8 @@ impl BlockyInstallProgressDialog {
             InstallationUpdate::Asset(progress) => progress,
             InstallationUpdate::LogConfig(progress) => progress,
             InstallationUpdate::Client(progress) => progress,
-            _ => unreachable!(),
+            InstallationUpdate::FabricLibrary(progress) => progress,
+            _ => unreachable!("Unknown resource installed"),
         };
 
         let fraction = progress.current_file as f64 / progress.total_files as f64;
@@ -100,7 +101,7 @@ impl BlockyInstallProgressDialog {
         imp.spinner.start();
 
         imp.status_label.set_label(&format!(
-            "Installing {:?}: {} of {}",
+            "Installing {}: {} of {}",
             &update.resource_type(),
             progress.current_file,
             progress.total_files

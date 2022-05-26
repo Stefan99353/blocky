@@ -3,6 +3,7 @@ use crate::helpers::{read_file, write_file};
 use crate::settings::SettingKey;
 use crate::{helpers, settings};
 use anyhow::anyhow;
+use blocky_core::instance::fabric::FabricInstanceExt;
 use blocky_core::instance::Instance;
 use blocky_core::minecraft::installation_update::InstallationUpdate;
 use blocky_core::minecraft::launch_options::{LaunchOptions, LaunchOptionsBuilder};
@@ -131,8 +132,18 @@ pub fn launch(uuid: Uuid, options: &LaunchOptions) {
         Some(instance) => instance,
     };
 
-    if let Err(err) = instance.launch(options) {
-        error_dialog(err);
+    if instance.use_fabric && instance.fabric_version.is_some() {
+        // Fabric launch
+        debug!("Launching instance with fabric");
+        if let Err(err) = instance.fabric_launch(options) {
+            error_dialog(err);
+        }
+    } else {
+        // Vanilla launch
+        debug!("Launching instance");
+        if let Err(err) = instance.launch(options) {
+            error_dialog(err);
+        }
     }
 }
 
