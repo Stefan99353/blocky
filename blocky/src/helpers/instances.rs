@@ -132,7 +132,7 @@ pub fn launch(uuid: Uuid, options: &LaunchOptions) {
         Some(instance) => instance,
     };
 
-    if instance.use_fabric && instance.fabric_version.is_some() {
+    if instance.use_fabric {
         // Fabric launch
         debug!("Launching instance with fabric");
         if let Err(err) = instance.fabric_launch(options) {

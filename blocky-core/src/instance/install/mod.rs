@@ -28,7 +28,7 @@ impl Instance {
         self.save_asset_index()?;
 
         #[cfg(feature = "fabric")]
-        if self.use_fabric && self.fabric_version.is_some() {
+        if self.use_fabric {
             self.save_fabric_version_data()?;
         }
 
@@ -39,7 +39,7 @@ impl Instance {
         self.install_client(update_sender.clone(), cancel.clone())?;
 
         #[cfg(feature = "fabric")]
-        if self.use_fabric && self.fabric_version.is_some() {
+        if self.use_fabric {
             self.install_fabric_libraries(update_sender.clone(), cancel)?;
         }
 

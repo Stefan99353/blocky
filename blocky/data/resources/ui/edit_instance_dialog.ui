@@ -103,6 +103,7 @@
                                                                 <child>
                                                                     <object class="AdwActionRow">
                                                                         <property name="title" translatable="yes">Version</property>
+                                                                        <property name="use_underline">True</property>
                                                                         <property name="focusable">False</property>
                                                                         <child>
                                                                             <object class="GtkLabel" id="version_label">
@@ -447,6 +448,78 @@
                                 </property>
                             </object>
                         </child>
+                        <!-- Fabric -->
+                        <child>
+                            <object class="GtkStackPage">
+                                <property name="name">fabric</property>
+                                <property name="child">
+                                    <object class="GtkScrolledWindow">
+                                        <property name="hscrollbar-policy">never</property>
+                                        <child>
+                                            <object class="AdwClamp">
+                                                <property name="margin-start">12</property>
+                                                <property name="margin-end">12</property>
+                                                <property name="margin-top">24</property>
+                                                <property name="margin-bottom">24</property>
+                                                <child>
+                                                    <object class="GtkBox">
+                                                        <property name="orientation">vertical</property>
+                                                        <property name="spacing">24</property>
+                                                        <!-- Fabric Group -->
+                                                        <child>
+                                                            <object class="AdwPreferencesGroup">
+                                                                <property name="title" translatable="yes">Fabric</property>
+                                                                <child>
+                                                                    <object class="AdwExpanderRow" id="use_fabric_expander">
+                                                                        <property name="title" translatable="yes">Use Fabric Mod-Loader</property>
+                                                                        <property name="show_enable_switch">True</property>
+                                                                        <property name="use_underline">True</property>
+                                                                        <!-- Version -->
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Fabric Version</property>
+                                                                                <property name="use_underline">True</property>
+                                                                                <property name="focusable">False</property>
+                                                                                <child>
+                                                                                    <object class="GtkLabel" id="fabric_version_label">
+                                                                                        <property name="valign">center</property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                        <!-- Install -->
+                                                                        <child>
+                                                                            <object class="AdwActionRow">
+                                                                                <property name="title" translatable="yes">Mod-Loader</property>
+                                                                                <property name="use_underline">True</property>
+                                                                                <property name="focusable">False</property>
+                                                                                <child>
+                                                                                    <object class="GtkButton" id="fabric_install_button">
+                                                                                        <property name="valign">center</property>
+                                                                                        <property name="label" translatable="yes">Install</property>
+                                                                                    </object>
+                                                                                </child>
+                                                                            </object>
+                                                                        </child>
+                                                                    </object>
+                                                                </child>
+                                                            </object>
+                                                        </child>
+                                                        <!-- Mods Group -->
+                                                        <child>
+                                                            <object class="AdwPreferencesGroup">
+                                                                <property name="title" translatable="yes">Mods</property>
+                                                                <!-- TODO: Add Mod List -->
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
                         <!-- Saves -->
                         <child>
                             <object class="GtkStackPage">
@@ -464,6 +537,11 @@
                                                     <object class="GtkBox">
                                                         <property name="orientation">vertical</property>
                                                         <property name="spacing">24</property>
+                                                        <child>
+                                                            <object class="GtkLabel">
+                                                                <property name="label">TODO</property>
+                                                            </object>
+                                                        </child>
                                                     </object>
                                                 </child>
                                             </object>
@@ -489,6 +567,11 @@
                                                     <object class="GtkBox">
                                                         <property name="orientation">vertical</property>
                                                         <property name="spacing">24</property>
+                                                        <child>
+                                                            <object class="GtkLabel">
+                                                                <property name="label">TODO</property>
+                                                            </object>
+                                                        </child>
                                                     </object>
                                                 </child>
                                             </object>
@@ -514,6 +597,11 @@
                                                     <object class="GtkBox">
                                                         <property name="orientation">vertical</property>
                                                         <property name="spacing">24</property>
+                                                        <child>
+                                                            <object class="GtkLabel">
+                                                                <property name="label">TODO</property>
+                                                            </object>
+                                                        </child>
                                                     </object>
                                                 </child>
                                             </object>
@@ -539,6 +627,41 @@
                                                     <object class="GtkBox">
                                                         <property name="orientation">vertical</property>
                                                         <property name="spacing">24</property>
+                                                        <child>
+                                                            <object class="GtkLabel">
+                                                                <property name="label">TODO</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                        <!-- Logs -->
+                        <child>
+                            <object class="GtkStackPage">
+                                <property name="name">logs</property>
+                                <property name="child">
+                                    <object class="GtkScrolledWindow">
+                                        <property name="hscrollbar-policy">never</property>
+                                        <child>
+                                            <object class="AdwClamp">
+                                                <property name="margin-start">12</property>
+                                                <property name="margin-end">12</property>
+                                                <property name="margin-top">24</property>
+                                                <property name="margin-bottom">24</property>
+                                                <child>
+                                                    <object class="GtkBox">
+                                                        <property name="orientation">vertical</property>
+                                                        <property name="spacing">24</property>
+                                                        <child>
+                                                            <object class="GtkLabel">
+                                                                <property name="label">TODO</property>
+                                                            </object>
+                                                        </child>
                                                     </object>
                                                 </child>
                                             </object>

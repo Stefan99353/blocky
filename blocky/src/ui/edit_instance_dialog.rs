@@ -71,6 +71,14 @@ mod imp {
         #[template_child]
         pub window_height_spinbutton: TemplateChild<gtk::SpinButton>,
 
+        // Fabric
+        #[template_child]
+        pub use_fabric_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub fabric_install_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub fabric_version_label: TemplateChild<gtk::Label>,
+
         pub instance: OnceCell<GInstance>,
         pub name_valid: Cell<bool>,
     }
@@ -151,9 +159,18 @@ impl BlockyEditInstanceDialog {
     #[template_callback]
     fn save_button_clicked(&self) {
         let instance_manager = BlockyInstanceManager::default();
+        let g_instance = self.instance();
         info!("Saving instance");
 
-        let instance = Instance::from(self.instance());
+        // Check Fabric version
+        if g_instance
+            .property::<String>(instance::FABRIC_VERSION)
+            .is_empty()
+        {
+            g_instance.set_property(instance::USE_FABRIC, false);
+        }
+
+        let instance = Instance::from(g_instance);
         instance_manager.update_instance(instance);
         self.close();
     }
@@ -261,6 +278,18 @@ impl BlockyEditInstanceDialog {
             &imp.window_height_spinbutton.get(),
             "value",
         );
+
+        // Fabric
+        self.bind_property(
+            instance::USE_FABRIC,
+            &imp.use_fabric_expander.get(),
+            "enable-expansion",
+        );
+        self.bind_property(
+            instance::FABRIC_VERSION,
+            &imp.fabric_version_label.get(),
+            "label",
+        );
     }
 
     fn setup_signals(&self) {
@@ -292,6 +321,11 @@ impl BlockyEditInstanceDialog {
                 }
             ),
         );
+
+        // Install Fabric
+        imp.fabric_install_button.connect_clicked(move |_| {
+            debug!("Installing fabric");
+        });
     }
 
     fn update_save_button(&self) {
@@ -337,10 +371,12 @@ impl BlockyEditInstanceDialog {
             View::General => {}
             View::Java => {}
             View::Game => {}
+            View::Fabric => {}
             View::Saves => {}
             View::Servers => {}
             View::ScreenShots => {}
             View::ResourcePacks => {}
+            View::Logs => {}
         }
 
         imp.stack.set_visible_child_name(view.get_id())
@@ -368,10 +404,12 @@ enum View {
     General,
     Java,
     Game,
+    Fabric,
     Saves,
     Servers,
     ScreenShots,
     ResourcePacks,
+    Logs,
 }
 
 impl From<&str> for View {
@@ -380,10 +418,12 @@ impl From<&str> for View {
             "general" => Self::General,
             "java" => Self::Java,
             "game" => Self::Game,
+            "fabric" => Self::Fabric,
             "saves" => Self::Saves,
             "servers" => Self::Servers,
             "screenshots" => Self::ScreenShots,
             "resourcepacks" => Self::ResourcePacks,
+            "logs" => Self::Logs,
             x => {
                 error!("View '{}' does not exist", x);
                 Self::General
@@ -413,10 +453,12 @@ impl View {
             View::General => "general",
             View::Java => "java",
             View::Game => "game",
+            View::Fabric => "fabric",
             View::Saves => "saves",
             View::Servers => "servers",
             View::ScreenShots => "screenshots",
             View::ResourcePacks => "resourcepacks",
+            View::Logs => "logs",
         }
     }
 
@@ -425,10 +467,12 @@ impl View {
             View::General => "General",
             View::Java => "Java",
             View::Game => "Game",
+            View::Fabric => "Fabric",
             View::Saves => "Saves",
             View::Servers => "Servers",
             View::ScreenShots => "Screenshots",
             View::ResourcePacks => "Resourcepacks",
+            View::Logs => "Logs",
         }
     }
 }

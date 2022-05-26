@@ -58,6 +58,5 @@ pub struct Instance {
     pub use_fabric: bool,
     #[cfg(feature = "fabric")]
     #[builder(default)]
-    #[builder(setter(strip_option))]
-    pub fabric_version: Option<String>,
+    pub fabric_version: String,
 }

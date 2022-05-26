@@ -27,18 +27,17 @@ pub trait FabricInstanceExt {
 
 impl FabricInstanceExt for Instance {
     fn save_fabric_version_data(&self) -> error::Result<()> {
-        let profile_url =
-            if let (true, Some(fabric_version)) = (self.use_fabric, &self.fabric_version) {
-                format!(
-                    "{}/versions/loader/{}/{}/profile/json",
-                    consts::FABRIC_BASE_V2_URL,
-                    self.version,
-                    fabric_version
-                )
-            } else {
-                warn!("Instance is either not using fabric or has no loader version specified");
-                return Ok(());
-            };
+        if !self.use_fabric {
+            warn!("Instance is not using fabric");
+            return Ok(());
+        }
+
+        let profile_url = format!(
+            "{}/versions/loader/{}/{}/profile/json",
+            consts::FABRIC_BASE_V2_URL,
+            &self.version,
+            &self.fabric_version
+        );
 
         let fabric_version_data_path = self.fabric_version_data_path();
         download_file_check(&profile_url, &fabric_version_data_path, None)?;
@@ -62,12 +61,12 @@ impl FabricInstanceExt for Instance {
         update_sender: Sender<InstallationUpdate>,
         cancel: Arc<AtomicBool>,
     ) -> error::Result<()> {
-        let fabric_version_data = if self.use_fabric && self.fabric_version.is_some() {
-            self.read_fabric_version_data()?
-        } else {
-            warn!("Instance is either not using fabric or has no loader version specified");
+        if !self.use_fabric {
+            warn!("Instance is not using fabric");
             return Ok(());
-        };
+        }
+
+        let fabric_version_data = self.read_fabric_version_data()?;
 
         install_fabric_libraries(
             &fabric_version_data,

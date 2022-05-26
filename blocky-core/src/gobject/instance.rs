@@ -28,6 +28,8 @@ pub const ENABLE_JAVA_EXEC: &str = "enable-java-exec";
 pub const JAVA_EXEC: &str = "java-exec";
 pub const ENABLE_JVM_ARGS: &str = "enable-jvm-args";
 pub const JVM_ARGS: &str = "jvm-args";
+pub const USE_FABRIC: &str = "use-fabric";
+pub const FABRIC_VERSION: &str = "fabric-version";
 
 mod imp {
     use super::*;
@@ -52,6 +54,9 @@ mod imp {
         pub java_exec: RefCell<String>,
         pub enable_jvm_args: Cell<bool>,
         pub jvm_args: RefCell<String>,
+
+        pub use_fabric: Cell<bool>,
+        pub fabric_version: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -187,6 +192,20 @@ mod imp {
                         None,
                         ParamFlags::READWRITE,
                     ),
+                    ParamSpecBoolean::new(
+                        USE_FABRIC,
+                        "Use Fabric",
+                        "Use Fabric",
+                        false,
+                        ParamFlags::READWRITE,
+                    ),
+                    ParamSpecString::new(
+                        FABRIC_VERSION,
+                        "Fabric Version",
+                        "Fabric Version",
+                        None,
+                        ParamFlags::READWRITE,
+                    ),
                 ]
             });
 
@@ -213,6 +232,8 @@ mod imp {
                 JAVA_EXEC => *self.java_exec.borrow_mut() = value.get().unwrap(),
                 ENABLE_JVM_ARGS => self.enable_jvm_args.set(value.get().unwrap()),
                 JVM_ARGS => *self.jvm_args.borrow_mut() = value.get().unwrap(),
+                USE_FABRIC => self.use_fabric.set(value.get().unwrap()),
+                FABRIC_VERSION => *self.fabric_version.borrow_mut() = value.get().unwrap(),
                 x => {
                     error!("Property {} not a member of GInstance", x);
                     unimplemented!()
@@ -240,6 +261,8 @@ mod imp {
                 JAVA_EXEC => self.java_exec.borrow().to_value(),
                 ENABLE_JVM_ARGS => self.enable_jvm_args.get().to_value(),
                 JVM_ARGS => self.jvm_args.borrow().to_value(),
+                USE_FABRIC => self.use_fabric.get().to_value(),
+                FABRIC_VERSION => self.fabric_version.borrow().to_value(),
                 x => {
                     error!("Property {} not a member of GInstance", x);
                     unimplemented!()
@@ -300,6 +323,8 @@ impl From<Instance> for GInstance {
             (JAVA_EXEC, &instance.java_exec),
             (ENABLE_JVM_ARGS, &instance.enable_jvm_args),
             (JVM_ARGS, &instance.jvm_args),
+            (USE_FABRIC, &instance.use_fabric),
+            (FABRIC_VERSION, &instance.fabric_version),
         ])
         .unwrap()
     }
@@ -338,7 +363,9 @@ impl From<GInstance> for Instance {
             .enable_java_exec(instance.property(ENABLE_JAVA_EXEC))
             .java_exec(instance.property(JAVA_EXEC))
             .enable_jvm_args(instance.property(ENABLE_JVM_ARGS))
-            .jvm_args(instance.property(JVM_ARGS));
+            .jvm_args(instance.property(JVM_ARGS))
+            .use_fabric(instance.property(USE_FABRIC))
+            .fabric_version(instance.property(FABRIC_VERSION));
 
         if !description.is_empty() {
             instance_builder.description(description);
