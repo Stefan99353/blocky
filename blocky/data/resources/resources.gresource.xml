@@ -8,6 +8,7 @@
     <file compressed="true" preprocess="xml-stripblanks">ui/new_instance_dialog.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/install_progress_dialog.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/edit_instance_dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/fabric_version_selection_dialog.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/version_summary_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/instance_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/instance_page.ui</file>

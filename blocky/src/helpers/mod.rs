@@ -4,6 +4,7 @@ use std::io::BufReader;
 use std::path::Path;
 
 pub mod error;
+pub mod fabric;
 pub mod instances;
 pub mod profiles;
 pub mod version_manifest;

@@ -10,6 +10,7 @@ data/resources/ui/new_profile_dialog.ui
 data/resources/ui/new_instance_dialog.ui
 data/resources/ui/edit_instance_dialog.ui
 data/resources/ui/install_progress_dialog.ui
+data/resources/ui/fabric_version_selection_dialog.ui
 data/resources/ui/version_summary_row.ui
 data/resources/ui/instance_row.ui
 data/resources/ui/instance_page.ui

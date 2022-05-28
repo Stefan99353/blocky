@@ -1,3 +1,5 @@
+#[cfg(feature = "fabric")]
+pub mod fabric;
 pub mod instance;
 pub mod profile;
 pub mod version_summary;

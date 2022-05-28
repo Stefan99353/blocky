@@ -1,5 +1,5 @@
 use crate::managers::BlockyInstanceManager;
-use crate::ui::BlockyApplicationWindow;
+use crate::ui::{BlockyApplicationWindow, BlockyFabricVersionSelectionDialog};
 use adw::prelude::*;
 use blocky_core::gobject::instance;
 use blocky_core::gobject::GInstance;
@@ -323,9 +323,12 @@ impl BlockyEditInstanceDialog {
         );
 
         // Install Fabric
-        imp.fabric_install_button.connect_clicked(move |_| {
-            debug!("Installing fabric");
-        });
+        imp.fabric_install_button
+            .connect_clicked(glib::clone!(@weak self as this => move |_| {
+                let instance = this.instance();
+                let dialog = BlockyFabricVersionSelectionDialog::new(&this.upcast(), &instance);
+                dialog.show();
+            }));
     }
 
     fn update_save_button(&self) {
