@@ -25,6 +25,10 @@ pub enum Error {
 
     #[error("{0}")]
     Download(DownloadError),
+
+    #[cfg(feature = "fabric")]
+    #[error("{0}")]
+    Mod(crate::instance::mods::error::ModError),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -57,20 +61,9 @@ impl From<DownloadError> for Error {
     }
 }
 
-// impl From<InstallationError> for Error {
-//     fn from(err: InstallationError) -> Self {
-//         Self::Installation(err)
-//     }
-// }
-//
-// impl From<LaunchError> for Error {
-//     fn from(err: LaunchError) -> Self {
-//         Self::Launch(err)
-//     }
-// }
-//
-// impl From<hex::FromHexError> for Error {
-//     fn from(err: hex::FromHexError) -> Self {
-//         Self::Sha1Decode(err)
-//     }
-// }
+#[cfg(feature = "fabric")]
+impl From<crate::instance::mods::error::ModError> for Error {
+    fn from(err: crate::instance::mods::error::ModError) -> Self {
+        Self::Mod(err)
+    }
+}

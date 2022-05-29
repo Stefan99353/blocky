@@ -6,6 +6,8 @@ use uuid::Uuid;
 pub mod fabric;
 mod install;
 mod launch;
+#[cfg(feature = "fabric")]
+pub mod mods;
 mod paths;
 mod remove;
 
